@@ -1,6 +1,6 @@
 """
 Resource Optimization Agent 
-Manages work teams and resource allocation 
+Manages work teams and resource allocation and optimization.
 """
 
 import json
@@ -35,7 +35,7 @@ class ResourceOptimizationAgent:
             member_type: 'person' or 'organization'
             
         Returns:
-            Dictionary with result
+            Dictionary with result and team member details
         """
         try:
             if member_type not in ['person', 'organization']:
