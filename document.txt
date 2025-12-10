@@ -1,0 +1,438 @@
+Iteration 1 Overview
+Timeline: September – October
+Modules Covered:
+Module 1: Project Monitoring & Performance
+Module 2: Financial & Audit Management
+Core setup (authentication, database, embedding pipeline)
+1.High-Level Use Cases
+
+Use Case ID
+Use Case Name
+Actors
+Type
+Description
+UC1
+User Authentication & Role Management
+Project Manager, Staff, Auditor
+Primary
+Allows users to log in securely, manage profiles, and access features according to their assigned roles.
+UC2
+Project Creation & Setup
+Project Manager
+Primary
+Enables managers to create new projects, define goals, scope, budgets, and assign team members.
+UC3
+Project Performance Monitoring
+Project Manager
+Primary
+Displays real-time project progress, health status, and milestone completion through AI-powered dashboards.
+UC4
+Milestone & Progress Tracking
+Project Staff, Manager
+Primary
+Allows users to view, and track milestones and progress against planned schedules.
+UC5
+Bottleneck Detection
+Project Staff
+Secondary
+AI detects workflow delays or dependencies affecting performance and alerts relevant team members.
+UC6
+Budget & Expenditure Audit
+Financial Officer, Manager
+Primary
+Tracks project expenditures versus allocated budgets to maintain financial accountability.
+UC7
+Fraud & Anomaly Detection
+Auditor, Manager
+Primary
+Uses AI to detect irregular financial transactions or suspicious spending patterns.
+UC8
+Effort vs. Outcome Analysis
+Manager
+Secondary
+Compares human and financial effort with achieved project outcomes to measure efficiency.
+UC9
+Risk Forecasting & Prediction
+Project Manager
+Primary
+AI predicts potential risks, delays, or failures and provides preventive recommendations.
+UC10
+What-If Scenario Simulation
+Manager
+Secondary
+Allows simulation of different project or budget scenarios to evaluate outcomes before implementation.
+UC11
+Resource Optimization
+Project Manager, System
+Primary
+AI allocates resources intelligently based on project needs and workload balance.
+UC12
+Task Prioritization Engine
+Staff, Manager
+Secondary
+Prioritizes tasks dynamically based on urgency, deadlines, and dependencies.
+UC13
+Compliance Monitoring & Violation Detection
+Auditor, Manager
+Primary
+Continuously monitors project activities against organizational and national compliance policies.
+UC14
+Guidance & Recommendation Engine
+Project Manager, Auditor
+Primary
+Provides AI-driven recommendations and corrective actions based on policy and data patterns.
+UC15
+Document Analysis & Summarization
+Project Staff, Manager
+Primary
+AI analyzes, summarizes, and extracts key points from large project documents in English and Urdu.
+UC16
+Knowledge Graph Building & Insight Discovery
+AI Engine, Manager
+Secondary
+Builds interconnected knowledge graphs linking documents, risks, and projects for semantic search.
+UC17
+Communication Intelligence (Chat Analysis)
+Team Members, Manager
+Primary
+AI monitors team communication, detects conflicts, and extracts actionable insights from chat data.
+UC18
+AI Assistant (Text)
+All Users
+Primary
+AI Assistant answers queries, provides suggestions, and generates insights using NLP and optionally speech models.
+UC19
+Mobile Monitoring & Alerts
+Manager, Field Staff
+Primary
+Mobile app sends AI-generated alerts, project updates, and visual summaries to users on the go.
+UC20
+Dashboard & Visualization
+Project Manager, Staff
+Primary
+Displays integrated project, financial, and performance data in dynamic dashboards for decision-making.
+
+2.Expanded Use Case
+UC1 – User Authentication & Role Management
+Section Main
+Details
+Use Case
+User Authentication & Role Management
+Actors
+Project Manager, Project Staff, Auditor
+Purpose
+To allow users to securely log in and access system features based on their role.
+Overview
+The user enters credentials. The system verifies login information and grants access to the appropriate dashboard according to the assigned role. In case of invalid credentials, an error is displayed.
+Type
+Primary and Essential
+
+
+
+UC2 – Project Creation & Setup
+Section Main
+Details
+Use Case
+Project Creation & Setup
+Actors
+Project Manager
+Purpose
+To create a new project and initialize key parameters such as objectives, budget, and team.
+Overview
+The project manager selects “Create New Project,” enters the title, scope, timeline, and assigns members. The system saves details, generates a project ID, and sets up initial milestones and budget templates.
+Type
+Primary and Essential
+
+
+Project Performance Monitoring
+Section Main
+Details
+Use Case
+Project Performance Monitoring
+Actors
+Project Manager
+Purpose
+To evaluate and visualize project progress using AI-driven performance analytics.
+Overview
+The manager opens the “Performance Dashboard.” The system retrieves project data, compares planned vs. actual progress, and highlights issues. Visual indicators, charts, and AI-based recommendations are displayed for better decision-making.
+Type
+Primary and Essential
+
+
+UC4 – Milestone & Progress Tracking
+Section Main
+Details
+Use Case
+Milestone & Progress Tracking
+Actors
+Project Staff, Project Manager
+Purpose
+To manage and track project milestones throughout the project lifecycle.
+Overview
+Users open the milestone interface, update milestone completion statuses, and add progress notes. The system recalculates completion percentages, flags delays, and updates dashboards accordingly.
+Type
+Primary and Essential
+
+
+
+UC5 – Bottleneck Detection
+Section Main
+Details
+Use Case
+Bottleneck Detection
+Actors
+Project Staff
+Purpose
+To detect workflow delays and critical dependencies through AI-based analysis.
+Overview
+The user triggers the bottleneck detection process. The AI engine identifies process delays and dependencies, generates a report, and suggests optimization actions.
+Type
+Secondary and Essential
+
+
+
+UC6 – Budget & Expenditure Audit
+Section Main
+Details
+Use Case
+Budget & Expenditure Audit
+Actors
+Financial Officer, Project Manager
+Purpose
+To monitor and verify project expenditures against allocated budgets.
+Overview
+The financial officer uploads budget data and tracks real-time expenditures. The system compares actual vs. planned spending and flags any over-budget items or discrepancies for managerial review.
+Type
+Primary and Essential
+
+
+UC7 – Fraud & Anomaly Detection
+Section Main
+Details
+Use Case
+Fraud & Anomaly Detection
+Actors
+Auditor, Project Manager
+Purpose
+To automatically detect suspicious or irregular financial transactions using AI algorithms.
+Overview
+The auditor runs the anomaly detection process. The system analyzes financial data using AI models and highlights potential fraudulent or unusual entries for manual verification and reporting.
+Type
+Primary and Essential
+
+
+
+UC8 – Effort vs. Outcome Analysis
+Section Main
+Details
+Use Case
+Effort vs. Outcome Analysis
+Actors
+Project Manager
+Purpose
+To compare the amount of work and resources invested with achieved project results.
+Overview
+The manager requests an efficiency analysis. The system aggregates input data such as manpower hours and costs, compares it with project KPIs, and generates an analytical report on efficiency and effectiveness.
+Type
+Secondary and Essential
+
+
+
+UC9 – Risk Forecasting & Prediction
+Section Main
+Details
+Use Case
+Risk Forecasting & Prediction
+Actors
+Project Manager
+Purpose
+To predict potential project risks and delays using AI-based predictive analytics.
+Overview
+The manager triggers the risk forecasting engine. The AI model evaluates project parameters, identifies potential risks, and displays predicted impact levels with recommended preventive measures.
+Type
+Primary and Essential
+
+
+UC9 – Risk Forecasting & Prediction
+Section Main
+Details
+Use Case
+Risk Forecasting & Prediction
+Actors
+Project Manager
+Purpose
+To predict potential project risks and delays using AI-based predictive analytics.
+Overview
+The manager triggers the risk forecasting engine. The AI model evaluates project parameters, identifies potential risks, and displays predicted impact levels with recommended preventive measures.
+Type
+Primary and Essential
+
+
+UC10 – What-If Scenario Simulation
+Section Main
+Details
+Use Case
+What-If Scenario Simulation
+Actors
+Project Manager
+Purpose
+To simulate alternative project strategies and analyze potential outcomes.
+Overview
+The manager selects variables like time, cost, or resource changes. The system simulates outcomes using AI models and presents visual comparisons of possible scenarios for decision-making.
+Type
+Secondary and Essential
+
+
+UC11 – Resource Optimization
+Section Main
+Details
+Use Case
+Resource Optimization
+Actors
+Project Manager, System (AI Engine)
+Purpose
+To intelligently allocate and optimize available project resources for maximum efficiency.
+Overview
+The manager views resource utilization data. The AI engine analyzes workloads, skill availability, and project priorities, then recommends optimized resource allocation and scheduling for balanced distribution.
+Type
+Primary and Essential
+
+
+UC12 – Task Prioritization Engine
+Section Main
+Details
+Use Case
+Task Prioritization Engine
+Actors
+Project Staff, Project Manager
+Purpose
+To automatically determine and update the order of tasks based on deadlines, dependencies, and workload.
+Overview
+The user accesses the task list. The system evaluates urgency, dependencies, and project phase, then reprioritizes tasks dynamically to improve productivity and prevent overlaps.
+Type
+Secondary and Essential
+
+
+UC13 – Compliance Monitoring & Violation Detection
+Section Main
+Details
+Use Case
+Compliance Monitoring & Violation Detection
+Actors
+Auditor, Project Manager
+Purpose
+To ensure that all project processes and financial transactions comply with organizational and national policies.
+Overview
+The auditor activates compliance monitoring. The AI engine checks logs, expenditures, and communications for rule violations, then flags non-compliant activities and generates a detailed compliance report.
+Type
+Primary and Essential
+
+
+UC14 – Guidance & Recommendation Engine
+Section Main
+Details
+Use Case
+Guidance & Recommendation Engine
+Actors
+Project Manager, Auditor
+Purpose
+To provide AI-generated suggestions and corrective guidance for improving performance and compliance.
+Overview
+The manager requests recommendations. The AI module analyzes project data, identifies performance issues, and presents actionable recommendations to optimize efficiency and ensure compliance.
+Type
+Primary and Essential
+
+
+UC15 – Document Analysis & Summarization
+Section Main
+Details
+Use Case
+Document Analysis & Summarization
+Actors
+Project Staff, Project Manager
+Purpose
+To automatically analyze and summarize large project documents in English and Urdu for faster review.
+Overview
+The user uploads a project document. The AI module reads and processes the file, extracts important information, and generates concise summaries and key highlights for managerial use.
+Type
+Primary and Essential
+
+
+UC16 – Knowledge Graph Building & Insight Discovery
+
+Section Main
+Details
+Use Case
+Knowledge Graph Building & Insight Discovery
+Actors
+AI Engine, Project Manager
+Purpose
+To connect project data, documents, risks, and entities through an intelligent knowledge graph for semantic insights.
+Overview
+The AI engine processes documents and metadata, linking related entities and themes. The system generates a searchable knowledge graph, allowing users to discover insights and relationships across multiple projects.
+Type
+Secondary and Essential
+
+
+UC17 – Communication Intelligence (Chat Analysis)
+Section Main
+Details
+Use Case
+Communication Intelligence (Chat Analysis)
+Actors
+Team Members, Project Manager
+Purpose
+To analyze project-related team communications, detect conflicts, and extract action items.
+Overview
+Team members use the project chat system. The AI engine monitors messages, performs sentiment and context analysis, highlights key decisions, detects conflicts, and suggests resolutions.
+Type
+Primary and Essential
+
+
+UC18 – AI Assistant (Text & Voice)
+Section Main
+Details
+Use Case
+AI Assistant (Text & Voice)
+Actors
+All Users
+Purpose
+To enable users to interact with the system using natural language for queries, reports, and guidance.
+Overview
+The user interacts with the AI Assistant via text or voice. The system interprets the query using NLP, fetches relevant information from databases, and provides contextual answers, suggestions, or visual summaries.
+Type
+Primary and Essential
+
+
+UC19 – Mobile Monitoring & Alerts
+Section Main
+Details
+Use Case
+Mobile Monitoring & Alerts
+Actors
+Project Manager, Field Staff
+Purpose
+To deliver real-time alerts, summaries, and project updates through a mobile application.
+Overview
+The mobile app syncs with the central system to send AI-generated notifications about project delays, risks, or compliance issues. Users can view quick dashboards and acknowledge alerts on the go.
+Type
+Primary and Essential
+
+
+
+UC20 – Dashboard & Visualization
+
+Section Main
+Details
+Use Case
+Dashboard & Visualization
+Actors
+Project Manager, Project Staff
+Purpose
+To display project, financial, and performance data visually for decision-making.
+Overview
+The user accesses the dashboard. The system aggregates data from multiple modules, displays KPIs, charts, and trends, and allows filtering by time or category for strategic analysis.
+Type
+Primary and Essential
+
+
