@@ -1,6 +1,6 @@
 """
 Resource Optimization Agent 
-Manages work teams and resource allocation and optimization.
+Manages work teams and resource allocation.
 """
 
 import json
