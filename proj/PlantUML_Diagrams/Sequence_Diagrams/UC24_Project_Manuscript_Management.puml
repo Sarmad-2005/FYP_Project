@@ -1,0 +1,302 @@
+@startuml UC24 - Project Manuscript Management
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC24 - Project Manuscript Management\nSequence Diagram
+
+actor "Administrator" as AD
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Document Manager" as DM_Agent
+participant "Version Controller" as VC
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+participant "Cloud Storage" as CS
+
+== Access Document Repository ==
+
+AD -> WB: Navigate to document management
+WB -> FA: GET /documents/manuscripts/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_document_repository(project_id)
+DM --> FA: Repository data
+FA --> WB: Render document interface
+WB --> AD: Display manuscript management dashboard
+
+== Upload New Manuscript ==
+
+AD -> WB: Click "Upload Manuscript"
+WB -> FA: GET /documents/upload
+FA -> DM: get_upload_categories()
+DM --> FA: Upload categories
+FA --> WB: Render upload form
+WB --> AD: Display upload interface
+
+AD -> WB: Select file and enter details
+note right: file, title, description, category, version_notes
+WB -> FA: POST /documents/upload_manuscript
+note right: project_id, file_data, metadata
+
+FA -> DM_Agent: upload_manuscript(project_id, file_data, metadata)
+DM_Agent -> DM_Agent: validate_file_format(file_data)
+note right: Check PDF, Word, text formats
+DM_Agent -> DM_Agent: validate_file_size(file_data)
+DM_Agent -> DM: check_duplicate_file(project_id, file_data)
+DM --> DM_Agent: Duplicate check results
+
+alt File is duplicate
+    DM_Agent --> FA: Duplicate file detected
+    FA --> WB: Duplicate warning
+    WB --> AD: Display duplicate file warning
+    AD -> WB: Confirm overwrite
+    WB -> FA: POST /documents/confirm_overwrite
+    note right: project_id, file_data, overwrite_confirmation
+    FA -> DM_Agent: process_duplicate_upload(project_id, file_data, overwrite_confirmation)
+end
+
+DM_Agent -> CS: upload_file_to_storage(file_data, project_id)
+CS --> DM_Agent: File uploaded
+DM_Agent -> VC: create_document_version(project_id, file_data, metadata)
+VC -> DM: save_document_metadata(project_id, metadata)
+DM --> VC: Metadata saved
+VC -> DM: create_version_record(project_id, version_data)
+DM --> VC: Version created
+VC -> DM: log_document_activity(project_id, "upload", user_id)
+DM --> VC: Activity logged
+VC --> DM_Agent: Document versioned
+DM_Agent --> FA: Manuscript uploaded successfully
+FA --> WB: Upload confirmation
+WB --> AD: Display upload success
+
+== Document Version Management ==
+
+AD -> WB: View document versions
+WB -> FA: GET /documents/versions/<document_id>
+FA -> DM_Agent: get_document_versions(document_id)
+DM_Agent -> DM: get_document_version_history(document_id)
+DM --> DM_Agent: Version history
+DM_Agent -> VC: format_version_timeline(version_history)
+VC -> VC: Create version comparison
+VC --> DM_Agent: Version timeline
+DM_Agent --> FA: Document versions
+FA --> WB: Render version history
+WB --> AD: Display document versions
+
+AD -> WB: Create new version
+WB -> FA: POST /documents/create_version
+note right: document_id, new_file_data, version_notes
+
+FA -> DM_Agent: create_new_version(document_id, new_file_data, version_notes)
+DM_Agent -> CS: upload_new_version(document_id, new_file_data)
+CS --> DM_Agent: New version uploaded
+DM_Agent -> VC: increment_document_version(document_id, new_file_data)
+VC -> DM: save_new_version(document_id, version_data)
+DM --> VC: Version saved
+VC -> DM: update_document_metadata(document_id, version_notes)
+DM --> VC: Metadata updated
+VC -> DM: log_version_creation(document_id, user_id)
+DM --> VC: Version logged
+VC --> DM_Agent: Version created
+DM_Agent --> FA: New version created
+FA --> WB: Version confirmation
+WB --> AD: Display version creation
+
+== Document Access Control ==
+
+AD -> WB: Set document permissions
+WB -> FA: POST /documents/set_permissions
+note right: document_id, access_level, user_permissions
+
+FA -> DM_Agent: set_document_permissions(document_id, access_level, user_permissions)
+DM_Agent -> DM: update_document_access(document_id, access_level)
+DM --> DM_Agent: Access updated
+DM_Agent -> DM: set_user_permissions(document_id, user_permissions)
+DM --> DM_Agent: Permissions set
+DM_Agent -> DM: log_permission_change(document_id, user_id)
+DM --> DM_Agent: Change logged
+DM_Agent --> FA: Permissions updated
+FA --> WB: Permission confirmation
+WB --> AD: Display permission update
+
+== Document Search and Filtering ==
+
+PM -> WB: Search documents
+WB -> FA: POST /documents/search
+note right: project_id, search_criteria, filters
+
+FA -> DM_Agent: search_documents(project_id, search_criteria, filters)
+DM_Agent -> DM: query_documents(project_id, search_criteria)
+DM --> DM_Agent: Search results
+DM_Agent -> CDB: semantic_search_documents(search_criteria)
+CDB --> DM_Agent: Semantic results
+DM_Agent -> LLM: enhance_search_results(search_results, search_criteria)
+note right: Context: search results, search criteria, document content
+LLM --> DM_Agent: Enhanced results
+DM_Agent -> DM_Agent: merge_search_results(search_results, semantic_results, enhanced_results)
+DM_Agent --> FA: Search results
+FA --> WB: Render search results
+WB --> PM: Display document search results
+
+== Document Collaboration ==
+
+PM -> WB: Share document
+WB -> FA: POST /documents/share
+note right: document_id, share_with_users, access_level
+
+FA -> DM_Agent: share_document(document_id, share_with_users, access_level)
+DM_Agent -> DM: create_document_sharing(document_id, share_with_users, access_level)
+DM --> DM_Agent: Sharing created
+DM_Agent -> DM: notify_shared_users(document_id, share_with_users)
+DM --> DM_Agent: Notifications sent
+DM_Agent --> FA: Document shared
+FA --> WB: Sharing confirmation
+WB --> PM: Display sharing confirmation
+
+== Document Review and Approval ==
+
+PM -> WB: Submit document for review
+WB -> FA: POST /documents/submit_review
+note right: document_id, review_notes
+
+FA -> DM_Agent: submit_for_review(document_id, review_notes)
+DM_Agent -> DM: update_document_status(document_id, "under_review")
+DM --> DM_Agent: Status updated
+DM_Agent -> DM: create_review_request(document_id, review_notes)
+DM --> DM_Agent: Review request created
+DM_Agent -> DM: notify_reviewers(document_id)
+DM --> DM_Agent: Reviewers notified
+DM_Agent --> FA: Document submitted for review
+FA --> WB: Submission confirmation
+WB --> PM: Display review submission
+
+AD -> WB: Approve document
+WB -> FA: POST /documents/approve
+note right: document_id, approval_notes
+
+FA -> DM_Agent: approve_document(document_id, approval_notes)
+DM_Agent -> DM: update_document_status(document_id, "approved")
+DM --> DM_Agent: Status updated
+DM_Agent -> DM: create_approval_record(document_id, approval_notes)
+DM --> DM_Agent: Approval recorded
+DM_Agent -> DM: notify_stakeholders(document_id, "approved")
+DM --> DM_Agent: Stakeholders notified
+DM_Agent --> FA: Document approved
+FA --> WB: Approval confirmation
+WB --> AD: Display approval confirmation
+
+== Document Analytics ==
+
+PM -> WB: View document analytics
+WB -> FA: GET /documents/analytics/<project_id>
+FA -> DM_Agent: get_document_analytics(project_id)
+DM_Agent -> DM: get_document_usage_stats(project_id)
+DM --> DM_Agent: Usage statistics
+DM_Agent -> DM: get_document_access_logs(project_id)
+DM --> DM_Agent: Access logs
+DM_Agent -> LLM: analyze_document_patterns(usage_stats, access_logs)
+note right: Context: usage statistics, access patterns, document performance
+LLM --> DM_Agent: Analytics insights
+DM_Agent -> DM_Agent: generate_analytics_report(analytics_data)
+DM_Agent --> FA: Document analytics
+FA --> WB: Render analytics dashboard
+WB --> PM: Display document analytics
+
+== Document Backup and Recovery ==
+
+note over DM_Agent: Scheduled backup
+DM_Agent -> CS: backup_document_repository(project_id)
+CS --> DM_Agent: Backup completed
+DM_Agent -> DM: log_backup_activity(project_id, backup_data)
+DM --> DM_Agent: Backup logged
+
+AD -> WB: Restore document version
+WB -> FA: POST /documents/restore_version
+note right: document_id, version_id
+
+FA -> DM_Agent: restore_document_version(document_id, version_id)
+DM_Agent -> CS: restore_file_from_backup(document_id, version_id)
+CS --> DM_Agent: File restored
+DM_Agent -> VC: create_restore_version(document_id, restored_data)
+VC -> DM: save_restore_record(document_id, version_id)
+DM --> VC: Restore recorded
+VC -> DM: log_restore_activity(document_id, version_id, user_id)
+DM --> VC: Restore logged
+VC --> DM_Agent: Version restored
+DM_Agent --> FA: Document restored
+FA --> WB: Restore confirmation
+WB --> AD: Display restore confirmation
+
+== Document Export and Download ==
+
+PM -> WB: Export document
+WB -> FA: POST /documents/export
+note right: document_id, export_format, include_versions
+
+FA -> DM_Agent: export_document(document_id, export_format, include_versions)
+DM_Agent -> CS: prepare_document_export(document_id, export_format)
+CS --> DM_Agent: Export prepared
+DM_Agent -> DM: get_document_metadata(document_id)
+DM --> DM_Agent: Metadata
+DM_Agent -> DM_Agent: format_export_data(document_data, metadata)
+DM_Agent -> CS: create_export_package(export_data)
+CS --> DM_Agent: Export package created
+DM_Agent --> FA: Document export
+FA --> WB: Export file
+WB --> PM: Download document export
+
+== Document Archival ==
+
+AD -> WB: Archive document
+WB -> FA: POST /documents/archive
+note right: document_id, archive_reason
+
+FA -> DM_Agent: archive_document(document_id, archive_reason)
+DM_Agent -> DM: update_document_status(document_id, "archived")
+DM --> DM_Agent: Status updated
+DM_Agent -> CS: move_to_archive_storage(document_id)
+CS --> DM_Agent: Document archived
+DM_Agent -> DM: create_archive_record(document_id, archive_reason)
+DM --> DM_Agent: Archive recorded
+DM_Agent -> DM: log_archive_activity(document_id, user_id)
+DM --> DM_Agent: Archive logged
+DM_Agent --> FA: Document archived
+FA --> WB: Archive confirmation
+WB --> AD: Display archive confirmation
+
+== Document Integration ==
+
+PM -> WB: Integrate with external systems
+WB -> FA: POST /documents/integrate
+note right: document_id, integration_type, external_system
+
+FA -> DM_Agent: integrate_document(document_id, integration_type, external_system)
+DM_Agent -> DM: get_document_data(document_id)
+DM --> DM_Agent: Document data
+DM_Agent -> DM_Agent: format_for_integration(document_data, integration_type)
+DM_Agent -> CS: sync_with_external_system(document_data, external_system)
+CS --> DM_Agent: Integration completed
+DM_Agent -> DM: log_integration_activity(document_id, external_system)
+DM --> DM_Agent: Integration logged
+DM_Agent --> FA: Integration complete
+FA --> WB: Integration confirmation
+WB --> PM: Display integration confirmation
+
+@enduml
+
+
+
+
+

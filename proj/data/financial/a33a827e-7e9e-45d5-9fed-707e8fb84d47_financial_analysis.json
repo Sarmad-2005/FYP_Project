@@ -1,0 +1,28 @@
+{
+  "project_id": "a33a827e-7e9e-45d5-9fed-707e8fb84d47",
+  "document_id": "c9448b11-4abb-42ad-bb54-08c12dad2790",
+  "timestamp": "2025-12-10T01:58:46.812218",
+  "financial_details": {
+    "success": true,
+    "count": 13
+  },
+  "transactions": {
+    "success": true,
+    "count": 0
+  },
+  "expenses": {
+    "total": 100000.0,
+    "count": 2
+  },
+  "revenue": {
+    "total": 500000.0,
+    "count": 1
+  },
+  "financial_health": 75.0,
+  "overall_success": true,
+  "anomaly_detection": {
+    "success": false,
+    "anomalies_detected": 0,
+    "anomaly_rate": 0
+  }
+}

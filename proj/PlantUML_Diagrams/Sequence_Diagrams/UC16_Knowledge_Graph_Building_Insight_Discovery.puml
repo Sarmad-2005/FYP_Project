@@ -1,0 +1,176 @@
+@startuml UC16 - Knowledge Graph Building & Insight Discovery
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC16 - Knowledge Graph Building & Insight Discovery\nSequence Diagram
+
+actor "AI Engine" as AI
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Knowledge Graph Agent" as KGA
+participant "Graph Builder" as GB
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Knowledge Graph Building Process ==
+
+AI -> FA: Trigger knowledge graph building
+FA -> KGA: build_knowledge_graph(project_id)
+KGA -> DM: get_project_data(project_id)
+DM --> KGA: Project data
+KGA -> DM: get_document_data(project_id)
+DM --> KGA: Document data
+KGA -> DM: get_performance_data(project_id)
+DM --> KGA: Performance data
+KGA -> DM: get_financial_data(project_id)
+DM --> KGA: Financial data
+
+== Entity Extraction and Linking ==
+
+KGA -> GB: extract_entities(project_data, document_data, performance_data, financial_data)
+GB -> LLM: Extract entities from data
+note right: Context: project documents, performance metrics, financial data
+LLM --> GB: Extracted entities
+GB -> LLM: Identify entity relationships
+note right: Context: entities, project context, semantic relationships
+LLM --> GB: Entity relationships
+GB -> GB: Create entity nodes
+note right: Projects, Documents, Tasks, Milestones, Risks, Resources
+GB -> GB: Create relationship edges
+note right: Dependencies, associations, hierarchies, flows
+
+== Semantic Analysis ==
+
+GB -> LLM: Perform semantic analysis
+note right: Context: entities, relationships, project context
+LLM --> GB: Semantic insights
+GB -> GB: Identify themes and patterns
+GB -> GB: Create semantic clusters
+GB -> GB: Generate entity embeddings
+GB -> CDB: Store entity embeddings
+CDB --> GB: Embeddings stored
+
+== Knowledge Graph Construction ==
+
+GB -> GB: Build knowledge graph structure
+note right: Nodes: entities, Edges: relationships, Properties: attributes
+GB -> CDB: Store knowledge graph
+CDB --> GB: Graph stored
+GB -> DM: save_knowledge_graph(project_id, graph_data)
+DM --> GB: Graph saved
+GB --> KGA: Knowledge graph built
+KGA --> FA: Graph building complete
+FA --> AI: Knowledge graph ready
+
+== Insight Discovery ==
+
+PM -> WB: Request insights
+WB -> FA: POST /knowledge/insights
+note right: project_id, insight_type, query
+
+FA -> KGA: discover_insights(project_id, insight_type, query)
+KGA -> CDB: Query knowledge graph
+CDB --> KGA: Graph data
+KGA -> GB: analyze_graph_patterns(graph_data)
+GB -> LLM: Discover insights from graph
+note right: Context: knowledge graph, query, project context
+LLM --> GB: Insight discoveries
+GB -> GB: Generate insight explanations
+GB -> GB: Create insight visualizations
+
+== Cross-Project Knowledge Discovery ==
+
+KGA -> DM: get_all_projects_data()
+DM --> KGA: All projects data
+KGA -> GB: build_cross_project_graph(all_projects_data)
+GB -> LLM: Analyze cross-project patterns
+note right: Context: multiple projects, common patterns, best practices
+LLM --> GB: Cross-project insights
+GB -> GB: Identify reusable knowledge
+GB -> GB: Create knowledge transfer recommendations
+GB --> KGA: Cross-project insights
+KGA --> FA: Cross-project knowledge
+FA --> WB: Cross-project insights
+WB --> PM: Display cross-project knowledge
+
+== Semantic Search ==
+
+PM -> WB: Perform semantic search
+WB -> FA: POST /knowledge/semantic_search
+note right: project_id, search_query
+
+FA -> KGA: semantic_search(project_id, search_query)
+KGA -> CDB: Query knowledge graph with semantic search
+CDB --> KGA: Relevant graph nodes
+KGA -> LLM: Generate search results
+note right: Context: search query, relevant nodes, relationships
+LLM --> KGA: Search results
+KGA -> GB: rank_search_results(search_results)
+GB -> GB: Calculate relevance scores
+GB --> KGA: Ranked results
+KGA --> FA: Search results
+FA --> WB: Search results
+WB --> PM: Display semantic search results
+
+== Knowledge Graph Updates ==
+
+note over KGA: Continuous updates
+KGA -> DM: query_new_data(project_id)
+DM --> KGA: New data
+KGA -> GB: update_knowledge_graph(project_id, new_data)
+GB -> LLM: Process new data
+note right: Context: new data, existing graph, update requirements
+LLM --> GB: Updated entities and relationships
+GB -> GB: Update graph structure
+GB -> CDB: Update knowledge graph
+CDB --> GB: Graph updated
+GB -> DM: save_graph_updates(project_id, updates)
+DM --> GB: Updates saved
+GB --> KGA: Graph updated
+KGA -> FA: send_update_notification(project_id)
+FA -> WB: Push notification
+WB --> PM: Display knowledge graph updates
+
+== Knowledge Visualization ==
+
+PM -> WB: View knowledge graph
+WB -> FA: GET /knowledge/visualization/<project_id>
+FA -> KGA: get_knowledge_visualization(project_id)
+KGA -> CDB: Query knowledge graph
+CDB --> KGA: Graph data
+KGA -> GB: create_visualization(graph_data)
+GB -> GB: Generate graph visualization
+note right: Interactive graph with nodes and edges
+GB --> KGA: Visualization data
+KGA --> FA: Visualization
+FA --> WB: Render knowledge graph
+WB --> PM: Display interactive knowledge graph
+
+== Knowledge Export ==
+
+PM -> WB: Export knowledge graph
+WB -> FA: GET /knowledge/export/<project_id>
+FA -> KGA: export_knowledge_graph(project_id)
+KGA -> CDB: Query complete knowledge graph
+CDB --> KGA: Complete graph data
+KGA -> GB: format_export_data(graph_data)
+GB -> GB: Generate export format
+note right: JSON, GraphML, or other formats
+GB --> KGA: Export data
+KGA --> FA: Knowledge graph export
+FA --> WB: Export file
+WB --> PM: Download knowledge graph
+
+@enduml

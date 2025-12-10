@@ -1,0 +1,162 @@
+@startuml UC18 - AI Assistant 
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC18 - AI Assistant \nSequence Diagram
+
+actor "All Users" as AU
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "LLM Manager" as LLM
+participant "ChromaDB" as CDB
+participant "Performance Agent" as PA
+participant "Database Manager" as DM
+
+== Text Chat with AI Assistant ==
+
+AU -> WB: Open chat interface
+WB -> FA: GET /project/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA --> WB: Render project details with chat
+WB --> AU: Display chat interface
+
+AU -> WB: Type message in chat
+WB -> FA: POST /chat_with_document
+note right: project_id, document_id, message
+
+== Message Processing ==
+FA -> FA: Validate input parameters
+FA -> CDB: Query document embeddings
+note right: Similarity search for context
+CDB --> FA: Relevant document chunks
+FA -> LLM: Process chat message
+note right: Context: document chunks + user message
+LLM --> FA: AI response
+FA -> FA: Format response
+FA --> WB: AI response
+WB --> AU: Display AI response
+
+== Context-Aware Responses ==
+
+AU -> WB: Ask about project status
+WB -> FA: POST /chat_with_document
+note right: "What is the current project status?"
+
+FA -> CDB: Query project data
+CDB --> FA: Project context
+FA -> PA: get_performance_status(project_id)
+PA -> CDB: Query performance data
+CDB --> PA: Performance metrics
+PA --> FA: Current status
+FA -> LLM: Generate contextual response
+note right: Context: project data + performance metrics
+LLM --> FA: Contextual response
+FA --> WB: Status response
+WB --> AU: Display project status
+
+== Document-Specific Queries ==
+
+AU -> WB: Ask about specific document
+WB -> FA: POST /chat_with_document
+note right: "Summarize the budget document"
+
+FA -> CDB: Query specific document embeddings
+CDB --> FA: Document chunks
+FA -> LLM: Generate document summary
+note right: Context: specific document content
+LLM --> FA: Document summary
+FA --> WB: Summary response
+WB --> AU: Display document summary
+
+== Multi-Language Support ==
+
+AU -> WB: Type message in Urdu
+WB -> FA: POST /chat_with_document
+note right: Urdu message
+
+FA -> LLM: Process multi-language message
+note right: Support for English and Urdu
+LLM --> FA: Multi-language response
+FA --> WB: Response in appropriate language
+WB --> AU: Display response
+
+== Voice Input (Future Implementation) ==
+
+AU -> WB: Click voice input button
+WB -> FA: POST /voice_chat
+note right: audio_file, project_id
+
+FA -> FA: Convert speech to text
+note right: Speech-to-Text processing
+FA -> CDB: Query document embeddings
+CDB --> FA: Relevant context
+FA -> LLM: Process voice message
+LLM --> FA: AI response
+FA -> FA: Convert response to speech
+note right: Text-to-Speech processing
+FA --> WB: Audio response
+WB --> AU: Play AI response
+
+== Intelligent Recommendations ==
+
+AU -> WB: Ask for recommendations
+WB -> FA: POST /chat_with_document
+note right: "What should I focus on next?"
+
+FA -> PA: get_performance_suggestions(project_id)
+PA -> CDB: Query performance data
+CDB --> PA: Current metrics
+PA -> LLM: Generate recommendations
+note right: Based on project status and bottlenecks
+LLM --> PA: Recommendations
+PA --> FA: Suggestions
+FA -> LLM: Format recommendations
+LLM --> FA: Formatted response
+FA --> WB: Recommendations
+WB --> AU: Display actionable recommendations
+
+== Project Insights ==
+
+AU -> WB: Request project insights
+WB -> FA: POST /chat_with_document
+note right: "Give me insights about this project"
+
+FA -> CDB: Query all project data
+CDB --> FA: Complete project context
+FA -> PA: get_performance_analytics(project_id)
+PA --> FA: Analytics data
+FA -> LLM: Generate comprehensive insights
+note right: Context: all project data + analytics
+LLM --> FA: Project insights
+FA --> WB: Insights response
+WB --> AU: Display project insights
+
+== Error Handling ==
+
+AU -> WB: Send invalid request
+WB -> FA: POST /chat_with_document
+note right: Invalid parameters
+
+FA -> FA: Validate input
+alt Invalid input
+    FA --> WB: Error message
+    WB --> AU: Display error
+else Valid input
+    FA -> LLM: Process message
+    LLM --> FA: Response
+    FA --> WB: Success response
+    WB --> AU: Display response
+end
+
+@enduml

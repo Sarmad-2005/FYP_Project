@@ -1,0 +1,91 @@
+@startuml UC2 - Project Creation & Setup
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC2 - Project Creation & Setup\nSequence Diagram
+
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Database Manager" as DM
+participant "File System" as FS
+
+== Project Creation Process ==
+
+PM -> WB: Navigate to dashboard
+WB -> FA: GET /
+FA -> DM: get_all_projects()
+DM -> FS: Read projects.json
+FS --> DM: Projects data
+DM --> FA: Projects list
+FA --> WB: Render dashboard.html
+WB --> PM: Display dashboard
+
+PM -> WB: Click "Create New Project"
+WB -> FA: POST /create_project
+note right: Form data: project_name, description
+
+FA -> FA: Validate input data
+note right: Check name length, required fields
+
+alt Valid input
+    FA -> DM: create_project(project_data)
+    DM -> FS: Write to projects.json
+    FS --> DM: Success confirmation
+    DM --> FA: Project created with ID
+    FA --> WB: Redirect to project details
+    WB --> PM: Display project details page
+else Invalid input
+    FA --> WB: Return error message
+    WB --> PM: Display error
+end
+
+== Project Setup Process ==
+
+PM -> WB: View project details
+WB -> FA: GET /project/<project_id>
+FA -> DM: get_project(project_id)
+DM -> FS: Read projects.json
+FS --> DM: Project data
+DM --> FA: Project details
+FA -> DM: get_documents_by_project(project_id)
+DM -> FS: Read documents.json
+FS --> DM: Documents list
+DM --> FA: Documents data
+FA --> WB: Render project_details.html
+WB --> PM: Display project details
+
+== Document Upload (Initial Setup) ==
+
+PM -> WB: Upload initial document
+WB -> FA: POST /upload_document
+note right: Form data: file, project_id
+
+FA -> FA: Validate file (PDF, size)
+alt Valid file
+    FA -> FS: Save file to uploads/
+    FS --> FA: File saved
+    FA -> FA: Process PDF (EnhancedPDFProcessor)
+    FA -> FA: Generate embeddings (EmbeddingsManager)
+    FA -> DM: save_document(document_data)
+    DM -> FS: Write to documents.json
+    FS --> DM: Success
+    DM --> FA: Document saved
+    FA --> WB: Success response
+    WB --> PM: Display success message
+else Invalid file
+    FA --> WB: Return error
+    WB --> PM: Display error message
+end
+
+@enduml

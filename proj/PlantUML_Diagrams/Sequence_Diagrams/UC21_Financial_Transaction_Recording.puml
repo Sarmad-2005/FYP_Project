@@ -1,0 +1,238 @@
+@startuml UC21 - Financial Transaction Recording
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC21 - Financial Transaction Recording\nSequence Diagram
+
+actor "Auditor" as AU
+actor "Financial Officer" as FO
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Financial Agent" as FA_Agent
+participant "Transaction Validator" as TV
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Access Financial Module ==
+
+AU -> WB: Navigate to financial transactions
+WB -> FA: GET /financial/transactions/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_financial_accounts(project_id)
+DM --> FA: Financial accounts
+FA --> WB: Render transaction interface
+WB --> AU: Display transaction dashboard
+
+== Create New Transaction ==
+
+AU -> WB: Click "Add Transaction"
+WB -> FA: GET /financial/transactions/new/<project_id>
+FA -> DM: get_project_financial_data(project_id)
+DM --> FA: Project financial data
+FA -> DM: get_transaction_categories()
+DM --> FA: Transaction categories
+FA --> WB: Render transaction form
+WB --> AU: Display transaction form
+
+== Record Transaction Details ==
+
+AU -> WB: Enter transaction details
+note right: amount, category, description, vendor, date
+WB -> FA: POST /financial/transactions/create
+note right: project_id, transaction_data
+
+FA -> FA_Agent: create_transaction(project_id, transaction_data)
+FA_Agent -> TV: validate_transaction_data(transaction_data)
+TV -> TV: Validate amount format
+TV -> TV: Check required fields
+TV -> TV: Validate date format
+TV -> TV: Check category validity
+TV --> FA_Agent: Validation results
+
+alt Validation successful
+    FA_Agent -> DM: save_transaction(project_id, transaction_data)
+    DM --> FA_Agent: Transaction saved
+    FA_Agent -> DM: update_financial_totals(project_id)
+    DM --> FA_Agent: Totals updated
+    FA_Agent -> DM: create_audit_trail(project_id, transaction_id)
+    DM --> FA_Agent: Audit trail created
+    FA_Agent --> FA: Transaction created successfully
+    FA --> WB: Success response
+    WB --> AU: Display transaction confirmation
+else Validation failed
+    FA_Agent --> FA: Validation errors
+    FA --> WB: Error response
+    WB --> AU: Display validation errors
+end
+
+== Transaction Verification ==
+
+AU -> WB: Verify transaction details
+WB -> FA: GET /financial/transactions/<transaction_id>
+FA -> FA_Agent: get_transaction_details(transaction_id)
+FA_Agent -> DM: get_transaction_data(transaction_id)
+DM --> FA_Agent: Transaction data
+FA_Agent -> DM: get_audit_trail(transaction_id)
+DM --> FA_Agent: Audit trail
+FA_Agent --> FA: Transaction details
+FA --> WB: Render transaction details
+WB --> AU: Display transaction verification
+
+== Digital Signature Verification ==
+
+AU -> WB: Request digital signature
+WB -> FA: POST /financial/transactions/sign
+note right: transaction_id, digital_signature
+
+FA -> FA_Agent: verify_digital_signature(transaction_id, signature)
+FA_Agent -> TV: validate_digital_signature(signature)
+TV -> TV: Check signature format
+TV -> TV: Verify signature authenticity
+TV --> FA_Agent: Signature validation
+FA_Agent -> DM: update_transaction_signature(transaction_id, signature)
+DM --> FA_Agent: Signature updated
+FA_Agent --> FA: Signature verified
+FA --> WB: Success response
+WB --> AU: Display signature confirmation
+
+== Transaction Approval Workflow ==
+
+FO -> WB: Review pending transactions
+WB -> FA: GET /financial/transactions/pending/<project_id>
+FA -> FA_Agent: get_pending_transactions(project_id)
+FA_Agent -> DM: get_pending_transactions(project_id)
+DM --> FA_Agent: Pending transactions
+FA_Agent --> FA: Pending transactions list
+FA --> WB: Render pending transactions
+WB --> FO: Display pending transactions
+
+FO -> WB: Approve transaction
+WB -> FA: POST /financial/transactions/approve
+note right: transaction_id, approval_notes
+
+FA -> FA_Agent: approve_transaction(transaction_id, approval_notes)
+FA_Agent -> DM: update_transaction_status(transaction_id, "approved")
+DM --> FA_Agent: Status updated
+FA_Agent -> DM: log_approval(transaction_id, approval_notes)
+DM --> FA_Agent: Approval logged
+FA_Agent -> DM: update_financial_ledger(transaction_id)
+DM --> FA_Agent: Ledger updated
+FA_Agent --> FA: Transaction approved
+FA --> WB: Success response
+WB --> FO: Display approval confirmation
+
+== Transaction Rejection ==
+
+FO -> WB: Reject transaction
+WB -> FA: POST /financial/transactions/reject
+note right: transaction_id, rejection_reason
+
+FA -> FA_Agent: reject_transaction(transaction_id, rejection_reason)
+FA_Agent -> DM: update_transaction_status(transaction_id, "rejected")
+DM --> FA_Agent: Status updated
+FA_Agent -> DM: log_rejection(transaction_id, rejection_reason)
+DM --> FA_Agent: Rejection logged
+FA_Agent --> FA: Transaction rejected
+FA --> WB: Success response
+WB --> FO: Display rejection confirmation
+
+== Transaction Modification ==
+
+AU -> WB: Edit transaction
+WB -> FA: GET /financial/transactions/edit/<transaction_id>
+FA -> FA_Agent: get_transaction_for_edit(transaction_id)
+FA_Agent -> DM: get_transaction_data(transaction_id)
+DM --> FA_Agent: Transaction data
+FA_Agent --> FA: Transaction data
+FA --> WB: Render edit form
+WB --> AU: Display edit form
+
+AU -> WB: Submit transaction changes
+WB -> FA: POST /financial/transactions/update
+note right: transaction_id, updated_data
+
+FA -> FA_Agent: update_transaction(transaction_id, updated_data)
+FA_Agent -> TV: validate_updated_transaction(updated_data)
+TV --> FA_Agent: Validation results
+FA_Agent -> DM: update_transaction_data(transaction_id, updated_data)
+DM --> FA_Agent: Transaction updated
+FA_Agent -> DM: create_modification_audit_trail(transaction_id, updated_data)
+DM --> FA_Agent: Modification logged
+FA_Agent --> FA: Transaction updated
+FA --> WB: Success response
+WB --> AU: Display update confirmation
+
+== Transaction Search and Filtering ==
+
+AU -> WB: Search transactions
+WB -> FA: POST /financial/transactions/search
+note right: project_id, search_criteria, date_range
+
+FA -> FA_Agent: search_transactions(project_id, search_criteria)
+FA_Agent -> DM: query_transactions(project_id, search_criteria)
+DM --> FA_Agent: Search results
+FA_Agent -> FA_Agent: Format search results
+FA_Agent --> FA: Search results
+FA --> WB: Render search results
+WB --> AU: Display filtered transactions
+
+== Transaction Export ==
+
+AU -> WB: Export transactions
+WB -> FA: POST /financial/transactions/export
+note right: project_id, export_format, date_range
+
+FA -> FA_Agent: export_transactions(project_id, export_format, date_range)
+FA_Agent -> DM: get_transactions_for_export(project_id, date_range)
+DM --> FA_Agent: Transaction data
+FA_Agent -> FA_Agent: Format export data
+FA_Agent -> DM: save_export_file(project_id, export_data)
+DM --> FA_Agent: Export file saved
+FA_Agent --> FA: Export file
+FA --> WB: Export file
+WB --> AU: Download transaction export
+
+== Real-time Transaction Monitoring ==
+
+note over FA_Agent: Continuous monitoring
+FA_Agent -> DM: query_recent_transactions(project_id)
+DM --> FA_Agent: Recent transactions
+FA_Agent -> FA_Agent: Check for unusual patterns
+FA_Agent -> LLM: Analyze transaction patterns
+note right: Context: transaction data, spending patterns
+LLM --> FA_Agent: Pattern analysis
+FA_Agent -> DM: update_transaction_insights(project_id, insights)
+DM --> FA_Agent: Insights saved
+
+== Transaction Reconciliation ==
+
+FO -> WB: Run transaction reconciliation
+WB -> FA: POST /financial/transactions/reconcile
+note right: project_id, reconciliation_period
+
+FA -> FA_Agent: reconcile_transactions(project_id, period)
+FA_Agent -> DM: get_transactions_for_reconciliation(project_id, period)
+DM --> FA_Agent: Transaction data
+FA_Agent -> DM: get_bank_statements(project_id, period)
+DM --> FA_Agent: Bank statement data
+FA_Agent -> FA_Agent: Compare transactions with bank statements
+FA_Agent -> FA_Agent: Identify discrepancies
+FA_Agent -> DM: save_reconciliation_report(project_id, reconciliation_data)
+DM --> FA_Agent: Report saved
+FA_Agent --> FA: Reconciliation complete
+FA --> WB: Reconciliation report
+WB --> FO: Display reconciliation results
+
+@enduml

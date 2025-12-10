@@ -1,0 +1,31 @@
+{
+  "2025-10-09T01:02:48.006633": {
+    "project_id": "ce6b34cf-e61b-4bd3-b3d3-4c5bebb306d5",
+    "document_id": "851b41b2-f4c7-497f-a6ff-52724fa41b67",
+    "timestamp": "2025-10-09T01:02:48.006633",
+    "milestones": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "Milestone extraction failed: 'MilestoneAgent' object has no attribute 'model'"
+    },
+    "tasks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "completion_analysis": false,
+      "error": "LLM error: No LLM selected. Please select an AI model from the dashboard first."
+    },
+    "bottlenecks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "LLM error: No LLM selected. Please select an AI model from the dashboard first."
+    },
+    "completion_score": 0.0,
+    "overall_success": false
+  }
+}

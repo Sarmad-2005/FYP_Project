@@ -1,0 +1,187 @@
+@startuml UC10 - What-If Scenario Simulation
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC10 - What-If Scenario Simulation\nSequence Diagram
+
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Scenario Simulator" as SS
+participant "Simulation Engine" as SE
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Access Scenario Simulation ==
+
+PM -> WB: Navigate to scenario simulation
+WB -> FA: GET /simulation/scenarios/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_simulation_data(project_id)
+DM --> FA: Simulation data
+FA --> WB: Render simulation dashboard
+WB --> PM: Display scenario simulation interface
+
+== Create What-If Scenario ==
+
+PM -> WB: Create new scenario
+WB -> FA: POST /simulation/create_scenario
+note right: project_id, scenario_name, variables
+
+FA -> SS: create_scenario(project_id, scenario_data)
+SS -> DM: get_current_project_state(project_id)
+DM --> SS: Current project data
+SS -> SS: Define scenario parameters
+note right: Time changes, cost changes, resource changes
+SS -> DM: save_scenario(project_id, scenario_data)
+DM --> SS: Scenario saved
+SS --> FA: Scenario created
+FA --> WB: Scenario confirmation
+WB --> PM: Display scenario created
+
+== Run Scenario Simulation ==
+
+PM -> WB: Run scenario simulation
+WB -> FA: POST /simulation/run_scenario
+note right: scenario_id, simulation_parameters
+
+FA -> SS: run_scenario_simulation(scenario_id, parameters)
+SS -> SE: execute_simulation(scenario_id)
+SE -> DM: get_scenario_data(scenario_id)
+DM --> SE: Scenario data
+SE -> DM: get_project_data(project_id)
+DM --> SE: Project data
+SE -> CDB: Query historical patterns
+CDB --> SE: Historical data
+
+== AI-Powered Simulation ==
+
+SE -> LLM: Simulate scenario outcomes
+note right: Context: scenario variables, project data, historical patterns
+LLM --> SE: Simulation results
+SE -> SE: Calculate scenario impacts
+note right: Time impact, cost impact, resource impact
+SE -> SE: Generate outcome probabilities
+SE -> SE: Create scenario timeline
+SE -> SE: Identify scenario risks
+
+== Scenario Comparison ==
+
+SE -> SE: Compare with baseline scenario
+SE -> LLM: Analyze scenario differences
+note right: Context: scenario vs baseline, impact analysis
+LLM --> SE: Comparison analysis
+SE -> SE: Calculate scenario metrics
+note right: ROI, efficiency, risk levels
+SE -> SE: Generate scenario rankings
+
+== Scenario Results Analysis ==
+
+SE -> CDB: Store simulation results
+CDB --> SE: Results saved
+SE -> DM: save_simulation_results(scenario_id, results)
+DM --> SE: Results saved
+SE --> SS: Simulation complete
+SS --> FA: Scenario results
+FA --> WB: Simulation results
+WB --> PM: Display scenario outcomes
+
+== Multi-Scenario Comparison ==
+
+PM -> WB: Compare multiple scenarios
+WB -> FA: POST /simulation/compare_scenarios
+note right: scenario_ids[], comparison_type
+
+FA -> SS: compare_scenarios(scenario_ids, comparison_type)
+SS -> DM: get_scenario_results(scenario_ids)
+DM --> SS: Scenario results
+SS -> SE: perform_comparison_analysis(scenario_results)
+SE -> LLM: Generate comparison insights
+note right: Context: multiple scenarios, comparison criteria
+LLM --> SE: Comparison insights
+SE -> SE: Create comparison matrix
+SE -> SE: Generate recommendations
+SE --> SS: Comparison results
+SS --> FA: Comparison data
+FA --> WB: Comparison results
+WB --> PM: Display scenario comparison
+
+== Sensitivity Analysis ==
+
+PM -> WB: Run sensitivity analysis
+WB -> FA: POST /simulation/sensitivity_analysis
+note right: project_id, variable_ranges
+
+FA -> SS: run_sensitivity_analysis(project_id, variable_ranges)
+SS -> SE: execute_sensitivity_analysis(variable_ranges)
+SE -> LLM: Analyze variable sensitivity
+note right: Context: variable ranges, project constraints
+LLM --> SE: Sensitivity analysis
+SE -> SE: Calculate sensitivity scores
+SE -> SE: Identify critical variables
+SE -> SE: Generate sensitivity matrix
+SE --> SS: Sensitivity results
+SS --> FA: Sensitivity analysis
+FA --> WB: Sensitivity data
+WB --> PM: Display sensitivity analysis
+
+== Scenario Optimization ==
+
+PM -> WB: Optimize scenario parameters
+WB -> FA: POST /simulation/optimize_scenario
+note right: scenario_id, optimization_goals
+
+FA -> SS: optimize_scenario(scenario_id, goals)
+SS -> SE: find_optimal_parameters(scenario_id, goals)
+SE -> LLM: Optimize scenario variables
+note right: Context: optimization goals, constraints, current scenario
+LLM --> SE: Optimization recommendations
+SE -> SE: Calculate optimal parameters
+SE -> SE: Validate optimization results
+SE --> SS: Optimized scenario
+SS --> FA: Optimization results
+FA --> WB: Optimized scenario
+WB --> PM: Display optimized scenario
+
+== Scenario Impact Visualization ==
+
+PM -> WB: View scenario impact visualization
+WB -> FA: GET /simulation/impact_visualization/<scenario_id>
+FA -> SS: get_scenario_impact(scenario_id)
+SS -> DM: get_scenario_data(scenario_id)
+DM --> SS: Scenario data
+SS -> SE: generate_impact_visualization(scenario_data)
+SE -> SE: Create impact charts
+SE -> SE: Generate timeline visualization
+SE --> SS: Visualization data
+SS --> FA: Impact visualization
+FA --> WB: Render visualization
+WB --> PM: Display scenario impact
+
+== Scenario Export ==
+
+PM -> WB: Export scenario results
+WB -> FA: GET /simulation/export_scenario/<scenario_id>
+FA -> SS: export_scenario(scenario_id)
+SS -> DM: get_complete_scenario_data(scenario_id)
+DM --> SS: Scenario data
+SS -> SE: format_export_data(scenario_data)
+SE -> SE: Generate export report
+SE --> SS: Export data
+SS --> FA: Scenario export
+FA --> WB: Export file
+WB --> PM: Download scenario results
+
+@enduml

@@ -1,0 +1,384 @@
+@startuml Database ER Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam entity {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam database {
+    BackgroundColor #F7FAFC
+    BorderColor #4A5568
+    FontColor #2D3748
+}
+
+title Database ER Diagram
+AI-Powered Project Management Platform
+
+package "PostgreSQL Database" as PG {
+    entity "Users" as Users {
+        * user_id : UUID [PK]
+        --
+        username : VARCHAR(50) [UNIQUE, NOT NULL]
+        password_hash : VARCHAR(255) [NOT NULL]
+        email : VARCHAR(100) [UNIQUE, NOT NULL]
+        role : ENUM('ProjectManager', 'ProjectStaff', 'FinancialOfficer', 'Auditor', 'FieldStaff') [NOT NULL]
+        created_at : TIMESTAMP [NOT NULL]
+        updated_at : TIMESTAMP [NOT NULL]
+        is_active : BOOLEAN [DEFAULT TRUE]
+    }
+
+    entity "Projects" as Projects {
+        * project_id : UUID [PK]
+        --
+        project_name : VARCHAR(200) [NOT NULL]
+        description : TEXT
+        status : ENUM('Active', 'Completed', 'OnHold', 'Cancelled') [DEFAULT 'Active']
+        created_by : UUID [FK -> Users.user_id]
+        created_at : TIMESTAMP [NOT NULL]
+        updated_at : TIMESTAMP [NOT NULL]
+        budget : DECIMAL(15,2)
+        start_date : DATE
+        end_date : DATE
+    }
+
+    entity "User_Projects" as UserProjects {
+        * user_id : UUID [FK -> Users.user_id]
+        * project_id : UUID [FK -> Projects.project_id]
+        --
+        role_in_project : ENUM('Owner', 'Manager', 'Member', 'Viewer') [NOT NULL]
+        assigned_at : TIMESTAMP [NOT NULL]
+    }
+
+    entity "Documents" as Documents {
+        * document_id : UUID [PK]
+        * project_id : UUID [FK -> Projects.project_id]
+        --
+        filename : VARCHAR(255) [NOT NULL]
+        file_path : VARCHAR(500) [NOT NULL]
+        file_size : BIGINT [NOT NULL]
+        file_type : VARCHAR(50) [NOT NULL]
+        uploaded_by : UUID [FK -> Users.user_id]
+        uploaded_at : TIMESTAMP [NOT NULL]
+        processed : BOOLEAN [DEFAULT FALSE]
+    }
+}
+
+package "ChromaDB Collections" as CDB {
+    database "Module 1: Project Monitoring & Performance" as Mod1 {
+        collection "project_milestones" as Milestones {
+            * id : STRING [PK]
+            document : STRING [VECTOR EMBEDDING]
+            metadata : JSON {
+                project_id : STRING
+                document_id : STRING
+                milestone_text : STRING
+                category : STRING
+                priority : STRING
+                created_at : STRING
+                source_document : STRING
+            }
+        }
+        
+        collection "project_tasks" as Tasks {
+            * id : STRING [PK]
+            document : STRING [VECTOR EMBEDDING]
+            metadata : JSON {
+                project_id : STRING
+                document_id : STRING
+                task_text : STRING
+                category : STRING
+                priority : STRING
+                status : STRING
+                created_at : STRING
+                source_document : STRING
+            }
+        }
+        
+        collection "project_bottlenecks" as Bottlenecks {
+            * id : STRING [PK]
+            document : STRING [VECTOR EMBEDDING]
+            metadata : JSON {
+                project_id : STRING
+                document_id : STRING
+                bottleneck_text : STRING
+                category : STRING
+                severity : STRING
+                impact : STRING
+                created_at : STRING
+                source_document : STRING
+            }
+        }
+        
+        collection "project_milestone_details" as MilestoneDetails {
+            * id : STRING [PK]
+            document : STRING [VECTOR EMBEDDING]
+            metadata : JSON {
+                parent_id : STRING
+                project_id : STRING
+                document_id : STRING
+                created_at : STRING
+            }
+        }
+        
+        collection "project_task_details" as TaskDetails {
+            * id : STRING [PK]
+            document : STRING [VECTOR EMBEDDING]
+            metadata : JSON {
+                parent_id : STRING
+                project_id : STRING
+                document_id : STRING
+                created_at : STRING
+            }
+        }
+        
+        collection "project_bottleneck_details" as BottleneckDetails {
+            * id : STRING [PK]
+            document : STRING [VECTOR EMBEDDING]
+            metadata : JSON {
+                parent_id : STRING
+                project_id : STRING
+                document_id : STRING
+                created_at : STRING
+            }
+        }
+    }
+
+    database "Module 2: Financial & Audit Management" as Mod2 {
+        collection "financial_transactions" as FinancialTxns {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            transaction_type : STRING
+            amount : FLOAT
+            category : STRING
+            description : STRING
+            transaction_date : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "budget_allocations" as BudgetAlloc {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            category : STRING
+            allocated_amount : FLOAT
+            spent_amount : FLOAT
+            remaining_amount : FLOAT
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "fraud_alerts" as FraudAlerts {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            alert_type : STRING
+            severity : STRING
+            description : STRING
+            status : STRING
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+    }
+
+    database "Module 3: Risk Forecasting & Simulation" as Mod3 {
+        collection "risk_assessments" as RiskAssess {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            risk_type : STRING
+            probability : FLOAT
+            impact : STRING
+            mitigation_strategy : STRING
+            status : STRING
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "scenario_simulations" as Scenarios {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            scenario_name : STRING
+            parameters : JSON
+            outcomes : JSON
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+    }
+
+    database "Module 4: Resource & Task Optimization" as Mod4 {
+        collection "resource_allocations" as ResourceAlloc {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            resource_type : STRING
+            resource_name : STRING
+            allocated_hours : FLOAT
+            utilized_hours : FLOAT
+            efficiency_score : FLOAT
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "task_priorities" as TaskPriorities {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            task_id : STRING
+            priority_score : FLOAT
+            urgency : STRING
+            importance : STRING
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+    }
+
+    database "Module 5: Compliance & Guidance" as Mod5 {
+        collection "compliance_checks" as ComplianceChecks {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            compliance_rule : STRING
+            status : STRING
+            violation_details : STRING
+            remediation_plan : STRING
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "guidance_recommendations" as GuidanceRec {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            recommendation_type : STRING
+            recommendation_text : STRING
+            priority : STRING
+            status : STRING
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+    }
+
+    database "Module 6: Knowledge & Document Intelligence" as Mod6 {
+        collection "document_embeddings" as DocEmbeddings {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            document_id : STRING
+            content_type : STRING
+            content_text : STRING
+            embedding_vector : VECTOR(384)
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "knowledge_graph" as KnowledgeGraph {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            entity_type : STRING
+            entity_name : STRING
+            relationships : JSON
+            properties : JSON
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+    }
+
+    database "Module 7: Communication Intelligence" as Mod7 {
+        collection "team_communications" as TeamComm {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            sender_id : STRING
+            message_text : STRING
+            sentiment_score : FLOAT
+            action_items : JSON
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "conflict_detection" as Conflicts {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            conflict_type : STRING
+            participants : JSON
+            severity : STRING
+            resolution_status : STRING
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+    }
+
+    database "Module 8: AI Guidance & Assistant" as Mod8 {
+        collection "ai_conversations" as AIConversations {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            user_id : STRING
+            query : STRING
+            response : STRING
+            context : JSON
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "ai_recommendations" as AIRecommendations {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            recommendation_type : STRING
+            recommendation_text : STRING
+            confidence_score : FLOAT
+            status : STRING
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+    }
+
+    database "Module 9: Mobile Monitoring & Alerts" as Mod9 {
+        collection "mobile_alerts" as MobileAlerts {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            user_id : STRING
+            alert_type : STRING
+            alert_message : STRING
+            priority : STRING
+            status : STRING
+            created_at : TIMESTAMP
+            metadata : JSON
+        }
+        
+        collection "mobile_dashboard_data" as MobileDashboard {
+            * id : STRING [PK]
+            project_id : STRING [INDEXED]
+            user_id : STRING
+            dashboard_type : STRING
+            data : JSON
+            last_updated : TIMESTAMP
+            metadata : JSON
+        }
+    }
+}
+
+' Relationships
+Users ||--o{ UserProjects : "assigned to"
+Projects ||--o{ UserProjects : "has users"
+Projects ||--o{ Documents : "contains"
+Users ||--o{ Projects : "creates"
+Users ||--o{ Documents : "uploads"
+
+' ChromaDB Collections are linked to Projects via project_id
+Projects ||--o{ Milestones : "has milestones"
+Projects ||--o{ Tasks : "has tasks"
+Projects ||--o{ Bottlenecks : "has bottlenecks"
+Milestones ||--o{ MilestoneDetails : "has details"
+Tasks ||--o{ TaskDetails : "has details"
+Bottlenecks ||--o{ BottleneckDetails : "has details"
+Projects ||--o{ FinancialTxns : "has transactions"
+Projects ||--o{ BudgetAlloc : "has budget"
+Projects ||--o{ FraudAlerts : "has fraud alerts"
+Projects ||--o{ RiskAssess : "has risks"
+Projects ||--o{ Scenarios : "has scenarios"
+Projects ||--o{ ResourceAlloc : "has resources"
+Projects ||--o{ TaskPriorities : "has priorities"
+Projects ||--o{ ComplianceChecks : "has compliance"
+Projects ||--o{ GuidanceRec : "has guidance"
+Projects ||--o{ DocEmbeddings : "has embeddings"
+Projects ||--o{ KnowledgeGraph : "has knowledge"
+Projects ||--o{ TeamComm : "has communications"
+Projects ||--o{ Conflicts : "has conflicts"
+Projects ||--o{ AIConversations : "has AI chats"
+Projects ||--o{ AIRecommendations : "has AI recommendations"
+Projects ||--o{ MobileAlerts : "has mobile alerts"
+Projects ||--o{ MobileDashboard : "has mobile data"
+
+@enduml

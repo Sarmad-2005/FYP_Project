@@ -1,0 +1,71 @@
+@startuml JSON Storage (Mini)
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam linetype ortho
+
+skinparam rectangle {
+    BackgroundColor #F7FAFC
+    BorderColor #4A5568
+    FontColor #2D3748
+}
+
+skinparam diamond {
+    BackgroundColor #E8F5E9
+    BorderColor #4CAF50
+    FontColor #2E7D32
+}
+
+title JSON Storage (What We Use)
+
+' ===============
+' PRODUCERS
+' ===============
+rectangle "Flask App" as App
+rectangle "CSV SessionManager" as SessionMgr
+rectangle "Financial Interface" as FinIF
+rectangle "Performance UI" as PerfUI
+
+' ===============
+' JSON FILES
+' ===============
+rectangle "data/projects.json" as ProjectsJSON
+rectangle "data/documents.json" as DocumentsJSON
+rectangle "data/financial/*.json" as FinancialJSON
+rectangle "data/performance/*.json" as PerformanceJSON
+rectangle "data/csv_sessions/{project}/{session}/\nmetadata.json + data.csv" as CsvSessions
+
+' ===============
+' RELATIONSHIPS
+' ===============
+diamond "WRITES" as W
+diamond "READS" as R
+
+App ||--o{ W
+W ||--o{ ProjectsJSON
+App ||--o{ W
+W ||--o{ DocumentsJSON
+
+FinIF ||--o{ W
+W ||--o{ FinancialJSON
+PerfUI ||--o{ R
+R ||--o{ FinancialJSON
+
+SessionMgr ||--o{ W
+W ||--o{ CsvSessions
+SessionMgr ||--o{ R
+R ||--o{ CsvSessions
+
+App ||--o{ R
+R ||--o{ ProjectsJSON
+App ||--o{ R
+R ||--o{ DocumentsJSON
+
+note right of CsvSessions
+  Per-upload session folder with
+  metadata.json and data.csv
+end note
+
+@enduml
+
+
+

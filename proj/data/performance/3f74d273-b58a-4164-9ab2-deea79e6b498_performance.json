@@ -1,0 +1,45 @@
+{
+  "2025-12-09T00:21:07.142500": {
+    "project_id": "3f74d273-b58a-4164-9ab2-deea79e6b498",
+    "document_id": "dccd2587-81a1-4603-bad6-859910b43453",
+    "timestamp": "2025-12-09T00:21:07.142500",
+    "milestones": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "LLM error: Gemini API quota exceeded. Please try again later."
+    },
+    "tasks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "completion_analysis": false,
+      "error": "LLM error: Gemini API quota exceeded. Please try again later."
+    },
+    "bottlenecks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "LLM error: Gemini API quota exceeded. Please try again later."
+    },
+    "requirements": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "Gemini API quota exceeded. Please try again later."
+    },
+    "actors": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "linked_requirements_count": 0,
+      "error": "Gemini API quota exceeded. Please try again later."
+    },
+    "completion_score": 0.0,
+    "overall_success": false
+  }
+}

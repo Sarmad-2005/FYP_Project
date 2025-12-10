@@ -1,0 +1,302 @@
+@startuml UC23 - Custom Rules Definition
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC23 - Custom Rules Definition\nSequence Diagram
+
+actor "Administrator" as AD
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Rules Engine" as RE
+participant "Rule Parser" as RP
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Access Rules Management ==
+
+AD -> WB: Navigate to rules management
+WB -> FA: GET /rules/management
+FA -> DM: get_user_permissions(user_id)
+DM --> FA: User permissions
+FA -> DM: get_existing_rules()
+DM --> FA: Existing rules
+FA --> WB: Render rules management interface
+WB --> AD: Display rules dashboard
+
+== Create New Custom Rule ==
+
+AD -> WB: Click "Create New Rule"
+WB -> FA: GET /rules/create
+FA -> DM: get_rule_categories()
+DM --> FA: Rule categories
+FA -> DM: get_rule_templates()
+DM --> FA: Rule templates
+FA --> WB: Render rule creation form
+WB --> AD: Display rule creation interface
+
+AD -> WB: Enter rule definition
+note right: rule_name, rule_description, rule_logic, rule_category
+WB -> FA: POST /rules/create
+note right: rule_data
+
+FA -> RE: create_custom_rule(rule_data)
+RE -> RP: parse_rule_logic(rule_data)
+RP -> LLM: Parse natural language rule
+note right: Context: rule_description, rule_logic, existing rule patterns
+LLM --> RP: Parsed rule structure
+RP -> RP: Validate rule syntax
+RP -> RP: Check rule consistency
+RP --> RE: Parsed rule
+
+alt Rule parsing successful
+    RE -> DM: save_rule_definition(rule_data)
+    DM --> RE: Rule saved
+    RE -> DM: create_rule_version(rule_id)
+    DM --> RE: Version created
+    RE -> DM: log_rule_creation(rule_id, user_id)
+    DM --> RE: Log created
+    RE --> FA: Rule created successfully
+    FA --> WB: Success response
+    WB --> AD: Display rule creation confirmation
+else Rule parsing failed
+    RE --> FA: Parsing errors
+    FA --> WB: Error response
+    WB --> AD: Display parsing errors
+end
+
+== Edit Existing Rule ==
+
+AD -> WB: Select rule to edit
+WB -> FA: GET /rules/edit/<rule_id>
+FA -> DM: get_rule_details(rule_id)
+DM --> FA: Rule details
+FA -> DM: get_rule_versions(rule_id)
+DM --> FA: Rule versions
+FA --> WB: Render rule edit form
+WB --> AD: Display rule editing interface
+
+AD -> WB: Update rule definition
+WB -> FA: POST /rules/update
+note right: rule_id, updated_rule_data
+
+FA -> RE: update_custom_rule(rule_id, updated_rule_data)
+RE -> RP: parse_updated_rule(updated_rule_data)
+RP -> LLM: Parse updated rule logic
+note right: Context: updated rule description, existing rule context
+LLM --> RP: Parsed updated rule
+RP -> RP: Validate updated syntax
+RP -> RP: Check for conflicts with existing rules
+RP --> RE: Parsed updated rule
+
+alt Update successful
+    RE -> DM: save_rule_update(rule_id, updated_rule_data)
+    DM --> RE: Rule updated
+    RE -> DM: create_rule_version(rule_id)
+    DM --> RE: New version created
+    RE -> DM: log_rule_modification(rule_id, user_id)
+    DM --> RE: Modification logged
+    RE --> FA: Rule updated successfully
+    FA --> WB: Success response
+    WB --> AD: Display update confirmation
+else Update failed
+    RE --> FA: Update errors
+    FA --> WB: Error response
+    WB --> AD: Display update errors
+end
+
+== Rule Validation and Testing ==
+
+AD -> WB: Test rule logic
+WB -> FA: POST /rules/test
+note right: rule_id, test_data
+
+FA -> RE: test_rule_logic(rule_id, test_data)
+RE -> RP: execute_rule_test(rule_id, test_data)
+RP -> DM: get_rule_definition(rule_id)
+DM --> RP: Rule definition
+RP -> LLM: Execute rule against test data
+note right: Context: rule logic, test data, expected outcomes
+LLM --> RP: Test execution results
+RP -> RP: Validate test results
+RP -> RP: Generate test report
+RP --> RE: Test results
+RE --> FA: Rule test results
+FA --> WB: Test report
+WB --> AD: Display rule test results
+
+== Rule Conflict Detection ==
+
+note over RE: Continuous monitoring
+RE -> DM: query_all_active_rules()
+DM --> RE: Active rules
+RE -> RP: detect_rule_conflicts(active_rules)
+RP -> LLM: Analyze rule interactions
+note right: Context: all active rules, rule logic, potential conflicts
+LLM --> RP: Conflict analysis
+RP -> RP: Identify conflicting rules
+RP -> RP: Generate conflict report
+RP --> RE: Conflict analysis
+alt Conflicts detected
+    RE -> DM: save_rule_conflicts(conflict_data)
+    DM --> RE: Conflicts saved
+    RE -> FA: send_conflict_alert(conflict_data)
+    FA -> WB: Push notification
+    WB --> AD: Display rule conflicts
+end
+
+== Rule Activation and Deactivation ==
+
+AD -> WB: Activate rule
+WB -> FA: POST /rules/activate
+note right: rule_id
+
+FA -> RE: activate_rule(rule_id)
+RE -> DM: get_rule_status(rule_id)
+DM --> RE: Current status
+RE -> RP: validate_rule_activation(rule_id)
+RP -> RP: Check rule dependencies
+RP -> RP: Verify rule completeness
+RP --> RE: Validation results
+RE -> DM: update_rule_status(rule_id, "active")
+DM --> RE: Status updated
+RE -> DM: log_rule_activation(rule_id, user_id)
+DM --> RE: Activation logged
+RE --> FA: Rule activated
+FA --> WB: Activation confirmation
+WB --> AD: Display rule activation
+
+AD -> WB: Deactivate rule
+WB -> FA: POST /rules/deactivate
+note right: rule_id
+
+FA -> RE: deactivate_rule(rule_id)
+RE -> DM: update_rule_status(rule_id, "inactive")
+DM --> RE: Status updated
+RE -> DM: log_rule_deactivation(rule_id, user_id)
+DM --> RE: Deactivation logged
+RE --> FA: Rule deactivated
+FA --> WB: Deactivation confirmation
+WB --> AD: Display rule deactivation
+
+== Rule Version Management ==
+
+AD -> WB: View rule versions
+WB -> FA: GET /rules/versions/<rule_id>
+FA -> RE: get_rule_versions(rule_id)
+RE -> DM: get_rule_version_history(rule_id)
+DM --> RE: Version history
+RE --> FA: Version data
+FA --> WB: Render version history
+WB --> AD: Display rule versions
+
+AD -> WB: Restore previous version
+WB -> FA: POST /rules/restore_version
+note right: rule_id, version_id
+
+FA -> RE: restore_rule_version(rule_id, version_id)
+RE -> DM: get_rule_version(rule_id, version_id)
+DM --> RE: Version data
+RE -> DM: restore_rule_definition(rule_id, version_data)
+DM --> RE: Rule restored
+RE -> DM: create_rule_version(rule_id)
+DM --> RE: New version created
+RE -> DM: log_version_restore(rule_id, version_id, user_id)
+DM --> RE: Restore logged
+RE --> FA: Version restored
+FA --> WB: Restore confirmation
+WB --> AD: Display version restore
+
+== Rule Categories Management ==
+
+AD -> WB: Manage rule categories
+WB -> FA: GET /rules/categories
+FA -> DM: get_rule_categories()
+DM --> FA: Categories data
+FA --> WB: Render categories management
+WB --> AD: Display rule categories
+
+AD -> WB: Create new category
+WB -> FA: POST /rules/categories/create
+note right: category_name, category_description
+
+FA -> RE: create_rule_category(category_data)
+RE -> DM: save_rule_category(category_data)
+DM --> RE: Category saved
+RE -> DM: log_category_creation(category_id, user_id)
+DM --> RE: Creation logged
+RE --> FA: Category created
+FA --> WB: Creation confirmation
+WB --> AD: Display category creation
+
+== Rule Templates ==
+
+AD -> WB: Use rule template
+WB -> FA: POST /rules/use_template
+note right: template_id, project_id
+
+FA -> RE: apply_rule_template(template_id, project_id)
+RE -> DM: get_rule_template(template_id)
+DM --> RE: Template data
+RE -> RP: customize_template_for_project(template_data, project_id)
+RP -> LLM: Customize template
+note right: Context: template data, project requirements, existing rules
+LLM --> RP: Customized rule
+RP -> DM: save_customized_rule(project_id, customized_rule)
+DM --> RP: Rule saved
+RP --> RE: Template applied
+RE --> FA: Template application complete
+FA --> WB: Application confirmation
+WB --> AD: Display template application
+
+== Rule Performance Monitoring ==
+
+note over RE: Continuous monitoring
+RE -> DM: query_rule_execution_stats()
+DM --> RE: Execution statistics
+RE -> RE: Analyze rule performance
+RE -> RE: Identify slow rules
+RE -> RE: Generate performance report
+alt Performance issues detected
+    RE -> DM: save_performance_alert(performance_data)
+    DM --> RE: Alert saved
+    RE -> FA: send_performance_alert(performance_data)
+    FA -> WB: Push notification
+    WB --> AD: Display performance alert
+end
+
+== Rule Documentation Generation ==
+
+AD -> WB: Generate rule documentation
+WB -> FA: POST /rules/generate_documentation
+note right: rule_ids[], documentation_format
+
+FA -> RE: generate_rule_documentation(rule_ids, format)
+RE -> DM: get_rule_definitions(rule_ids)
+DM --> RE: Rule definitions
+RE -> LLM: Generate rule documentation
+note right: Context: rule definitions, documentation format, usage examples
+LLM --> RE: Documentation content
+RE -> DM: save_rule_documentation(rule_ids, documentation)
+DM --> RE: Documentation saved
+RE --> FA: Rule documentation
+FA --> WB: Documentation file
+WB --> AD: Download rule documentation
+
+@enduml
+
+
+
+
+

@@ -1,0 +1,102 @@
+2.4 Functional Requirements
+Module 1 – Project Monitoring & Performance
+The system shall track project milestones, deliverables, and performance indicators in real time.
+
+
+The system shall compare planned vs. actual project progress to identify deviations.
+
+
+The system shall detect operational bottlenecks and visualize workflow inefficiencies.
+
+
+The system shall provide dashboards with live project health summaries for managers.
+
+
+Module 2 – Financial & Audit Management
+The system shall monitor and record all project-related budgets and expenditures.
+
+
+The system shall detect anomalies, fraud, or financial irregularities
+
+
+The system shall analyze effort versus outcomes to assess financial performance.
+
+
+The system shall generate automated audit summaries for compliance officers.
+
+
+Module 3 – Risk Forecasting & Simulation
+The system shall forecast project delays and risk probabilities using predictive analytics.
+
+
+The system shall simulate “what-if” scenarios to support data-driven decision-making.
+
+
+The system shall visualize possible outcomes of risk mitigation strategies.
+
+
+The system shall generate early-warning alerts for potential schedule or cost overruns.
+
+
+Module 4 – Resource & Task Optimization
+The system shall optimize allocation of human and material resources based on workload.
+
+
+The system shall intelligently prioritize tasks to ensure timely execution.
+
+
+The system shall recommend reallocation of resources when bottlenecks are detected.
+
+
+Module 5 – Compliance & Guidance
+The system shall continuously monitor adherence to policies, standards, and regulations.
+
+
+The system shall detect and report compliance violations automatically.
+
+
+The system shall allow creation of custom rules for specific organizational policies.
+
+
+The system shall provide real-time guidance and corrective actions for non-compliance.
+
+
+Module 6 – Knowledge & Document Intelligence
+The system shall analyze and summarize project documents in both English and Urdu.
+
+
+The system shall generate intelligent, concise versions of lengthy reports.
+
+
+The system shall cluster similar project themes for cross-project knowledge reuse.
+
+
+Module 7 – Communication Intelligence
+The system shall provide a project-specific AI chat hub for team collaboration.
+
+
+The system shall detect conflicts or contradictory instructions in team communication.
+
+
+The system shall summarize discussion threads into action items for managers.
+
+
+
+Module 8 – AI Guidance & Assistant
+The system shall offer an AI assistant accessible via text
+
+
+The assistant shall answer user queries about project performance, risks, and finances.
+
+
+The system shall provide context-aware recommendations and insights.
+
+
+The system shall generate project similarity indexes for comparative analysis.
+
+
+Module 9 – Mobile Monitoring & Alerts
+The system shall provide real-time alerts and notifications for project status changes.
+
+
+The system shall visualize project data and summaries on mobile dashboards.

@@ -1,0 +1,175 @@
+@startuml UC9 - Risk Forecasting & Prediction
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC9 - Risk Forecasting & Prediction\nSequence Diagram
+
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Risk Agent" as RA
+participant "Predictive Analyzer" as PA
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Trigger Risk Forecasting ==
+
+PM -> WB: Navigate to risk management
+WB -> FA: GET /risk/forecasting/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_risk_data(project_id)
+DM --> FA: Risk data
+FA --> WB: Render risk dashboard
+WB --> PM: Display risk management interface
+
+PM -> WB: Run risk forecasting
+WB -> FA: POST /risk/run_forecasting
+note right: project_id, forecasting_parameters
+
+== Risk Data Collection ==
+
+FA -> RA: run_risk_forecasting(project_id, parameters)
+RA -> DM: get_project_data(project_id)
+DM --> RA: Project data
+RA -> DM: get_performance_data(project_id)
+DM --> RA: Performance data
+RA -> DM: get_financial_data(project_id)
+DM --> RA: Financial data
+RA -> CDB: Query historical risk patterns
+CDB --> RA: Historical risk data
+
+== AI-Powered Risk Analysis ==
+
+RA -> PA: analyze_risk_patterns(project_data)
+PA -> LLM: Predict potential risks
+note right: Context: project data, historical patterns, industry trends
+LLM --> PA: Risk predictions
+PA -> PA: Calculate risk probabilities
+PA -> PA: Classify risk severity
+note right: Critical, High, Medium, Low risk levels
+PA -> PA: Identify risk categories
+note right: Technical, Financial, Schedule, Resource risks
+
+== Risk Impact Assessment ==
+
+PA -> PA: Assess potential impact
+PA -> LLM: Evaluate risk consequences
+note right: Context: risk types, project context, historical data
+LLM --> PA: Impact assessment
+PA -> PA: Calculate risk scores
+PA -> PA: Generate risk scenarios
+PA -> PA: Create mitigation strategies
+
+== Risk Timeline Prediction ==
+
+PA -> PA: Predict risk occurrence timeline
+PA -> LLM: Forecast risk timing
+note right: Context: project schedule, risk patterns, dependencies
+LLM --> PA: Timeline predictions
+PA -> PA: Create risk timeline
+PA -> PA: Identify critical periods
+PA -> PA: Generate early warning indicators
+
+== Risk Mitigation Recommendations ==
+
+PA -> LLM: Generate mitigation strategies
+note right: Context: identified risks, project constraints, best practices
+LLM --> PA: Mitigation recommendations
+PA -> PA: Prioritize mitigation actions
+PA -> PA: Create action plans
+PA -> PA: Calculate mitigation costs
+
+== Risk Monitoring Setup ==
+
+RA -> CDB: Store risk analysis results
+CDB --> RA: Analysis saved
+RA -> DM: save_risk_forecast(project_id, risk_data)
+DM --> RA: Forecast saved
+RA -> RA: Setup risk monitoring
+note right: Continuous monitoring of risk indicators
+RA --> FA: Risk forecasting complete
+FA --> WB: Risk analysis results
+WB --> PM: Display risk dashboard
+
+== Real-time Risk Monitoring ==
+
+note over RA: Continuous monitoring
+RA -> DM: query_risk_indicators(project_id)
+DM --> RA: Current risk indicators
+RA -> PA: check_risk_thresholds(indicators)
+PA -> PA: Compare with predicted risks
+alt Risk threshold exceeded
+    PA -> PA: Generate risk alert
+    PA -> DM: save_risk_alert(project_id, alert_data)
+    DM --> PA: Alert saved
+    PA -> FA: send_risk_alert(project_id, alert_data)
+    FA -> WB: Push notification
+    WB --> PM: Display risk alert
+end
+
+== Risk Scenario Simulation ==
+
+PM -> WB: Simulate risk scenarios
+WB -> FA: POST /risk/simulate_scenarios
+note right: project_id, scenario_parameters
+
+FA -> RA: simulate_risk_scenarios(project_id, parameters)
+RA -> PA: create_scenario_models(scenario_parameters)
+PA -> LLM: Generate scenario outcomes
+note right: Context: risk scenarios, project data, constraints
+LLM --> PA: Scenario predictions
+PA -> PA: Calculate scenario probabilities
+PA -> PA: Generate scenario comparisons
+PA --> RA: Scenario results
+RA --> FA: Simulation results
+FA --> WB: Scenario data
+WB --> PM: Display risk scenarios
+
+== Risk Response Planning ==
+
+PM -> WB: Create risk response plan
+WB -> FA: POST /risk/create_response_plan
+note right: project_id, risk_id, response_actions
+
+FA -> RA: create_risk_response_plan(project_id, risk_id, actions)
+RA -> LLM: Optimize response strategy
+note right: Context: risk details, available resources, constraints
+LLM --> RA: Optimized response plan
+RA -> DM: save_response_plan(project_id, plan_data)
+DM --> RA: Plan saved
+RA --> FA: Response plan created
+FA --> WB: Plan confirmation
+WB --> PM: Display response plan
+
+== Risk Report Generation ==
+
+PM -> WB: Generate risk report
+WB -> FA: POST /risk/generate_report
+note right: project_id, report_type, date_range
+
+FA -> RA: generate_risk_report(project_id, report_params)
+RA -> DM: get_risk_data(project_id, date_range)
+DM --> RA: Risk data
+RA -> LLM: Generate risk report summary
+note right: Context: risk analysis, predictions, recommendations
+LLM --> RA: Report summary
+RA -> RA: Format report data
+RA -> DM: save_risk_report(project_id, report_data)
+DM --> RA: Report saved
+RA --> FA: Risk report
+FA --> WB: Report data
+WB --> PM: Display risk report
+
+@enduml

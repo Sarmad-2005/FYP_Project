@@ -1,0 +1,169 @@
+@startuml System Architecture - 9 Module Project Management Platform
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam component {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+    FontSize 10
+}
+skinparam package {
+    BackgroundColor #F7FAFC
+    BorderColor #4A5568
+    FontColor #2D3748
+    FontSize 11
+}
+
+title System Architecture - AI-Powered Project Management Platform\n(9 Modules with Layered Architecture)
+
+!define RECTANGLE class
+
+' Layered Architecture Structure - Vertical Layout
+package "Layer 1: Presentation Layer" as layer1 {
+    component [Web UI] as WebUI
+    component [Mobile UI] as MobileUI
+    component [API Endpoints] as API
+}
+
+package "Layer 2: Application Layer" as layer2 {
+    component [Flask Framework] as Flask
+    component [Module Coordinators] as Coordinators
+}
+
+package "Layer 3: Service Layer (Multi-Agent System)" as layer3 {
+    ' Group modules in 3 columns for better layout
+    package "Core Modules" as core_modules {
+        package "Module 1: Performance" as mod1 {
+            component [Performance Coordinator] as PAC1
+            component [Performance Analyzer] as PP2
+            component [Milestone Tracker] as MPT2
+            component [Bottleneck Detector] as OBD2
+        }
+        
+        package "Module 2: Financial" as mod2 {
+            component [Financial Coordinator] as FAC2
+            component [Budget Audit] as BFAM
+            component [Fraud Detection] as FADE
+            component [Effort Analyzer] as EOA
+        }
+        
+        package "Module 3: Risk" as mod3 {
+            component [Risk Coordinator] as RAC3
+            component [Risk Analyzer] as PDRA
+            component [Forecasting] as APPF
+            component [Scenario Simulator] as WISS
+        }
+    }
+    
+    package "Advanced Modules" as adv_modules {
+        package "Module 4: Resource" as mod4 {
+            component [Resource Coordinator] as RAC4
+            component [Resource Optimizer] as ARO
+            component [Task Prioritization] as ATPE
+        }
+        
+        package "Module 5: Compliance" as mod5 {
+            component [Compliance Coordinator] as CAC5
+            component [Monitoring System] as APMS
+            component [Compliance Checker] as CC
+            component [Guidance Engine] as GE
+        }
+        
+        package "Module 6: Knowledge" as mod6 {
+            component [Document Analyzer] as ADAS
+            component [Document Generator] as IDG
+            component [Knowledge Reuse] as CPKR
+            component [Theme Clustering] as APTC
+        }
+    }
+    
+    package "Intelligence Modules" as int_modules {
+        package "Module 7: Communication" as mod7 {
+            component [Comm Hub] as CIH
+            component [Conflict Detection] as CDM
+            component [Sentiment Analyzer] as TSMA
+        }
+        
+        package "Module 8: AI Assistant" as mod8 {
+            component [AI Assistant] as ABA
+            component [Recommendation Engine] as AGRE
+            component [Similarity Indexing] as PSI
+        }
+        
+        package "Module 9: Mobile" as mod9 {
+            component [Mobile Notifications] as MN
+            component [Mobile Dashboards] as MDV
+        }
+    }
+}
+
+package "Layer 4: Data Access Layer" as layer4 {
+    component [Database Manager] as DB
+    component [ChromaDB] as ChromaDB
+    component [Embeddings Manager] as EM
+    component [File Storage] as FS
+}
+
+package "Layer 5: Infrastructure Layer" as layer5 {
+    component [LLM Manager] as LLM
+    component [AI/ML Services] as AI_ML
+    component [Vector Processing] as VSE
+}
+
+' External Services
+
+' External Integrations
+package "External Services" as ext {
+    component [AI APIs] as AI_APIs
+    component [Mobile Services] as Mobile_Services
+    component [Voice APIs] as Voice_APIs
+}
+
+' Layer Dependencies (Top to Bottom)
+layer1 --> layer2 : "User Requests"
+layer2 --> layer3 : "Business Logic"
+layer3 --> layer4 : "Data Access"
+layer4 --> layer5 : "Infrastructure Services"
+
+' Module Group Connections
+core_modules --> adv_modules : "Data Flow"
+adv_modules --> int_modules : "Data Flow"
+
+' Data Access Layer Connections
+layer3 --> ChromaDB : "Vector Storage"
+layer3 --> LLM : "AI Analysis"
+EM --> ChromaDB : "Vector Storage"
+DB --> ChromaDB : "Data Persistence"
+DB --> FS : "File Storage"
+
+' Infrastructure Layer Connections
+LLM --> AI_APIs : "AI Services"
+layer5 --> ext : "External Services"
+
+' Key Module Connections
+mod1 --> mod2 : "Performance Data"
+mod2 --> mod3 : "Financial Risk"
+mod3 --> mod4 : "Resource Planning"
+mod4 --> mod5 : "Compliance Check"
+mod5 --> mod6 : "Document Analysis"
+mod6 --> mod7 : "Knowledge Sharing"
+mod7 --> mod8 : "Communication Data"
+mod8 --> mod9 : "Mobile Alerts"
+
+' External Dependencies
+layer3 --> ext : "External Services"
+
+' Architecture Legend
+note as Legend
+  Layered Multi-Agent Architecture:
+  
+  Layer 1: Presentation - Web UI, Mobile UI, API
+  Layer 2: Application - Flask Framework, Coordinators  
+  Layer 3: Service - 9 Modules (Core/Advanced/Intelligence)
+  Layer 4: Data Access - Database, ChromaDB, Storage
+  Layer 5: Infrastructure - AI/ML Services, Processing
+  External: AI APIs, Mobile Services, Voice APIs
+end note
+
+@enduml

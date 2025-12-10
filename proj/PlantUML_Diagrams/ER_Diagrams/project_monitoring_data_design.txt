@@ -1,0 +1,182 @@
+Data Design
+The data design for the Project Monitoring & Performance Management System leverages ChromaDB, a vector database optimized for AI applications, to handle document embeddings, semantic search, and performance analytics. This choice supports real-time project analysis, enables intelligent document processing, and provides scalable vector storage for complex project data relationships.
+
+Key considerations include:
+- Vector Storage: Document embeddings are stored using ChromaDB's optimized vector storage for fast similarity search and semantic analysis.
+- Performance Analytics: Project milestones, tasks, and bottlenecks are stored with metadata for efficient querying and real-time dashboard updates.
+- Document Intelligence: Each uploaded document gets its own collection for isolated embedding storage and retrieval.
+- Scalability: ChromaDB's distributed architecture supports high-traffic project monitoring with efficient vector operations.
+- Data Relationships: Project data is linked through metadata filtering and parent-child relationships for comprehensive analysis.
+
+Below is the vector-oriented data model overview, followed by the detailed collections.
+
+Data Model Overview
+- Collections: Document Collections (dynamic), Performance Collections (static), Details Collections (large text storage)
+- Relationships:
+Document Collections store embeddings for each uploaded document using safe naming patterns.
+Performance Collections aggregate data from multiple documents using metadata filtering.
+Details Collections store large text content separately from metadata for optimal performance.
+- Attributes: Timestamps for all operations; vector embeddings for semantic search; metadata for filtering and relationships.
+
+ChromaDB Collections 
+
+1. Document Collections (Dynamic Naming)
+Stores document embeddings for semantic search and analysis.
+Collection Naming Pattern: `p_{project_id[:8]}_d_{document_id[:8]}`
+Document Example:
+     ```json
+     {
+       "id": "sentence_1_20251015_120000",
+       "document": "The project milestone for Phase 1 completion is scheduled for Q2 2025",
+       "embedding": [0.1234, -0.5678, 0.9012, ...],
+       "metadata": {
+         "project_id": "proj_abc12345",
+         "document_id": "doc_def67890",
+         "sentence_index": 1,
+         "page_number": 3,
+         "created_at": "2025-10-15T12:00:00Z",
+         "document_type": "pdf"
+       }
+     }
+     ```
+
+2. Project Milestones Collection
+Stores extracted project milestones with metadata for tracking and analysis.
+Collection Name: `project_milestones`
+Document Example:
+     ```json
+     {
+       "id": "milestone_proj123_doc1_0_20251015_120000",
+       "document": "Complete Phase 1 Development",
+       "embedding": [0.2345, -0.6789, 0.1234, ...],
+       "metadata": {
+         "project_id": "proj_abc12345",
+         "document_id": "doc_def67890",
+         "milestone_text": "Complete Phase 1 Development",
+         "category": "development",
+         "priority": "high",
+         "created_at": "2025-10-15T12:00:00Z",
+         "source_document": "doc_def67890"
+       }
+     }
+     ```
+
+3. Project Tasks Collection
+Stores extracted project tasks with completion status and priority.
+Collection Name: `project_tasks`
+Document Example:
+     ```json
+     {
+       "id": "task_proj123_doc1_1_20251015_120000",
+       "document": "Implement user authentication module",
+       "embedding": [0.3456, -0.7890, 0.2345, ...],
+       "metadata": {
+         "project_id": "proj_abc12345",
+         "document_id": "doc_def67890",
+         "task_text": "Implement user authentication module",
+         "status": "in_progress",
+         "priority": "medium",
+         "assigned_to": "dev_team",
+         "created_at": "2025-10-15T12:00:00Z",
+         "source_document": "doc_def67890"
+       }
+     }
+     ```
+
+4. Project Bottlenecks Collection
+Stores identified bottlenecks with severity and impact analysis.
+Collection Name: `project_bottlenecks`
+Document Example:
+     ```json
+     {
+       "id": "bottleneck_proj123_doc1_2_20251015_120000",
+       "document": "Resource allocation delays in critical path",
+       "embedding": [0.4567, -0.8901, 0.3456, ...],
+       "metadata": {
+         "project_id": "proj_abc12345",
+         "document_id": "doc_def67890",
+         "bottleneck_text": "Resource allocation delays in critical path",
+         "category": "resource",
+         "severity": "high",
+         "impact": "schedule_delay",
+         "created_at": "2025-10-15T12:00:00Z",
+         "source_document": "doc_def67890"
+       }
+     }
+     ```
+
+5. Milestone Details Collection
+Stores detailed analysis and context for milestones (large text storage).
+Collection Name: `project_milestone_details`
+Document Example:
+     ```json
+     {
+       "id": "detail_milestone_123_doc1_20251015_120000",
+       "document": "Detailed milestone analysis: Phase 1 involves frontend development, API integration, and user testing. Key deliverables include responsive UI components, RESTful API endpoints, and comprehensive test coverage. Timeline: 8 weeks with 3-week buffer for testing and refinement.",
+       "embedding": [0.5678, -0.9012, 0.4567, ...],
+       "metadata": {
+         "parent_id": "milestone_proj123_doc1_0_20251015_120000",
+         "project_id": "proj_abc12345",
+         "document_id": "doc_def67890",
+         "created_at": "2025-10-15T12:00:00Z"
+       }
+     }
+     ```
+
+6. Task Details Collection
+Stores detailed task descriptions and implementation notes.
+Collection Name: `project_task_details`
+Document Example:
+     ```json
+     {
+       "id": "detail_task_123_doc1_20251015_120000",
+       "document": "Task implementation details: Authentication module requires JWT token generation, password hashing with bcrypt, role-based access control, and integration with existing user management system. Dependencies: user database schema, encryption libraries.",
+       "embedding": [0.6789, -0.0123, 0.5678, ...],
+       "metadata": {
+         "parent_id": "task_proj123_doc1_1_20251015_120000",
+         "project_id": "proj_abc12345",
+         "document_id": "doc_def67890",
+         "created_at": "2025-10-15T12:00:00Z"
+       }
+     }
+     ```
+
+7. Bottleneck Details Collection
+Stores detailed bottleneck analysis and mitigation strategies.
+Collection Name: `project_bottleneck_details`
+Document Example:
+     ```json
+     {
+       "id": "detail_bottleneck_123_doc1_20251015_120000",
+       "document": "Bottleneck analysis: Resource allocation delays stem from budget approval processes taking 2-3 weeks longer than anticipated. Impact: 15% schedule delay on critical path. Mitigation: Pre-approve contingency budget, establish fast-track approval for critical resources, implement resource sharing agreements with other projects.",
+       "embedding": [0.7890, -0.1234, 0.6789, ...],
+       "metadata": {
+         "parent_id": "bottleneck_proj123_doc1_2_20251015_120000",
+         "project_id": "proj_abc12345",
+         "document_id": "doc_def67890",
+         "created_at": "2025-10-15T12:00:00Z"
+       }
+     }
+     ```
+
+Indexes and Vector Operations
+Indexes: 
+Vector indexes automatically created by ChromaDB for efficient similarity search.
+Metadata indexes on `project_id`, `document_id`, and `created_at` for filtering.
+Collection Management: Dynamic document collections created per project-document pair.
+Vector Operations: Semantic search using cosine similarity for document retrieval and analysis.
+
+Data Flow and Integration
+Data is ingested from document uploads via RESTful APIs and processed through the EmbeddingsManager for vector storage. Performance agents (MilestoneAgent, TaskAgent, BottleneckAgent) analyze document embeddings and store results in performance collections. The centralized PerformanceChromaManager handles all ChromaDB operations with consistent naming and error handling. Real-time analytics are generated through vector similarity searches and metadata filtering across collections.
+
+System Architecture Benefits:
+- Vector Storage: Optimized for AI-powered document analysis and semantic search
+- Performance Analytics: Real-time project monitoring with efficient vector operations
+- Scalable Design: ChromaDB's distributed architecture supports growing project portfolios
+- Intelligent Processing: Document embeddings enable context-aware project insights
+- Data Integrity: Separate collections for metadata and large text content prevent performance issues
+
+
+
+
+

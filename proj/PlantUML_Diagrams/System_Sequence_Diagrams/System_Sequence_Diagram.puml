@@ -1,0 +1,256 @@
+@startuml System Sequence Diagram - AI-Powered Project Management Platform
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title System Sequence Diagram - AI-Powered Project Management Platform
+Complete System Overview
+
+actor "Project Manager" as PM
+actor "Project Staff" as PS
+actor "Financial Officer" as FO
+actor "Auditor" as AU
+actor "Field Staff" as FS
+participant "Web Browser" as WB
+participant "Mobile App" as MA
+participant "Flask Application" as FA
+participant "AI Engine" as AI
+participant "Database Manager" as DM
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+
+== System Initialization ==
+
+PM -> WB: Access system
+WB -> FA: GET /
+FA -> DM: initialize_system()
+DM --> FA: System ready
+FA --> WB: Render main dashboard
+WB --> PM: Display system interface
+
+== User Authentication & Role Management ==
+
+PM -> WB: Login
+WB -> FA: POST /login
+FA -> DM: authenticate_user(credentials)
+DM --> FA: Authentication result
+alt Authentication successful
+    FA -> DM: get_user_roles(user_id)
+    DM --> FA: User roles
+    FA --> WB: Redirect to dashboard
+    WB --> PM: Display role-based dashboard
+else Authentication failed
+    FA --> WB: Error message
+    WB --> PM: Display error
+end
+
+== Project Creation & Management ==
+
+PM -> WB: Create new project
+WB -> FA: POST /create_project
+FA -> DM: create_project(project_data)
+DM --> FA: Project created
+FA -> AI: initialize_project_ai(project_id)
+AI -> CDB: setup_project_collections(project_id)
+CDB --> AI: Collections ready
+AI --> FA: AI initialized
+FA --> WB: Project created
+WB --> PM: Display project details
+
+== Document Upload & Processing ==
+
+PS -> WB: Upload document
+WB -> FA: POST /upload_document
+FA -> AI: process_document(file, project_id)
+AI -> AI: extract_text_from_pdf(file)
+AI -> AI: generate_embeddings(text)
+AI -> CDB: store_embeddings(project_id, embeddings)
+CDB --> AI: Embeddings stored
+AI -> DM: save_document_metadata(project_id, document_data)
+DM --> AI: Document saved
+AI --> FA: Document processed
+FA --> WB: Success response
+WB --> PS: Display success
+
+== AI-Powered Analysis ==
+
+PM -> WB: Generate AI analysis
+WB -> FA: POST /performance_agent/first_generation
+FA -> AI: run_ai_analysis(project_id)
+AI -> CDB: query_document_embeddings(project_id)
+CDB --> AI: Document chunks
+AI -> LLM: analyze_project_data(document_chunks, project_context)
+LLM --> AI: Analysis results
+AI -> AI: extract_milestones(analysis_results)
+AI -> AI: extract_tasks(analysis_results)
+AI -> AI: detect_bottlenecks(analysis_results)
+AI -> CDB: store_analysis_results(project_id, results)
+CDB --> AI: Results stored
+AI -> DM: save_performance_metrics(project_id, metrics)
+DM --> AI: Metrics saved
+AI --> FA: Analysis complete
+FA --> WB: Analysis results
+WB --> PM: Display AI insights
+
+== Performance Monitoring ==
+
+PM -> WB: View performance dashboard
+WB -> FA: GET /performance_agent/dashboard/<project_id>
+FA -> AI: get_performance_data(project_id)
+AI -> CDB: query_performance_collections(project_id)
+CDB --> AI: Performance data
+AI -> LLM: generate_performance_insights(performance_data)
+LLM --> AI: Performance insights
+AI --> FA: Performance data
+FA --> WB: Render performance dashboard
+WB --> PM: Display performance metrics
+
+== Financial Management ==
+
+FO -> WB: Access financial dashboard
+WB -> FA: GET /financial/dashboard/<project_id>
+FA -> AI: get_financial_data(project_id)
+AI -> DM: query_financial_transactions(project_id)
+DM --> AI: Financial data
+AI -> LLM: analyze_financial_patterns(financial_data)
+LLM --> AI: Financial insights
+AI -> AI: detect_fraud_patterns(financial_data)
+AI -> AI: calculate_budget_utilization(financial_data)
+AI --> FA: Financial analysis
+FA --> WB: Render financial dashboard
+WB --> FO: Display financial status
+
+== Risk Management ==
+
+PM -> WB: View risk dashboard
+WB -> FA: GET /risk/dashboard/<project_id>
+FA -> AI: get_risk_data(project_id)
+AI -> DM: query_risk_indicators(project_id)
+DM --> AI: Risk data
+AI -> LLM: predict_risks(risk_data, project_context)
+LLM --> AI: Risk predictions
+AI -> AI: calculate_risk_scores(risk_predictions)
+AI -> AI: generate_mitigation_strategies(risk_scores)
+AI --> FA: Risk analysis
+FA --> WB: Render risk dashboard
+WB --> PM: Display risk assessment
+
+== Compliance Monitoring ==
+
+AU -> WB: Access compliance dashboard
+WB -> FA: GET /compliance/dashboard/<project_id>
+FA -> AI: get_compliance_data(project_id)
+AI -> DM: query_compliance_indicators(project_id)
+DM --> AI: Compliance data
+AI -> LLM: check_compliance_violations(compliance_data)
+LLM --> AI: Compliance analysis
+AI -> AI: generate_compliance_report(compliance_analysis)
+AI --> FA: Compliance data
+FA --> WB: Render compliance dashboard
+WB --> AU: Display compliance status
+
+== Resource Optimization ==
+
+PM -> WB: View resource dashboard
+WB -> FA: GET /resources/dashboard/<project_id>
+FA -> AI: get_resource_data(project_id)
+AI -> DM: query_resource_allocations(project_id)
+DM --> AI: Resource data
+AI -> LLM: optimize_resource_allocation(resource_data)
+LLM --> AI: Optimization recommendations
+AI -> AI: generate_resource_schedule(optimization_recommendations)
+AI --> FA: Resource optimization
+FA --> WB: Render resource dashboard
+WB --> PM: Display resource optimization
+
+== Communication Intelligence ==
+
+PS -> WB: Send team message
+WB -> FA: POST /communication/send_message
+FA -> AI: process_communication(message, project_id)
+AI -> LLM: analyze_communication(message, project_context)
+LLM --> AI: Communication analysis
+AI -> AI: extract_action_items(communication_analysis)
+AI -> AI: detect_conflicts(communication_analysis)
+AI -> AI: analyze_sentiment(communication_analysis)
+AI -> DM: save_communication_analysis(project_id, analysis)
+DM --> AI: Analysis saved
+AI --> FA: Communication processed
+FA --> WB: Message sent
+WB --> PS: Display message sent
+
+== Mobile Monitoring ==
+
+FS -> MA: Access mobile dashboard
+MA -> FA: GET /mobile/dashboard/<project_id>
+FA -> AI: get_mobile_data(project_id)
+AI -> DM: query_mobile_summary(project_id)
+DM --> AI: Summary data
+AI -> LLM: generate_mobile_summary(summary_data)
+LLM --> AI: Mobile summary
+AI --> FA: Mobile data
+FA --> MA: Mobile dashboard
+MA --> FS: Display mobile interface
+
+== Real-time Alerts & Notifications ==
+
+note over AI
+Continuous monitoring
+end note
+AI -> DM: query_alert_indicators()
+DM --> AI: Alert data
+AI -> LLM: generate_alerts(alert_data)
+LLM --> AI: Alert content
+AI -> AI: prioritize_alerts(alert_content)
+AI -> FA: send_alerts(alerts)
+FA -> WB: Push notifications
+FA -> MA: Push notifications
+WB --> PM: Display alerts
+MA --> FS: Display alerts
+
+== System Integration & Data Flow ==
+
+note over AI, DM, CDB, LLM
+AI Engine coordinates all modules
+end note
+AI -> DM: query_integrated_data(project_id)
+DM --> AI: Integrated data
+AI -> CDB: query_vector_data(project_id)
+CDB --> AI: Vector data
+AI -> LLM: process_integrated_analysis(integrated_data, vector_data)
+LLM --> AI: Integrated insights
+AI -> AI: generate_cross_module_recommendations(integrated_insights)
+AI -> DM: save_integrated_analysis(project_id, analysis)
+DM --> AI: Analysis saved
+AI -> FA: send_integrated_updates(project_id, updates)
+FA -> WB: Update all dashboards
+FA -> MA: Update mobile interface
+WB --> PM: Display integrated dashboard
+MA --> FS: Display integrated mobile view
+
+== System Export & Reporting ==
+
+PM -> WB: Generate system report
+WB -> FA: POST /system/generate_report
+FA -> AI: generate_comprehensive_report(project_id)
+AI -> DM: get_all_project_data(project_id)
+DM --> AI: Complete project data
+AI -> CDB: get_all_analysis_data(project_id)
+CDB --> AI: Analysis data
+AI -> LLM: generate_report_summary(project_data, analysis_data)
+LLM --> AI: Report summary
+AI -> AI: format_comprehensive_report(report_summary)
+AI --> FA: System report
+FA --> WB: Report file
+WB --> PM: Download system report
+
+@enduml

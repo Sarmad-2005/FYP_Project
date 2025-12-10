@@ -1,0 +1,114 @@
+@startuml UC3 - Project Performance Monitoring
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC3 - Project Performance Monitoring\nSequence Diagram
+
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Performance Agent" as PA
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Performance Dashboard Access ==
+
+PM -> WB: Navigate to performance dashboard
+WB -> FA: GET /performance_agent/dashboard/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_performance_status(project_id)
+DM --> FA: Current metrics
+FA --> WB: Render performance_dashboard.html
+WB --> PM: Display performance dashboard
+
+== Generate Performance Analysis ==
+
+PM -> WB: Click "Generate Analysis"
+WB -> FA: POST /performance_agent/first_generation
+note right: project_id, document_id
+
+FA -> PA: performance_first_generation(project_id, document_id)
+
+== Milestone Extraction ==
+PA -> CDB: Query project_milestones collection
+CDB --> PA: Existing milestones
+PA -> CDB: Query document embeddings (similarity > 0.20)
+CDB --> PA: Relevant document chunks
+PA -> LLM: Extract milestones from context
+note right: Prompt: "Extract project milestones in bullet points"
+LLM --> PA: Milestone data
+PA -> CDB: Store milestones in project_milestones
+CDB --> PA: Success
+
+== Task Extraction ==
+PA -> CDB: Query project_tasks collection
+CDB --> PA: Existing tasks
+PA -> CDB: Query document embeddings (similarity > 0.20)
+CDB --> PA: Relevant document chunks
+PA -> LLM: Extract tasks from context
+note right: Prompt: "Extract project tasks in bullet points"
+LLM --> PA: Task data
+PA -> CDB: Store tasks in project_tasks
+CDB --> PA: Success
+
+== Bottleneck Detection ==
+PA -> CDB: Query project_bottlenecks collection
+CDB --> PA: Existing bottlenecks
+PA -> CDB: Query document embeddings (similarity > 0.20)
+CDB --> PA: Relevant document chunks
+PA -> LLM: Extract bottlenecks from context
+note right: Prompt: "Extract project bottlenecks in bullet points"
+LLM --> PA: Bottleneck data
+PA -> CDB: Store bottlenecks in project_bottlenecks
+CDB --> PA: Success
+
+== Performance Metrics Calculation ==
+PA -> PA: Calculate completion percentages
+PA -> PA: Generate performance insights
+PA -> PA: Create analytics summary
+PA -> DM: Save performance data
+DM --> PA: Success
+
+PA --> FA: Performance analysis complete
+FA --> WB: Success response with metrics
+WB --> PM: Display updated performance data
+
+== Real-time Performance Updates ==
+
+PM -> WB: Click "Refresh Metrics"
+WB -> FA: POST /performance_agent/update_metrics
+FA -> PA: update_performance_metrics(project_id)
+PA -> CDB: Query latest data
+CDB --> PA: Updated data
+PA -> PA: Recalculate metrics
+PA -> DM: Update performance data
+DM --> PA: Success
+PA --> FA: Updated metrics
+FA --> WB: Updated performance data
+WB --> PM: Display refreshed metrics
+
+== Performance Analytics View ==
+
+PM -> WB: View detailed analytics
+WB -> FA: GET /performance_agent/analytics/<project_id>
+FA -> PA: get_performance_analytics(project_id)
+PA -> CDB: Query all performance collections
+CDB --> PA: Complete performance data
+PA -> PA: Generate analytics report
+PA --> FA: Analytics data
+FA --> WB: Render analytics view
+WB --> PM: Display detailed analytics
+
+@enduml

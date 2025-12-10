@@ -1,0 +1,45 @@
+{
+  "2025-12-09T00:07:14.427034": {
+    "project_id": "386b4392-d1b7-4e2c-be9b-d866b82b4761",
+    "document_id": "291bddef-3278-4bb7-aed9-e50bdb5f226d",
+    "timestamp": "2025-12-09T00:07:14.427034",
+    "milestones": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "LLM error: Gemini API error: 403 Your API key was reported as leaked. Please use another API key."
+    },
+    "tasks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "completion_analysis": false,
+      "error": "LLM error: Gemini API error: 403 Your API key was reported as leaked. Please use another API key."
+    },
+    "bottlenecks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "LLM error: Gemini API error: 403 Your API key was reported as leaked. Please use another API key."
+    },
+    "requirements": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "Gemini API error: 403 Your API key was reported as leaked. Please use another API key."
+    },
+    "actors": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "linked_requirements_count": 0,
+      "error": "Gemini API error: 403 Your API key was reported as leaked. Please use another API key."
+    },
+    "completion_score": 0.0,
+    "overall_success": false
+  }
+}

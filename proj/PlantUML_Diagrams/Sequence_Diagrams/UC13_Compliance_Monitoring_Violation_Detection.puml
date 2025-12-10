@@ -1,0 +1,196 @@
+@startuml UC13 - Compliance Monitoring & Violation Detection
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC13 - Compliance Monitoring & Violation Detection\nSequence Diagram
+
+actor "Auditor" as AU
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Compliance Agent" as CA
+participant "Compliance Checker" as CC
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Activate Compliance Monitoring ==
+
+AU -> WB: Navigate to compliance monitoring
+WB -> FA: GET /compliance/monitoring/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_compliance_data(project_id)
+DM --> FA: Compliance data
+FA --> WB: Render compliance dashboard
+WB --> AU: Display compliance monitoring interface
+
+AU -> WB: Activate compliance monitoring
+WB -> FA: POST /compliance/activate_monitoring
+note right: project_id, monitoring_parameters
+
+== Compliance Rule Setup ==
+
+FA -> CA: activate_compliance_monitoring(project_id, parameters)
+CA -> DM: get_compliance_rules(project_id)
+DM --> CA: Compliance rules
+CA -> DM: get_organizational_policies()
+DM --> CA: Policy data
+CA -> DM: get_national_regulations()
+DM --> CA: Regulation data
+CA -> CA: Configure compliance rules
+CA -> DM: save_compliance_configuration(project_id, rules)
+DM --> CA: Configuration saved
+
+== Continuous Compliance Monitoring ==
+
+note over CA: Continuous monitoring
+CA -> DM: query_project_activities(project_id)
+DM --> CA: Activity data
+CA -> DM: query_financial_transactions(project_id)
+DM --> CA: Financial data
+CA -> DM: query_communications(project_id)
+DM --> CA: Communication data
+CA -> CC: check_compliance_violations(activity_data, financial_data, communication_data)
+
+== AI-Powered Compliance Analysis ==
+
+CC -> LLM: Analyze compliance violations
+note right: Context: activities, financial data, communications, compliance rules
+LLM --> CC: Violation analysis
+CC -> CC: Classify violation severity
+note right: Critical, High, Medium, Low severity levels
+CC -> CC: Identify violation categories
+note right: Financial, Process, Documentation, Regulatory violations
+CC -> CC: Generate violation details
+CC -> CC: Create remediation recommendations
+
+== Violation Detection and Alerting ==
+
+CC -> CC: Check violation thresholds
+alt Violation detected
+    CC -> CC: Generate compliance alert
+    CC -> DM: save_compliance_violation(project_id, violation_data)
+    DM --> CC: Violation saved
+    CC -> CA: send_compliance_alert(project_id, violation_data)
+    CA -> FA: send_violation_notification(project_id, violation_data)
+    FA -> WB: Push notification
+    WB --> PM: Display compliance violation alert
+end
+
+== Compliance Report Generation ==
+
+AU -> WB: Generate compliance report
+WB -> FA: POST /compliance/generate_report
+note right: project_id, report_type, date_range
+
+FA -> CA: generate_compliance_report(project_id, report_params)
+CA -> DM: get_compliance_data(project_id, date_range)
+DM --> CA: Compliance data
+CA -> CC: analyze_compliance_status(compliance_data)
+CC -> LLM: Generate compliance summary
+note right: Context: compliance data, violations, remediation status
+LLM --> CC: Compliance summary
+CC -> CC: Format compliance report
+CC -> DM: save_compliance_report(project_id, report_data)
+DM --> CC: Report saved
+CC --> CA: Compliance report
+CA --> FA: Report data
+FA --> WB: Report results
+WB --> AU: Display compliance report
+
+== Violation Investigation ==
+
+PM -> WB: Investigate compliance violation
+WB -> FA: GET /compliance/violation/<violation_id>
+FA -> CA: get_violation_details(violation_id)
+CA -> DM: get_violation_data(violation_id)
+DM --> CA: Violation data
+CA -> CC: analyze_violation_details(violation_data)
+CC -> LLM: Generate investigation summary
+note right: Context: violation details, related activities, compliance rules
+LLM --> CC: Investigation summary
+CC --> CA: Violation analysis
+CA --> FA: Violation details
+FA --> WB: Render violation details
+WB --> PM: Display violation investigation
+
+== Remediation Planning ==
+
+PM -> WB: Create remediation plan
+WB -> FA: POST /compliance/create_remediation
+note right: violation_id, remediation_actions
+
+FA -> CA: create_remediation_plan(violation_id, actions)
+CA -> CC: develop_remediation_strategy(violation_id, actions)
+CC -> LLM: Optimize remediation approach
+note right: Context: violation details, available resources, compliance requirements
+LLM --> CC: Remediation recommendations
+CC -> CC: Create remediation timeline
+CC -> DM: save_remediation_plan(violation_id, plan_data)
+DM --> CC: Plan saved
+CC --> CA: Remediation plan created
+CA --> FA: Plan confirmation
+FA --> WB: Plan details
+WB --> PM: Display remediation plan
+
+== Compliance Dashboard ==
+
+AU -> WB: View compliance dashboard
+WB -> FA: GET /compliance/dashboard/<project_id>
+FA -> CA: get_compliance_dashboard(project_id)
+CA -> DM: get_compliance_metrics(project_id)
+DM --> CA: Metrics data
+CA -> CC: calculate_compliance_scores(metrics_data)
+CC -> CC: Generate compliance KPIs
+note right: Compliance rate, violation count, remediation status
+CC --> CA: Dashboard data
+CA --> FA: Dashboard metrics
+FA --> WB: Render compliance dashboard
+WB --> AU: Display compliance dashboard
+
+== Policy Updates ==
+
+AU -> WB: Update compliance policies
+WB -> FA: POST /compliance/update_policies
+note right: project_id, policy_updates
+
+FA -> CA: update_compliance_policies(project_id, policy_updates)
+CA -> DM: save_policy_updates(project_id, policy_updates)
+DM --> CA: Policies updated
+CA -> CC: refresh_compliance_rules(project_id)
+CC -> CC: Update compliance checking logic
+CC --> CA: Rules refreshed
+CA --> FA: Policy update complete
+FA --> WB: Update confirmation
+WB --> AU: Display policy update confirmation
+
+== Compliance Training Recommendations ==
+
+PM -> WB: Request compliance training
+WB -> FA: POST /compliance/training_recommendations
+note right: project_id, team_members
+
+FA -> CA: get_training_recommendations(project_id, team_members)
+CA -> DM: get_violation_history(project_id, team_members)
+DM --> CA: Violation history
+CA -> LLM: Generate training recommendations
+note right: Context: violation patterns, team performance, compliance gaps
+LLM --> CA: Training recommendations
+CA -> DM: save_training_recommendations(project_id, recommendations)
+DM --> CA: Recommendations saved
+CA --> FA: Training recommendations
+FA --> WB: Recommendations data
+WB --> PM: Display training recommendations
+
+@enduml

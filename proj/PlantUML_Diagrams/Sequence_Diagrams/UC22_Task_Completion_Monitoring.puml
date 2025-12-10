@@ -1,0 +1,269 @@
+@startuml UC22 - Task Completion Monitoring
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC22 - Task Completion Monitoring\nSequence Diagram
+
+actor "Project Staff" as PS
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Mobile App" as MA
+participant "Flask Application" as FA
+participant "Task Agent" as TA
+participant "Completion Tracker" as CT
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Access Task Dashboard ==
+
+PS -> WB: Navigate to task dashboard
+WB -> FA: GET /tasks/dashboard/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_user_tasks(project_id, user_id)
+DM --> FA: User tasks
+FA --> WB: Render task dashboard
+WB --> PS: Display assigned tasks
+
+== Update Task Completion ==
+
+PS -> WB: Select task to update
+WB -> FA: GET /tasks/update/<task_id>
+FA -> DM: get_task_details(task_id)
+DM --> FA: Task details
+FA --> WB: Render task update form
+WB --> PS: Display task update interface
+
+PS -> WB: Update completion percentage
+note right: task_id, completion_percentage, progress_notes
+WB -> FA: POST /tasks/update_completion
+note right: task_id, completion_data
+
+FA -> TA: update_task_completion(task_id, completion_data)
+TA -> CT: validate_completion_data(completion_data)
+CT -> CT: Validate percentage range (0-100)
+CT -> CT: Check required fields
+CT -> CT: Validate timestamp
+CT --> TA: Validation results
+
+alt Validation successful
+    TA -> DM: update_task_completion(task_id, completion_data)
+    DM --> TA: Task updated
+    TA -> DM: create_completion_timestamp(task_id)
+    DM --> TA: Timestamp created
+    TA -> DM: update_task_status(task_id)
+    DM --> TA: Status updated
+    TA -> DM: log_completion_activity(task_id, completion_data)
+    DM --> TA: Activity logged
+    TA --> FA: Task completion updated
+    FA --> WB: Success response
+    WB --> PS: Display updated task status
+else Validation failed
+    TA --> FA: Validation errors
+    FA --> WB: Error response
+    WB --> PS: Display validation errors
+end
+
+== Offline Mode Support ==
+
+PS -> MA: Update task offline
+MA -> MA: Store completion data locally
+note right: task_id, completion_data, timestamp
+MA -> MA: Queue for sync when online
+MA --> PS: Task updated offline
+
+PS -> MA: Connect to network
+MA -> FA: POST /tasks/sync_offline_updates
+note right: user_id, offline_updates[]
+
+FA -> TA: sync_offline_completions(user_id, offline_updates)
+TA -> CT: validate_offline_data(offline_updates)
+CT --> TA: Validation results
+TA -> DM: batch_update_completions(offline_updates)
+DM --> TA: Updates applied
+TA -> DM: log_offline_sync(user_id, sync_data)
+DM --> TA: Sync logged
+TA --> FA: Offline sync complete
+FA --> MA: Sync confirmation
+MA --> PS: Display sync results
+
+== Real-time Progress Tracking ==
+
+note over CT: Continuous monitoring
+CT -> DM: query_active_tasks(project_id)
+DM --> CT: Active tasks
+CT -> CT: Calculate progress metrics
+CT -> CT: Identify overdue tasks
+CT -> CT: Detect completion patterns
+CT -> DM: update_progress_metrics(project_id, metrics)
+DM --> CT: Metrics updated
+
+== Task Status Validation ==
+
+PS -> WB: Mark task as complete
+WB -> FA: POST /tasks/mark_complete
+note right: task_id, completion_notes
+
+FA -> TA: mark_task_complete(task_id, notes)
+TA -> CT: validate_completion_requirements(task_id)
+CT -> DM: get_task_requirements(task_id)
+DM --> CT: Task requirements
+CT -> CT: Check if all subtasks complete
+CT -> CT: Verify deliverables
+CT -> CT: Validate quality criteria
+CT --> TA: Validation results
+
+alt All requirements met
+    TA -> DM: update_task_status(task_id, "completed")
+    DM --> TA: Status updated
+    TA -> DM: set_completion_timestamp(task_id)
+    DM --> TA: Timestamp set
+    TA -> DM: trigger_dependent_tasks(task_id)
+    DM --> TA: Dependencies triggered
+    TA --> FA: Task completed
+    FA --> WB: Completion confirmation
+    WB --> PS: Display task completion
+else Requirements not met
+    TA --> FA: Completion requirements not met
+    FA --> WB: Requirements error
+    WB --> PS: Display missing requirements
+end
+
+== Progress Dashboard Updates ==
+
+PM -> WB: View project progress
+WB -> FA: GET /tasks/progress_dashboard/<project_id>
+FA -> TA: get_progress_dashboard(project_id)
+TA -> DM: get_all_tasks(project_id)
+DM --> TA: All tasks
+TA -> CT: calculate_progress_metrics(tasks)
+CT -> CT: Calculate completion percentages
+CT -> CT: Generate progress trends
+CT -> CT: Identify bottlenecks
+CT --> TA: Progress metrics
+TA --> FA: Dashboard data
+FA --> WB: Render progress dashboard
+WB --> PM: Display project progress
+
+== Task Completion Analytics ==
+
+PM -> WB: View completion analytics
+WB -> FA: GET /tasks/analytics/<project_id>
+FA -> TA: get_completion_analytics(project_id)
+TA -> DM: get_historical_completion_data(project_id)
+DM --> TA: Historical data
+TA -> LLM: Analyze completion patterns
+note right: Context: completion data, team performance, project timeline
+LLM --> TA: Analytics insights
+TA -> CT: generate_completion_reports(analytics_data)
+CT -> CT: Create performance charts
+CT -> CT: Generate trend analysis
+CT --> TA: Analytics reports
+TA --> FA: Analytics data
+FA --> WB: Render analytics dashboard
+WB --> PM: Display completion analytics
+
+== Automated Progress Alerts ==
+
+note over CT: Continuous monitoring
+CT -> DM: query_progress_thresholds(project_id)
+DM --> CT: Threshold data
+CT -> CT: Check progress against thresholds
+alt Progress below threshold
+    CT -> CT: Generate progress alert
+    CT -> DM: save_progress_alert(project_id, alert_data)
+    DM --> CT: Alert saved
+    CT -> FA: send_progress_alert(project_id, alert_data)
+    FA -> WB: Push notification
+    WB --> PM: Display progress alert
+end
+
+== Task Completion Reports ==
+
+PM -> WB: Generate completion report
+WB -> FA: POST /tasks/generate_completion_report
+note right: project_id, report_period, team_members
+
+FA -> TA: generate_completion_report(project_id, report_params)
+TA -> DM: get_completion_data(project_id, report_period)
+DM --> TA: Completion data
+TA -> LLM: Generate completion summary
+note right: Context: completion data, team performance, project metrics
+LLM --> TA: Report summary
+TA -> CT: format_completion_report(completion_data)
+CT -> CT: Create completion charts
+CT -> CT: Generate team performance analysis
+CT --> TA: Completion report
+TA -> DM: save_completion_report(project_id, report_data)
+DM --> TA: Report saved
+TA --> FA: Completion report
+FA --> WB: Report data
+WB --> PM: Display completion report
+
+== Task Completion Validation ==
+
+PS -> WB: Submit task for review
+WB -> FA: POST /tasks/submit_for_review
+note right: task_id, submission_data
+
+FA -> TA: submit_task_for_review(task_id, submission_data)
+TA -> CT: validate_task_submission(task_id, submission_data)
+CT -> DM: get_task_requirements(task_id)
+DM --> CT: Task requirements
+CT -> CT: Check submission completeness
+CT -> CT: Validate quality standards
+CT --> TA: Validation results
+TA -> DM: update_task_status(task_id, "under_review")
+DM --> TA: Status updated
+TA -> DM: notify_reviewer(task_id, submission_data)
+DM --> TA: Notification sent
+TA --> FA: Task submitted for review
+FA --> WB: Submission confirmation
+WB --> PS: Display submission status
+
+== Mobile Task Updates ==
+
+PS -> MA: Update task on mobile
+MA -> FA: POST /mobile/tasks/update_completion
+note right: task_id, completion_data, location_data
+
+FA -> TA: update_mobile_completion(task_id, completion_data)
+TA -> CT: validate_mobile_data(completion_data)
+CT --> TA: Validation results
+TA -> DM: update_task_completion(task_id, completion_data)
+DM --> TA: Task updated
+TA -> DM: log_mobile_update(task_id, location_data)
+DM --> TA: Mobile update logged
+TA --> FA: Mobile update complete
+FA --> MA: Update confirmation
+MA --> PS: Display updated task
+
+== Task Completion History ==
+
+PS -> WB: View task completion history
+WB -> FA: GET /tasks/completion_history/<task_id>
+FA -> TA: get_completion_history(task_id)
+TA -> DM: get_task_completion_log(task_id)
+DM --> TA: Completion history
+TA -> CT: format_completion_timeline(history_data)
+CT -> CT: Create completion timeline
+CT -> CT: Generate progress visualization
+CT --> TA: History data
+TA --> FA: Completion history
+FA --> WB: Render history view
+WB --> PS: Display completion history
+
+@enduml
+
+

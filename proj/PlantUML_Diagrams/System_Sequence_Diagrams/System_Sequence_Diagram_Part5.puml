@@ -1,0 +1,94 @@
+@startuml System Sequence Diagram - Part 5: Reporting & Export
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title System Sequence Diagram - Part 5
+Reporting & Export
+
+actor "Project Manager" as PM
+actor "Project Staff" as PS
+actor "Financial Officer" as FO
+actor "Auditor" as AU
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "AI Engine" as AI
+participant "Database Manager" as DM
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+
+== System Export & Reporting ==
+
+PM -> WB: Generate system report
+WB -> FA: POST /system/generate_report
+FA -> AI: generate_comprehensive_report(project_id)
+AI -> DM: get_all_project_data(project_id)
+DM --> AI: Complete project data
+AI -> CDB: get_all_analysis_data(project_id)
+CDB --> AI: Analysis data
+AI -> LLM: generate_report_summary(project_data, analysis_data)
+LLM --> AI: Report summary
+AI -> AI: format_comprehensive_report(report_summary)
+AI --> FA: System report
+FA --> WB: Report file
+WB --> PM: Download system report
+
+== Financial Report Generation ==
+
+FO -> WB: Generate financial report
+WB -> FA: POST /financial/generate_report
+FA -> AI: generate_financial_report(project_id)
+AI -> DM: get_financial_data(project_id)
+DM --> AI: Financial data
+AI -> LLM: analyze_financial_trends(financial_data)
+LLM --> AI: Financial insights
+AI -> AI: create_financial_charts(financial_data)
+AI --> FA: Financial report
+FA --> WB: Report file
+WB --> FO: Download financial report
+
+== Compliance Report Generation ==
+
+AU -> WB: Generate compliance report
+WB -> FA: POST /compliance/generate_report
+FA -> AI: generate_compliance_report(project_id)
+AI -> DM: get_compliance_data(project_id)
+DM --> AI: Compliance data
+AI -> LLM: analyze_compliance_status(compliance_data)
+LLM --> AI: Compliance analysis
+AI -> AI: create_compliance_summary(compliance_analysis)
+AI --> FA: Compliance report
+FA --> WB: Report file
+WB --> AU: Download compliance report
+
+== Performance Analytics Export ==
+
+PS -> WB: Export performance analytics
+WB -> FA: POST /performance/export_analytics
+FA -> AI: export_performance_analytics(project_id)
+AI -> DM: get_performance_data(project_id)
+DM --> AI: Performance data
+AI -> CDB: get_analysis_data(project_id)
+CDB --> AI: Analysis data
+AI -> LLM: generate_analytics_summary(performance_data, analysis_data)
+LLM --> AI: Analytics summary
+AI -> AI: format_analytics_export(analytics_summary)
+AI --> FA: Analytics export
+FA --> WB: Export file
+WB --> PS: Download analytics export
+
+@enduml
+
+
+
+
+

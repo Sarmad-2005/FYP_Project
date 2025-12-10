@@ -1,0 +1,206 @@
+@startuml UC19 - Mobile Monitoring & Alerts
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC19 - Mobile Monitoring & Alerts\nSequence Diagram
+
+actor "Project Manager" as PM
+actor "Field Staff" as FS
+participant "Mobile App" as MA
+participant "Flask Application" as FA
+participant "Mobile Agent" as MA_Agent
+participant "Alert Manager" as AM
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Mobile App Initialization ==
+
+PM -> MA: Open mobile app
+MA -> FA: POST /mobile/authenticate
+note right: user_credentials, device_id
+
+FA -> MA_Agent: authenticate_mobile_user(user_credentials, device_id)
+MA_Agent -> DM: verify_user_credentials(user_credentials)
+DM --> MA_Agent: User verified
+MA_Agent -> DM: register_device(device_id, user_id)
+DM --> MA_Agent: Device registered
+MA_Agent --> FA: Authentication success
+FA --> MA: Authentication token
+MA -> MA: Store authentication token
+MA --> PM: Display mobile dashboard
+
+== Project Data Synchronization ==
+
+MA -> FA: GET /mobile/sync_data
+note right: user_id, last_sync_timestamp
+
+FA -> MA_Agent: sync_mobile_data(user_id, last_sync_timestamp)
+MA_Agent -> DM: get_user_projects(user_id)
+DM --> MA_Agent: Projects data
+MA_Agent -> DM: get_project_updates(user_id, last_sync_timestamp)
+DM --> MA_Agent: Updates data
+MA_Agent -> DM: get_performance_data(user_id)
+DM --> MA_Agent: Performance data
+MA_Agent -> DM: get_financial_data(user_id)
+DM --> MA_Agent: Financial data
+MA_Agent --> FA: Sync data
+FA --> MA: Project data
+MA -> MA: Update local data
+MA --> PM: Display updated project data
+
+== Real-time Alert Generation ==
+
+note over AM: Continuous monitoring
+AM -> DM: query_project_alerts(user_id)
+DM --> AM: Alert data
+AM -> LLM: Generate mobile alerts
+note right: Context: project status, alerts, user preferences
+LLM --> AM: Alert content
+AM -> AM: Format mobile alerts
+AM -> DM: save_mobile_alerts(user_id, alerts)
+DM --> AM: Alerts saved
+AM -> FA: send_mobile_alerts(user_id, alerts)
+FA -> MA: Push notification
+MA -> MA: Process alert
+MA --> PM: Display alert notification
+
+== Mobile Dashboard Access ==
+
+PM -> MA: View mobile dashboard
+MA -> FA: GET /mobile/dashboard/<project_id>
+FA -> MA_Agent: get_mobile_dashboard(project_id)
+MA_Agent -> DM: get_project_summary(project_id)
+DM --> MA_Agent: Project summary
+MA_Agent -> DM: get_performance_metrics(project_id)
+DM --> MA_Agent: Performance metrics
+MA_Agent -> DM: get_financial_status(project_id)
+DM --> MA_Agent: Financial status
+MA_Agent -> DM: get_risk_alerts(project_id)
+DM --> MA_Agent: Risk alerts
+MA_Agent --> FA: Dashboard data
+FA --> MA: Dashboard data
+MA --> PM: Display mobile dashboard
+
+== Mobile Performance Monitoring ==
+
+FS -> MA: View performance on mobile
+MA -> FA: GET /mobile/performance/<project_id>
+FA -> MA_Agent: get_mobile_performance(project_id)
+MA_Agent -> DM: get_performance_data(project_id)
+DM --> MA_Agent: Performance data
+MA_Agent -> LLM: Generate mobile performance summary
+note right: Context: performance data, mobile format, key metrics
+LLM --> MA_Agent: Performance summary
+MA_Agent --> FA: Performance data
+FA --> MA: Performance summary
+MA --> FS: Display performance metrics
+
+== Mobile Financial Monitoring ==
+
+PM -> MA: View financial status
+MA -> FA: GET /mobile/financial/<project_id>
+FA -> MA_Agent: get_mobile_financial(project_id)
+MA_Agent -> DM: get_financial_data(project_id)
+DM --> MA_Agent: Financial data
+MA_Agent -> LLM: Generate financial summary
+note right: Context: financial data, budget status, spending trends
+LLM --> MA_Agent: Financial summary
+MA_Agent --> FA: Financial data
+FA --> MA: Financial summary
+MA --> PM: Display financial status
+
+== Mobile Risk Alerts ==
+
+FS -> MA: View risk alerts
+MA -> FA: GET /mobile/risk_alerts/<project_id>
+FA -> MA_Agent: get_mobile_risk_alerts(project_id)
+MA_Agent -> DM: get_risk_data(project_id)
+DM --> MA_Agent: Risk data
+MA_Agent -> LLM: Generate risk summary
+note right: Context: risk data, alert priorities, mobile format
+LLM --> MA_Agent: Risk summary
+MA_Agent --> FA: Risk data
+FA --> MA: Risk alerts
+MA --> FS: Display risk alerts
+
+== Mobile Data Visualization ==
+
+PM -> MA: View data visualizations
+MA -> FA: GET /mobile/visualizations/<project_id>
+FA -> MA_Agent: get_mobile_visualizations(project_id)
+MA_Agent -> DM: get_visualization_data(project_id)
+DM --> MA_Agent: Visualization data
+MA_Agent -> MA_Agent: Create mobile-optimized charts
+note right: Responsive charts, touch-friendly interfaces
+MA_Agent --> FA: Visualization data
+FA --> MA: Chart data
+MA --> PM: Display mobile visualizations
+
+== Mobile Offline Support ==
+
+FS -> MA: Work offline
+MA -> MA: Enable offline mode
+MA -> MA: Cache essential data
+note right: Project data, performance metrics, critical alerts
+MA -> MA: Store offline changes
+note right: Track changes made while offline
+MA -> MA: Queue sync operations
+note right: Queue data for sync when online
+
+FS -> MA: Sync when online
+MA -> FA: POST /mobile/sync_offline_changes
+note right: offline_changes, device_id
+
+FA -> MA_Agent: sync_offline_changes(offline_changes, device_id)
+MA_Agent -> DM: process_offline_changes(offline_changes)
+DM --> MA_Agent: Changes processed
+MA_Agent -> DM: update_project_data(offline_changes)
+DM --> MA_Agent: Data updated
+MA_Agent --> FA: Sync complete
+FA --> MA: Sync confirmation
+MA --> FS: Display sync status
+
+== Mobile Push Notifications ==
+
+note over AM: Alert monitoring
+AM -> DM: query_critical_alerts(user_id)
+DM --> AM: Critical alerts
+AM -> LLM: Generate push notification content
+note right: Context: alert data, user preferences, mobile format
+LLM --> AM: Notification content
+AM -> AM: Format push notification
+AM -> FA: send_push_notification(user_id, notification)
+FA -> MA: Push notification
+MA -> MA: Process notification
+MA -> MA: Display notification
+MA --> PM: Show alert notification
+
+== Mobile Report Generation ==
+
+PM -> MA: Generate mobile report
+MA -> FA: POST /mobile/generate_report
+note right: project_id, report_type, date_range
+
+FA -> MA_Agent: generate_mobile_report(project_id, report_type, date_range)
+MA_Agent -> DM: get_report_data(project_id, date_range)
+DM --> MA_Agent: Report data
+MA_Agent -> LLM: Generate mobile report summary
+note right: Context: report data, mobile format, key insights
+LLM --> MA_Agent: Report summary
+MA_Agent -> MA_Agent: Format for mobile display
+MA_Agent --> FA: Mobile report
+FA --> MA: Report data
+MA --> PM: Display mobile report
+
+@enduml

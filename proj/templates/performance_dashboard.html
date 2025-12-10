@@ -1,0 +1,2427 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Agent Dashboard - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="performance-dashboard">
+    <!-- Hidden doc id so JS can auto-run analysis -->
+    {% if first_doc_id %}
+    <input type="hidden" id="first-doc-id" value="{{ first_doc_id }}">
+    {% endif %}
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title-modern">Performance Agent Dashboard</h1>
+            <p class="dashboard-subtitle-modern">{{ project.name }} - AI-Powered Project Analysis</p>
+            <div class="dashboard-meta-info">
+                <span>Project ID: {{ project.id }}</span>
+                <span id="last-analysis-timestamp">Loading...</span>
+            </div>
+        </div>
+        <div class="dashboard-controls">
+            <button onclick="exportPerformanceReport()" class="btn btn-success">
+                <i class="fas fa-download"></i> Export Report
+            </button>
+            <button onclick="refreshPerformanceData()" class="btn btn-secondary">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+            <a href="/project/{{ project.id }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to Project
+            </a>
+        </div>
+    </div>
+
+    <!-- Metrics Overview -->
+    <div class="metrics-grid">
+        <!-- Completion Score Card (always visible) -->
+        <div class="completion-metric-card">
+            <div class="completion-card-header">
+                <div class="completion-icon-wrapper">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="completion-status-badge" id="completion-badge">Not Started</span>
+            </div>
+            <div class="completion-card-body">
+                <h3 class="completion-card-title">Completion Score</h3>
+                <div class="completion-display-modern">
+                    <div class="completion-circle-modern">
+                        <div class="completion-percentage-modern" id="completion-percentage">0%</div>
+                    </div>
+                    <div class="completion-label-modern">Project Completion</div>
+                </div>
+                <div class="completion-progress-modern">
+                    <div class="progress-bar-modern">
+                        <div class="progress-fill-modern" id="completion-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="completion-card-gradient"></div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics Cards Grid -->
+    <div class="performance-cards-grid">
+        <!-- Milestones Card -->
+        <div class="performance-box-card milestones-card">
+            <div class="box-card-header">
+                <div class="box-header-left">
+                    <div class="box-icon milestones-icon">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <div class="box-header-text">
+                        <h3>Milestones</h3>
+                        <span class="box-subtitle">Project Checkpoints</span>
+                    </div>
+                </div>
+                <div class="box-count-badge milestones-badge">
+                    <span id="milestones-count">0</span>
+                </div>
+            </div>
+            <div class="box-card-body" id="milestones-details">
+                <p class="text-gray-600">No milestones identified yet.</p>
+            </div>
+        </div>
+
+        <!-- Tasks Card -->
+        <div class="performance-box-card tasks-card">
+            <div class="box-card-header">
+                <div class="box-header-left">
+                    <div class="box-icon tasks-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="box-header-text">
+                        <h3>Tasks</h3>
+                        <span class="box-subtitle">Action Items</span>
+                    </div>
+                </div>
+                <div class="box-count-badge tasks-badge">
+                    <span id="tasks-count">0</span>
+                </div>
+            </div>
+            <div class="box-card-body" id="tasks-details">
+                <p class="text-gray-600">No tasks identified yet.</p>
+            </div>
+        </div>
+
+        <!-- Bottlenecks Card -->
+        <div class="performance-box-card bottlenecks-card">
+            <div class="box-card-header">
+                <div class="box-header-left">
+                    <div class="box-icon bottlenecks-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="box-header-text">
+                        <h3>Bottlenecks</h3>
+                        <span class="box-subtitle">Potential Issues</span>
+                    </div>
+                </div>
+                <div class="box-count-badge bottlenecks-badge">
+                    <span id="bottlenecks-count">0</span>
+                </div>
+            </div>
+            <div class="box-card-body" id="bottlenecks-details">
+                <p class="text-gray-600">No bottlenecks identified yet.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Horizontal cards: Requirements + Actors -->
+    <div class="performance-horizontal-cards">
+        <div class="performance-horizontal-card requirements-horizontal-card">
+            <div class="box-card-header">
+                <div class="box-header-left">
+                    <div class="box-icon requirements-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="box-header-text">
+                        <h3>Requirements</h3>
+                        <span class="box-subtitle">Project Specifications</span>
+                    </div>
+                </div>
+                <div class="box-count-badge requirements-badge">
+                    <span id="requirements-count">0</span>
+                </div>
+            </div>
+            <div class="box-card-body" id="requirements-details">
+                <p class="text-gray-600">No requirements identified yet.</p>
+            </div>
+        </div>
+
+        <div class="performance-horizontal-card actors-horizontal-card">
+            <div class="box-card-header">
+                <div class="box-header-left">
+                    <div class="box-icon actors-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="box-header-text">
+                        <h3>Actors & Stakeholders</h3>
+                        <span class="box-subtitle">People and organizations responsible</span>
+                    </div>
+                </div>
+                <div class="box-count-badge actors-badge">
+                    <span id="actors-count">0</span>
+                </div>
+            </div>
+            <div class="box-card-body" id="actors-details">
+                <p class="text-gray-600">No actors identified yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extract Requirements & Actors Button -->
+    <div class="card mb-6" style="margin-top: 1.5rem;">
+        <div class="card-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; font-weight: 600;">
+                        <i class="fas fa-sync-alt text-purple-500"></i> Re-extract Requirements & Actors
+                    </h4>
+                    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">
+                        Extract requirements and actors from all project documents without running full analysis.
+                    </p>
+                </div>
+                <button onclick="extractRequirementsAndActors()" class="btn btn-primary" id="extract-req-actors-btn">
+                    <i class="fas fa-magic"></i> Extract Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Insights Panel -->
+    <div class="ai-insights-panel">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i class="fas fa-lightbulb text-yellow-500"></i> AI Insights & Suggestions
+            </h2>
+            <button onclick="generatePerformanceAnalysis()" class="btn btn-primary">
+                <i class="fas fa-magic"></i> Generate New Analysis
+            </button>
+        </div>
+        
+    <div class="insights-grid" id="insights-grid">
+        <div class="suggestion-card-modern type-info">
+            <div class="suggestion-card-top"></div>
+            <div class="suggestion-header">
+                <div class="suggestion-icon info"><i class="fas fa-info-circle"></i></div>
+                <div class="suggestion-title">Getting Started</div>
+                <span class="priority-badge priority-low">Tip</span>
+            </div>
+            <div class="suggestion-body">
+                <p>Upload documents to your project and generate AI analysis to get personalized insights and recommendations.</p>
+                <button onclick="window.location.href='/project/{{ project.id }}'" class="btn btn-sm btn-primary">
+                    <i class="fas fa-upload"></i> Upload Documents
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Progress Tracking -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-bar text-green-500"></i> Progress Tracking
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="progress-tracking">
+                <div class="progress-item">
+                    <div class="progress-label">Task Completion</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="task-progress" style="width: 0%"></div>
+                    </div>
+                    <span class="progress-text" id="task-progress-text">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Center -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-cogs text-gray-500"></i> Action Center
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="action-grid">
+                <button onclick="generatePerformanceAnalysis()" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <div class="action-content">
+                        <h4>Generate Analysis</h4>
+                        <p>Run AI analysis on project documents</p>
+                    </div>
+                </button>
+                
+                <button onclick="refreshPerformanceData()" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <div class="action-content">
+                        <h4>Refresh Data</h4>
+                        <p>Update performance metrics</p>
+                    </div>
+                </button>
+                
+                <button onclick="exportPerformanceReport()" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div class="action-content">
+                        <h4>Export Report</h4>
+                        <p>Download performance report</p>
+                    </div>
+                </button>
+                
+                <button onclick="window.location.href='/project/{{ project.id }}'" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <div class="action-content">
+                        <h4>View Project</h4>
+                        <p>Go back to project details</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden inputs for JavaScript -->
+<input type="hidden" name="project_id" value="{{ project.id }}">
+<input type="hidden" name="document_id" value="">
+
+<style>
+/* Dashboard specific styles */
+.performance-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+}
+
+.dashboard-title-modern {
+    font-size: 2.75rem;
+    font-weight: 800;
+    color: #2d3748;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-subtitle-modern {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgba(45, 55, 72, 0.8);
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+.dashboard-meta-info {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 0.9rem;
+    color: rgba(45, 55, 72, 0.6);
+    font-weight: 500;
+    flex-wrap: wrap;
+}
+
+.dashboard-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+/* Completion Score Card - Modern Style */
+.completion-metric-card {
+    background: #ffffff !important;
+    border-radius: 20px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    border: 3px solid #8b5cf6;
+    width: 100%;
+}
+
+.completion-metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.completion-metric-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.35) !important;
+    border-color: #7c3aed !important;
+}
+
+.completion-metric-card:hover::before {
+    opacity: 0.04;
+}
+
+.completion-card-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.completion-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.completion-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    transition: all 0.3s ease;
+}
+
+.completion-metric-card:hover .completion-icon-wrapper {
+    transform: rotate(5deg) scale(1.1);
+}
+
+#completion-badge.completion-status-badge,
+.completion-status-badge {
+    padding: 0.65rem 1.15rem;
+    border-radius: 12px;
+    font-size: 1.15rem !important;
+    line-height: 1.1 !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.completion-card-body {
+    position: relative;
+    z-index: 1;
+}
+
+.completion-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 0.5rem 0;
+}
+
+.completion-display-modern {
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.completion-circle-modern {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+    position: relative;
+}
+
+.completion-circle-modern::before {
+    content: '';
+    position: absolute;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid rgba(139, 92, 246, 0.2);
+}
+
+.completion-percentage-modern {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #8b5cf6;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.completion-label-modern {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.completion-progress-modern {
+    margin-top: 0.75rem;
+}
+
+.progress-bar-modern {
+    width: 100%;
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill-modern {
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+    border-radius: 10px;
+    transition: width 0.6s ease;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+}
+
+.completion-card {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Performance Box Cards Grid */
+.performance-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.performance-box-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+}
+
+.performance-box-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Card Color Themes */
+.milestones-card {
+    border-top: 4px solid #4299e1;
+}
+
+.milestones-card:hover {
+    border-color: #4299e1;
+}
+
+.tasks-card {
+    border-top: 4px solid #48bb78;
+}
+
+.tasks-card:hover {
+    border-color: #48bb78;
+}
+
+.bottlenecks-card {
+    border-top: 4px solid #f56565;
+}
+
+.bottlenecks-card:hover {
+    border-color: #f56565;
+}
+
+/* Box Card Header */
+.box-card-header {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.box-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.box-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.milestones-icon {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.tasks-icon {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.bottlenecks-icon {
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+.box-header-text h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.box-subtitle {
+    font-size: 0.875rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.box-count-badge {
+    min-width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.milestones-badge {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.tasks-badge {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.bottlenecks-badge {
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+.requirements-badge {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+}
+
+.actors-badge {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.requirements-icon {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+}
+
+.actors-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* Requirements and Actors Item Styling - Modern Cards */
+.req-item-card, .actor-item-card {
+    padding: 16px;
+    margin-bottom: 12px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.req-item-card {
+    border-left: 4px solid #8b5cf6;
+}
+
+.actor-item-card {
+    border-left: 4px solid #f59e0b;
+}
+
+.req-item-card:hover, .actor-item-card:hover {
+    background: #f9fafb;
+    transform: translateX(4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    border-color: #d1d5db;
+}
+
+.req-item-header, .actor-item-header {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.req-category-badge, .req-priority-badge, .actor-type-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.req-category-badge {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.req-priority-badge.priority-high {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.req-priority-badge.priority-medium {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.req-priority-badge.priority-low {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.actor-type-badge {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.actor-type-badge.actor-type-org {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.actor-type-badge.actor-type-team {
+    background: #e0e7ff;
+    color: #6366f1;
+}
+
+.actor-type-badge.actor-type-vendor {
+    background: #fce7f3;
+    color: #db2777;
+}
+
+.actor-type-badge.actor-type-client {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.req-item-content {
+    color: #374151;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.actor-item-name {
+    color: #1f2937;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.actor-item-role {
+    color: #6b7280;
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-top: 4px;
+}
+
+/* Horizontal Cards Layout */
+.performance-horizontal-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.performance-horizontal-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+}
+
+.performance-horizontal-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.requirements-horizontal-card {
+    border-top: 4px solid #8b5cf6;
+}
+
+.actors-horizontal-card {
+    border-top: 4px solid #f59e0b;
+}
+
+/* Box Card Body */
+.box-card-body {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+.box-card-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.box-card-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.box-card-body::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+}
+
+.box-card-body::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Expandable Item Cards */
+.expandable-items-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.expandable-item-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.expandable-item-card:hover {
+    border-color: #cbd5e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.expandable-item-card.expanded {
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+}
+
+.expandable-card-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+    transition: all 0.2s ease;
+}
+
+.expandable-card-header:hover {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+.expandable-card-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.priority-indicator {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.priority-red {
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+.priority-orange {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+}
+
+.priority-green {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.priority-blue {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.expandable-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.expandable-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.expandable-card-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge-category {
+    padding: 4px 12px;
+    background: #edf2f7;
+    color: #4a5568;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 12px;
+}
+
+.badge-priority {
+    padding: 4px 12px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 12px;
+}
+
+.badge-priority.priority-red {
+    background: #f56565;
+}
+
+.badge-priority.priority-orange {
+    background: #ed8936;
+}
+
+.badge-priority.priority-green {
+    background: #48bb78;
+}
+
+.badge-priority.priority-blue {
+    background: #4299e1;
+}
+
+.expandable-card-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #edf2f7;
+    color: #4a5568;
+    transition: all 0.3s ease;
+}
+
+.expandable-card-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.expandable-item-card:hover .expandable-card-toggle {
+    background: #e2e8f0;
+}
+
+.expandable-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.4s ease;
+}
+
+.expandable-card-body.collapsed {
+    max-height: 0;
+    padding: 0 20px;
+}
+
+.expandable-card-body.expanded {
+    max-height: 800px;
+    padding: 20px;
+    border-top: 1px solid #e2e8f0;
+    background: #f7fafc;
+}
+
+.expandable-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.loading-state {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+    justify-content: center;
+    color: #667eea;
+    font-size: 0.875rem;
+}
+
+.loading-state i {
+    font-size: 1.25rem;
+}
+
+.detail-item {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.detail-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: #667eea;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.detail-item-header i {
+    font-size: 1rem;
+}
+
+.detail-item-content {
+    color: #4a5568;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.detail-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.detail-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.detail-section h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-section h5 i {
+    color: #667eea;
+    font-size: 0.9rem;
+}
+
+.detail-section h6 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 8px 0;
+}
+
+.detail-section p {
+    margin: 0 0 12px 0;
+    color: #4a5568;
+    line-height: 1.7;
+}
+
+.detail-section p:last-child {
+    margin-bottom: 0;
+}
+
+.detail-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0 0;
+}
+
+.detail-list li {
+    padding: 8px 0 8px 24px;
+    position: relative;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.detail-list li::before {
+    content: '•';
+    position: absolute;
+    left: 8px;
+    color: #667eea;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.root-cause-item {
+    background: #f7fafc;
+    border-left: 3px solid #667eea;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.root-cause-item:last-child {
+    margin-bottom: 0;
+}
+
+.root-cause-item h6 {
+    color: #667eea;
+    margin-bottom: 12px;
+}
+
+.severity-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.severity-badge.severity-critical,
+.severity-badge.severity-high {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.severity-badge.severity-medium {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.severity-badge.severity-low {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.no-details, .error-details {
+    padding: 24px;
+    text-align: center;
+    color: #718096;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.error-details {
+    color: #f56565;
+}
+
+.metric-display {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.metric-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #667eea;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.metric-label {
+    font-size: 1rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.completion-display {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.completion-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.completion-progress {
+    margin-top: 16px;
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.progress-label {
+    min-width: 150px;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.progress-text {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.action-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.action-icon {
+    font-size: 2rem;
+    color: #667eea;
+}
+
+.action-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: #2d3748;
+}
+
+.action-content p {
+    font-size: 0.875rem;
+    color: #718096;
+    margin: 0;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.panel-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+}
+
+.ai-insights-panel {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.space-y-2 > * + * {
+    margin-top: 0.5rem;
+}
+
+/* Modern Suggestion Cards */
+.suggestion-card-modern {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.suggestion-card-modern:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    border-color: #d1d5db;
+}
+
+.suggestion-card-top {
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+}
+.suggestion-card-modern.type-milestone .suggestion-card-top {
+    background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+}
+.suggestion-card-modern.type-task .suggestion-card-top {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+.suggestion-card-modern.type-bottleneck .suggestion-card-top {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+.suggestion-card-modern.type-info .suggestion-card-top {
+    background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.suggestion-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px 0 16px;
+}
+
+.suggestion-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.suggestion-icon.milestone { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+.suggestion-icon.task { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.suggestion-icon.bottleneck { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.suggestion-icon.info { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+
+.suggestion-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+    flex: 1;
+}
+
+.priority-badge {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border-radius: 999px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+.priority-high { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.priority-medium { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+.priority-low { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+.suggestion-body {
+    padding: 12px 16px 16px 16px;
+    color: #4b5563;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 1200px) {
+    .performance-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .dashboard-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .performance-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .progress-label {
+        min-width: auto;
+    }
+    
+    .box-card-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .box-header-left {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .box-count-badge {
+        width: 100%;
+    }
+}
+
+/* Item cards with expandable details */
+.item-card {
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.details-content {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.details-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.details-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.details-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.details-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner i {
+    animation: spin 1s linear infinite;
+}
+
+/* Smooth transition for chevron icon */
+.fa-chevron-down {
+    transition: transform 0.3s ease;
+}
+
+/* Priority badges with better colors */
+.bg-red-100 { background-color: #fee2e2; }
+.text-red-700 { color: #b91c1c; }
+.bg-orange-100 { background-color: #ffedd5; }
+.text-orange-700 { color: #c2410c; }
+.bg-green-100 { background-color: #dcfce7; }
+.text-green-700 { color: #15803d; }
+.bg-purple-100 { background-color: #f3e8ff; }
+.text-purple-700 { color: #7e22ce; }
+
+/* Fade in animation for details */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.details-content > div {
+    animation: fadeIn 0.3s ease-in;
+}
+</style>
+
+<script>
+// Initialize Performance Dashboard
+// Set project ID BEFORE DOMContentLoaded so global scripts can use it
+window.currentProjectId = '{{ project.id }}';
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 Dashboard initialized with project ID:', window.currentProjectId);
+    
+    // Load dashboard data (detailed view)
+    loadDashboardData();
+    
+    // Set up auto-refresh for dashboard
+    setInterval(loadDashboardData, 30000);
+});
+
+// Load dashboard data (detailed version)
+async function loadDashboardData() {
+    if (!window.currentProjectId) {
+        console.warn('No project ID available');
+        return;
+    }
+    
+    try {
+        // Use quick_status to avoid running full processing on auto-refresh
+        console.log('🎛️ [Dashboard] Fetching performance data for project:', window.currentProjectId);
+        const response = await fetch(`/performance_agent/quick_status/${window.currentProjectId}`);
+        const data = await response.json();
+        
+        console.log('🎛️ [Dashboard] Received data:', data);
+        
+        if (data.success) {
+            console.log('✅ [Dashboard] Success! Updating dashboard...');
+            console.log('   Milestones:', data.milestones);
+            console.log('   Tasks:', data.tasks);
+            console.log('   Bottlenecks:', data.bottlenecks);
+            console.log('   Completion:', data.completion_score);
+            
+            updateDashboardMetrics(data);
+            // Also load detailed items and suggestions
+            await loadDetailedItems();
+            await loadSuggestions();
+        } else {
+            console.warn('Failed to load performance data:', data.error);
+        }
+    } catch (error) {
+        console.error('Error loading performance data:', error);
+    }
+}
+
+// Update dashboard metrics
+function updateDashboardMetrics(data) {
+    // Update counts in box card badges
+    updateElement('milestones-count', data.milestones?.count || 0);
+    updateElement('tasks-count', data.tasks?.count || 0);
+    updateElement('bottlenecks-count', data.bottlenecks?.count || 0);
+    
+    // Helper function to strip markdown formatting
+    function stripMarkdown(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove **bold**
+            .replace(/\*([^*]+)\*/g, '$1')      // Remove *italic*
+            .replace(/__([^_]+)__/g, '$1')     // Remove __bold__
+            .replace(/_([^_]+)_/g, '$1')       // Remove _italic_
+            .replace(/`([^`]+)`/g, '$1')        // Remove `code`
+            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')  // Remove [link](url)
+            .trim();
+    }
+
+    // Update requirements count/details
+    const requirementsCount = document.getElementById('requirements-count');
+    if (requirementsCount) {
+        requirementsCount.textContent = data.requirements?.count || 0;
+    }
+    const requirementsDetails = document.getElementById('requirements-details');
+    const reqList = data.requirements?.requirements || data.requirements?.items || [];
+    console.log('📋 Requirements data:', reqList);
+    if (requirementsDetails && Array.isArray(reqList) && reqList.length > 0) {
+        requirementsDetails.innerHTML = reqList.map(req => {
+            // Data structure: {id, content, metadata: {priority, category, ...}}
+            let reqText = req.content || req.text || req.requirement || 'Requirement';
+            reqText = stripMarkdown(reqText);
+            const priority = req.metadata?.priority || req.priority || 'Medium';
+            const category = req.metadata?.category || req.category || 'General';
+            
+            // Determine priority badge color
+            let priorityClass = 'priority-medium';
+            if (priority.toLowerCase() === 'high') priorityClass = 'priority-high';
+            else if (priority.toLowerCase() === 'low') priorityClass = 'priority-low';
+            
+            return `
+                <div class="req-item-card">
+                    <div class="req-item-header">
+                        <span class="req-category-badge">${escapeHtml(category)}</span>
+                        <span class="req-priority-badge ${priorityClass}">${escapeHtml(priority)}</span>
+                    </div>
+                    <div class="req-item-content">${escapeHtml(reqText)}</div>
+                </div>
+            `;
+        }).join('') || '<p class="text-gray-600">No requirements identified yet.</p>';
+    } else if (requirementsDetails && (!reqList || reqList.length === 0)) {
+        requirementsDetails.innerHTML = '<p class="text-gray-600">No requirements identified yet.</p>';
+    }
+
+    // Update actors count/details
+    const actorsCount = document.getElementById('actors-count');
+    if (actorsCount) {
+        actorsCount.textContent = data.actors?.count || 0;
+    }
+    const actorsDetails = document.getElementById('actors-details');
+    const actorList = data.actors?.actors || data.actors?.items || [];
+    console.log('👥 Actors data:', actorList);
+    if (actorsDetails && Array.isArray(actorList) && actorList.length > 0) {
+        actorsDetails.innerHTML = actorList.map(actor => {
+            // Data structure: {id, content, metadata: {actor_type, role, ...}}
+            let actorName = actor.content || actor.text || actor.name || 'Actor';
+            actorName = stripMarkdown(actorName);
+            const role = actor.metadata?.role || actor.role || '';
+            const type = actor.metadata?.actor_type || actor.actor_type || 'Person';
+            
+            // Determine type badge color
+            let typeClass = 'actor-type-person';
+            if (type.toLowerCase().includes('organization')) typeClass = 'actor-type-org';
+            else if (type.toLowerCase().includes('team')) typeClass = 'actor-type-team';
+            else if (type.toLowerCase().includes('vendor')) typeClass = 'actor-type-vendor';
+            else if (type.toLowerCase().includes('client')) typeClass = 'actor-type-client';
+            
+            return `
+                <div class="actor-item-card">
+                    <div class="actor-item-header">
+                        <span class="actor-type-badge ${typeClass}">${escapeHtml(type)}</span>
+                    </div>
+                    <div class="actor-item-name">${escapeHtml(actorName)}</div>
+                    ${role ? `<div class="actor-item-role">${escapeHtml(role)}</div>` : ''}
+                </div>
+            `;
+        }).join('') || '<p class="text-gray-600">No actors identified yet.</p>';
+    } else if (actorsDetails && (!actorList || actorList.length === 0)) {
+        actorsDetails.innerHTML = '<p class="text-gray-600">No actors identified yet.</p>';
+    }
+    
+    // Update completion score
+    const completionScore = data.completion_score || 0;
+    updateElement('completion-percentage', Math.round(completionScore) + '%');
+    updateElement('completion-progress', completionScore + '%');
+    updateElement('completion-badge', getCompletionStatus(completionScore));
+    
+    // Update last analysis timestamp
+    if (data.last_analysis) {
+        const date = new Date(data.last_analysis);
+        updateElement('last-analysis-timestamp', 
+            `<i class="fas fa-clock text-blue-500"></i> Last updated: ${date.toLocaleString()}`);
+    }
+}
+
+// Helper function to update element content
+function updateElement(id, content) {
+    const element = document.getElementById(id);
+    if (element) {
+        // Check if it's a progress bar that needs width update
+        if (id.includes('-progress') && !id.includes('-text')) {
+            element.style.width = content;
+        } else if (id === 'last-analysis-timestamp') {
+            element.innerHTML = content;
+        } else if (id === 'completion-badge') {
+            // Ensure badge styling stays applied
+            element.classList.add('completion-status-badge');
+            element.textContent = content;
+            // Force critical visual styles inline to avoid overrides
+            element.style.display = 'inline-block';
+            element.style.fontSize = '1.15rem';
+            element.style.lineHeight = '1.1';
+            element.style.padding = '0.65rem 1.15rem';
+            element.style.borderRadius = '12px';
+            element.style.fontWeight = '700';
+            element.style.textTransform = 'uppercase';
+            element.style.letterSpacing = '0.5px';
+            element.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)';
+            element.style.color = '#ffffff';
+            element.style.boxShadow = '0 2px 8px rgba(139, 92, 246, 0.3)';
+        } else {
+            element.textContent = content;
+        }
+    }
+}
+
+// Load detailed items (milestones, tasks, bottlenecks)
+async function loadDetailedItems() {
+    try {
+        console.log('📋 Fetching detailed items...');
+        const summaryResponse = await fetch(`/performance_agent/project_summary/${window.currentProjectId}`);
+        const summary = await summaryResponse.json();
+        
+        console.log('📋 Summary received:', summary);
+        console.log('   Milestones array:', summary.milestones);
+        console.log('   Tasks array:', summary.tasks);
+        console.log('   Bottlenecks array:', summary.bottlenecks);
+        
+        if (!summary.error) {
+            // Update milestones details
+            updateItemsList('milestones-details', summary.milestones || [], 'milestone', 'No milestones identified yet.');
+            
+            // Update tasks details
+            updateItemsList('tasks-details', summary.tasks || [], 'task', 'No tasks identified yet.');
+            
+            // Update bottlenecks details
+            updateItemsList('bottlenecks-details', summary.bottlenecks || [], 'bottleneck', 'No bottlenecks identified yet.');
+        } else {
+            console.error('❌ Summary error:', summary.error);
+        }
+    } catch (error) {
+        console.error('Error loading detailed items:', error);
+    }
+}
+
+// Update items list display with expandable cards
+function updateItemsList(elementId, items, type, emptyMessage) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    if (items.length === 0) {
+        element.innerHTML = `<p class="text-gray-600 text-center py-4">${emptyMessage}</p>`;
+        return;
+    }
+    
+    console.log(`📝 Rendering ${items.length} ${type}s as expandable cards`);
+    
+    let html = '<div class="expandable-items-grid">';
+    items.forEach((item, index) => {
+        const text = item[type] || item.task || item.milestone || item.bottleneck || 'Unknown';
+        const category = item.category || 'General';
+        const priority = item.priority || item.severity || 'Medium';
+        const itemId = item.id || `${type}_${index}`;
+        const detailsId = `details_${elementId}_${index}`;
+        const cardId = `card_${elementId}_${index}`;
+        
+        // Get priority color and icon
+        let priorityColor = 'blue';
+        let priorityIcon = 'info-circle';
+        if (priority === 'High' || priority === 'Critical') {
+            priorityColor = 'red';
+            priorityIcon = 'exclamation-triangle';
+        } else if (priority === 'Medium') {
+            priorityColor = 'orange';
+            priorityIcon = 'exclamation-circle';
+        } else if (priority === 'Low') {
+            priorityColor = 'green';
+            priorityIcon = 'check-circle';
+        }
+        
+        html += `
+            <div class="expandable-item-card" id="${cardId}">
+                <div class="expandable-card-header" onclick="toggleExpandableCard('${cardId}', '${detailsId}', '${itemId}', '${type}')">
+                    <div class="expandable-card-left">
+                        <div class="priority-indicator priority-${priorityColor}">
+                            <i class="fas fa-${priorityIcon}"></i>
+                        </div>
+                        <div class="expandable-card-content">
+                            <h4 class="expandable-card-title">${text}</h4>
+                            <div class="expandable-card-badges">
+                                <span class="badge-category">${category}</span>
+                                <span class="badge-priority priority-${priorityColor}">${priority}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="expandable-card-toggle">
+                        <i class="fas fa-chevron-down" id="toggle_${cardId}"></i>
+                    </div>
+                </div>
+                <div class="expandable-card-body collapsed" id="${detailsId}">
+                    <div class="expandable-card-details">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Loading details...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    element.innerHTML = html;
+}
+
+// Toggle expandable card
+window.toggleExpandableCard = function(cardId, detailsId, itemId, type) {
+    const card = document.getElementById(cardId);
+    const detailsBody = document.getElementById(detailsId);
+    const toggle = document.getElementById(`toggle_${cardId}`);
+    
+    if (!detailsBody || !toggle) return;
+    
+    // Toggle expanded state
+    const isCollapsed = detailsBody.classList.contains('collapsed');
+    
+    if (isCollapsed) {
+        detailsBody.classList.remove('collapsed');
+        detailsBody.classList.add('expanded');
+        toggle.style.transform = 'rotate(180deg)';
+        card.classList.add('expanded');
+        
+        // Load details if not already loaded
+        if (detailsBody.querySelector('.loading-state')) {
+            loadItemDetails(itemId, detailsId, type);
+        }
+    } else {
+        detailsBody.classList.remove('expanded');
+        detailsBody.classList.add('collapsed');
+        toggle.style.transform = 'rotate(0deg)';
+        card.classList.remove('expanded');
+    }
+};
+
+// Parse and format detail text
+function parseDetailText(detailText, type) {
+    if (!detailText) return null;
+    
+    // Remove "From document:" prefix if present
+    let text = detailText.replace(/^From document: [^\n]+/i, '').trim();
+    
+    // Remove common prefixes like "Here's a detailed analysis..."
+    text = text.replace(/^Here'?s? (a )?detailed analysis[^\n]*\n*/i, '').trim();
+    
+    // Try to extract JSON if present
+    let parsedData = null;
+    
+    // Look for JSON code blocks first
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+        try {
+            parsedData = JSON.parse(jsonMatch[1]);
+            text = text.replace(/```json\s*[\s\S]*?\s*```/g, '').trim();
+        } catch (e) {
+            // Failed to parse, continue
+        }
+    }
+    
+    // If no code block found, try to find JSON object directly (starting with {)
+    if (!parsedData && text.trim().startsWith('{')) {
+        try {
+            // Try to parse the entire text as JSON
+            parsedData = JSON.parse(text);
+            text = ''; // Clear text since we parsed it
+        } catch (e) {
+            // If full parse fails, try to extract just the JSON object
+            const jsonObjectMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonObjectMatch) {
+                try {
+                    parsedData = JSON.parse(jsonObjectMatch[0]);
+                    // Remove the JSON part from text
+                    text = text.replace(/\{[\s\S]*\}/, '').trim();
+                } catch (e2) {
+                    // Still failed, use as text
+                }
+            }
+        }
+    }
+    
+    // If we have parsed JSON, format it nicely
+    if (parsedData) {
+        return formatParsedDetails(parsedData, type);
+    }
+    
+    // Clean up plain text
+    text = text.replace(/```[\s\S]*?```/g, '').trim();
+    text = text.replace(/\n{3,}/g, '\n\n');
+    
+    return formatPlainTextDetails(text);
+}
+
+// Format parsed JSON details
+function formatParsedDetails(data, type) {
+    let html = '';
+    
+    if (type === 'milestone') {
+        const analysis = data.analysis || data.Analysis || {};
+        
+        if (analysis.description_and_scope || analysis.descriptionAndScope) {
+            html += `<div class="detail-section">
+                <h5><i class="fas fa-info-circle"></i> Description & Scope</h5>
+                <p>${escapeHtml(String(analysis.description_and_scope || analysis.descriptionAndScope))}</p>
+            </div>`;
+        }
+        
+        if (analysis.key_deliverables || analysis.keyDeliverables) {
+            const deliverables = analysis.key_deliverables || analysis.keyDeliverables;
+            if (Array.isArray(deliverables) && deliverables.length > 0) {
+                html += `<div class="detail-section">
+                    <h5><i class="fas fa-check-square"></i> Key Deliverables</h5>
+                    <ul class="detail-list">
+                        ${deliverables.map(d => `<li>${escapeHtml(String(d))}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+        }
+        
+    } else if (type === 'task') {
+        // Handle task details - can be structured JSON or plain text
+        const taskData = data.task || data.task_details || data;
+        const analysis = taskData.analysis || taskData.Analysis || data.analysis || data.Analysis || {};
+        
+        // First check if there's a description or scope at top level
+        if (taskData.description || taskData.Description || taskData.scope || taskData.Scope) {
+            if (taskData.description || taskData.Description) {
+                html += `<div class="detail-section">
+                    <h5><i class="fas fa-info-circle"></i> Description</h5>
+                    <p>${escapeHtml(String(taskData.description || taskData.Description))}</p>
+                </div>`;
+            }
+            if (taskData.scope || taskData.Scope) {
+                html += `<div class="detail-section">
+                    <h5><i class="fas fa-tasks"></i> Scope</h5>
+                    <p>${escapeHtml(String(taskData.scope || taskData.Scope))}</p>
+                </div>`;
+            }
+        }
+        
+        // Handle analysis - can be string or object
+        if (typeof analysis === 'string' && analysis.length > 0) {
+            // Parse numbered sections from string
+            const sections = analysis.split(/\n(?=\d+\.\s+\*\*)/);
+            if (sections.length > 1) {
+                sections.forEach(section => {
+                    section = section.trim();
+                    if (!section) return;
+                    
+                    const headingMatch = section.match(/^\d+\.\s+\*\*([^*]+)\*\*/);
+                    if (headingMatch) {
+                        const heading = headingMatch[1];
+                        const content = section.replace(/^\d+\.\s+\*\*[^*]+\*\*\s*/, '').trim();
+                        html += `<div class="detail-section">
+                            <h5><i class="fas fa-lightbulb"></i> ${escapeHtml(heading)}</h5>
+                            <div>${formatPlainTextDetails(content)}</div>
+                        </div>`;
+                    } else {
+                        html += `<div class="detail-section">
+                            <h5><i class="fas fa-lightbulb"></i> Analysis</h5>
+                            <div>${formatPlainTextDetails(section)}</div>
+                        </div>`;
+                    }
+                });
+            } else {
+                html += `<div class="detail-section">
+                    <h5><i class="fas fa-lightbulb"></i> Analysis</h5>
+                    <div>${formatPlainTextDetails(analysis)}</div>
+                </div>`;
+            }
+        } else if (typeof analysis === 'object' && analysis !== null) {
+            Object.keys(analysis).forEach(key => {
+                const value = analysis[key];
+                if (value && typeof value === 'string' && value.trim().length > 0) {
+                    html += `<div class="detail-section">
+                        <h5><i class="fas fa-info-circle"></i> ${formatKey(key)}</h5>
+                        <div>${formatPlainTextDetails(value)}</div>
+                    </div>`;
+                }
+            });
+        }
+        
+    } else if (type === 'bottleneck') {
+        // Handle bottleneck - can be at root or nested
+        const bottleneckData = data.Bottleneck || data.bottleneck || data;
+        const context = bottleneckData.Context || bottleneckData.context || data.Context || data.context || {};
+        const analysis = bottleneckData.Analysis || bottleneckData.analysis || data.Analysis || data.analysis || {};
+        
+        // Show bottleneck name if available
+        if (bottleneckData.Bottleneck || bottleneckData.bottleneck || data.Bottleneck || data.bottleneck) {
+            const bottleneckName = bottleneckData.Bottleneck || bottleneckData.bottleneck || data.Bottleneck || data.bottleneck;
+            html += `<div class="detail-section">
+                <h5><i class="fas fa-exclamation-triangle"></i> Bottleneck</h5>
+                <p><strong>${escapeHtml(String(bottleneckName))}</strong></p>
+            </div>`;
+        }
+        
+        // Show category if available
+        if (context.Category || context.category) {
+            html += `<div class="detail-section">
+                <h5><i class="fas fa-tag"></i> Category</h5>
+                <p>${escapeHtml(String(context.Category || context.category))}</p>
+            </div>`;
+        }
+        
+        // Show cost if available
+        if (context.Cost || context.cost) {
+            html += `<div class="detail-section">
+                <h5><i class="fas fa-dollar-sign"></i> Cost</h5>
+                <p><strong>${escapeHtml(String(context.Cost || context.cost))}</strong></p>
+            </div>`;
+        }
+        
+        if (context.Impact || context.impact) {
+            html += `<div class="detail-section">
+                <h5><i class="fas fa-exclamation-circle"></i> Impact</h5>
+                <p>${escapeHtml(String(context.Impact || context.impact))}</p>
+            </div>`;
+        }
+        
+        if (context.Severity || context.severity) {
+            html += `<div class="detail-section">
+                <h5><i class="fas fa-signal"></i> Severity</h5>
+                <p><span class="severity-badge severity-${(context.Severity || context.severity || '').toLowerCase()}">${escapeHtml(String(context.Severity || context.severity))}</span></p>
+            </div>`;
+        }
+        
+        if (analysis.RootCauseAnalysis || analysis.rootCauseAnalysis) {
+            const rootCauses = Array.isArray(analysis.RootCauseAnalysis) ? analysis.RootCauseAnalysis : 
+                             Array.isArray(analysis.rootCauseAnalysis) ? analysis.rootCauseAnalysis : [];
+            
+            if (rootCauses.length > 0) {
+                html += `<div class="detail-section">
+                    <h5><i class="fas fa-search"></i> Root Cause Analysis</h5>`;
+                
+                rootCauses.forEach((cause, idx) => {
+                    const causeObj = typeof cause === 'object' ? cause : { Cause: cause };
+                    html += `<div class="root-cause-item">
+                        <h6>${idx + 1}. ${escapeHtml(String(causeObj.Cause || causeObj.cause || 'Unknown Cause'))}</h6>`;
+                    
+                    if (causeObj.Description || causeObj.description) {
+                        html += `<p>${escapeHtml(String(causeObj.Description || causeObj.description))}</p>`;
+                    }
+                    
+                    if (causeObj.ContributingFactors || causeObj.contributingFactors) {
+                        const factors = causeObj.ContributingFactors || causeObj.contributingFactors;
+                        if (Array.isArray(factors) && factors.length > 0) {
+                            html += `<div style="margin-top: 12px;">
+                                <strong style="font-size: 0.85rem; color: #667eea;">Contributing Factors:</strong>
+                                <ul class="detail-list">
+                                    ${factors.map(f => `<li>${escapeHtml(String(f))}</li>`).join('')}
+                                </ul>
+                            </div>`;
+                        }
+                    }
+                    
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+            }
+        }
+        
+        if (analysis.Recommendations || analysis.recommendations) {
+            const recommendations = analysis.Recommendations || analysis.recommendations;
+            if (Array.isArray(recommendations) && recommendations.length > 0) {
+                html += `<div class="detail-section">
+                    <h5><i class="fas fa-lightbulb"></i> Recommendations</h5>
+                    <ul class="detail-list">
+                        ${recommendations.map(r => `<li>${escapeHtml(String(r))}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+        }
+    }
+    
+    return html || formatPlainTextDetails(JSON.stringify(data, null, 2));
+}
+
+// Format plain text details
+function formatPlainTextDetails(text) {
+    if (!text) return '<p class="text-gray-500">No details available</p>';
+    
+    const sections = text.split(/\n(?=\*\*|\d+\.\s+[A-Z]|[-•]\s+[A-Z])/);
+    
+    let html = '';
+    sections.forEach(section => {
+        section = section.trim();
+        if (!section) return;
+        
+        const headingMatch = section.match(/^\*\*([^*]+)\*\*/);
+        if (headingMatch) {
+            const heading = headingMatch[1];
+            const content = section.replace(/^\*\*[^*]+\*\*\s*/, '').trim();
+            html += `<div class="detail-section">
+                <h5><i class="fas fa-info-circle"></i> ${escapeHtml(heading)}</h5>
+                <div>${escapeHtml(content).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</div>
+            </div>`;
+        } else {
+            html += `<div class="detail-section">
+                <p>${escapeHtml(section).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>
+            </div>`;
+        }
+    });
+    
+    return html || `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
+}
+
+// Helper function to format keys
+function formatKey(key) {
+    return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+// Load details for specific item
+async function loadItemDetails(itemId, detailsId, type) {
+    try {
+        const detailType = type === 'milestone' ? 'milestone_details' :
+                          type === 'task' ? 'task_details' : 'bottleneck_details';
+        
+        const response = await fetch(`/performance_agent/item_details/${window.currentProjectId}/${detailType}/${itemId}`);
+        const data = await response.json();
+        
+        const detailsContainer = document.getElementById(detailsId);
+        if (!detailsContainer) return;
+        
+        const contentDiv = detailsContainer.querySelector('.expandable-card-details');
+        if (!contentDiv) return;
+        
+        if (data.details && data.details.length > 0) {
+            let html = '';
+            data.details.forEach((detail, idx) => {
+                const docName = detail.document_id ? detail.document_id.substring(0, 8) + '...' : 'Unknown';
+                const detailText = detail.details_text || detail.text || '';
+                const formattedContent = parseDetailText(detailText, type);
+                
+                html += `
+                    <div class="detail-item">
+                        <div class="detail-item-header">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Source Document: ${escapeHtml(docName)}</span>
+                        </div>
+                        <div class="detail-item-content">
+                            ${formattedContent || '<p class="text-gray-500">No details available</p>'}
+                        </div>
+                    </div>
+                `;
+            });
+            contentDiv.innerHTML = html;
+        } else {
+            contentDiv.innerHTML = '<div class="no-details"><i class="fas fa-info-circle"></i> No additional details available for this item.</div>';
+        }
+    } catch (error) {
+        console.error('Error loading item details:', error);
+        const contentDiv = document.getElementById(detailsId)?.querySelector('.expandable-card-details');
+        if (contentDiv) {
+            contentDiv.innerHTML = '<div class="error-details"><i class="fas fa-exclamation-triangle"></i> Error loading details.</div>';
+        }
+    }
+}
+
+// Load suggestions
+async function loadSuggestions() {
+    try {
+        const response = await fetch(`/performance_agent/suggestions/${window.currentProjectId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            updateSuggestionsDisplay(data.suggestions);
+        }
+    } catch (error) {
+        console.error('Error loading suggestions:', error);
+    }
+}
+
+// Helper: normalize suggestion text (strip leading "suggestion": labels, quotes, commas, or JSON wrappers)
+function cleanSuggestionText(raw) {
+    if (raw == null) return '';
+    let t = String(raw).trim();
+    // If it's a JSON object string, try to parse and extract the suggestion field
+    if (t.startsWith('{') && t.endsWith('}')) {
+        try {
+            const obj = JSON.parse(t);
+            if (obj && (obj.suggestion || obj.Suggestion)) {
+                return String(obj.suggestion || obj.Suggestion).trim();
+            }
+        } catch (_) { /* ignore */ }
+    }
+    // Remove leading key label if present
+    t = t.replace(/^\s*"?suggestion"?\s*:\s*/i, '');
+    // Remove wrapping quotes and optional trailing comma
+    t = t.replace(/^"/, '').replace(/",?\s*$/, '').replace(/"\s*$/, '');
+    // Remove trailing comma if any
+    t = t.replace(/,\s*$/, '');
+    return t.trim();
+}
+
+// Update suggestions display with categorization
+function updateSuggestionsDisplay(suggestions) {
+    const grid = document.getElementById('insights-grid');
+    if (!grid) return;
+    
+    const milestoneSuggestions = suggestions.milestone_suggestions || [];
+    const taskSuggestions = suggestions.task_suggestions || [];
+    const bottleneckSuggestions = suggestions.bottleneck_suggestions || [];
+    
+    const totalSuggestions = milestoneSuggestions.length + taskSuggestions.length + bottleneckSuggestions.length;
+    
+    console.log(`💡 Rendering ${totalSuggestions} suggestions:`, {
+        milestones: milestoneSuggestions.length,
+        tasks: taskSuggestions.length,
+        bottlenecks: bottleneckSuggestions.length
+    });
+    
+    if (totalSuggestions === 0) {
+        grid.innerHTML = `
+            <div class="suggestion-card col-span-full">
+                <div class="insight-header">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    <h3>No Suggestions Yet</h3>
+                </div>
+                <div class="insight-content">
+                    <p>AI suggestions will appear here after generating analysis for your project.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    // Add milestone suggestions (modern cards)
+    milestoneSuggestions.forEach(suggestion => {
+        const text = suggestion.text || suggestion.suggestion || 'No suggestion text';
+        const priority = (suggestion.metadata?.priority || suggestion.priority || 'Medium').toString();
+        const priorityClass = priority.toLowerCase() === 'high' ? 'priority-high' : priority.toLowerCase() === 'low' ? 'priority-low' : 'priority-medium';
+        
+        html += `
+            <div class="suggestion-card-modern type-milestone">
+                <div class="suggestion-card-top"></div>
+                <div class="suggestion-header">
+                    <div class="suggestion-icon milestone"><i class="fas fa-flag"></i></div>
+                    <div class="suggestion-title">Milestone Suggestion</div>
+                    <span class="priority-badge ${priorityClass}">${priority} Priority</span>
+                </div>
+                <div class="suggestion-body">
+                    <p>${escapeHtml(cleanSuggestionText(text))}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Add task suggestions (modern cards)
+    taskSuggestions.forEach(suggestion => {
+        const text = suggestion.text || suggestion.suggestion || 'No suggestion text';
+        const priority = (suggestion.metadata?.priority || suggestion.priority || 'Medium').toString();
+        const priorityClass = priority.toLowerCase() === 'high' ? 'priority-high' : priority.toLowerCase() === 'low' ? 'priority-low' : 'priority-medium';
+        
+        html += `
+            <div class="suggestion-card-modern type-task">
+                <div class="suggestion-card-top"></div>
+                <div class="suggestion-header">
+                    <div class="suggestion-icon task"><i class="fas fa-tasks"></i></div>
+                    <div class="suggestion-title">Task Suggestion</div>
+                    <span class="priority-badge ${priorityClass}">${priority} Priority</span>
+                </div>
+                <div class="suggestion-body">
+                    <p>${escapeHtml(cleanSuggestionText(text))}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Add bottleneck suggestions (modern cards)
+    bottleneckSuggestions.forEach(suggestion => {
+        const text = suggestion.text || suggestion.suggestion || 'No suggestion text';
+        const priority = (suggestion.metadata?.priority || suggestion.priority || 'Medium').toString();
+        const priorityClass = priority.toLowerCase() === 'high' ? 'priority-high' : priority.toLowerCase() === 'low' ? 'priority-low' : 'priority-medium';
+        
+        html += `
+            <div class="suggestion-card-modern type-bottleneck">
+                <div class="suggestion-card-top"></div>
+                <div class="suggestion-header">
+                    <div class="suggestion-icon bottleneck"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="suggestion-title">Bottleneck Suggestion</div>
+                    <span class="priority-badge ${priorityClass}">${priority} Priority</span>
+                </div>
+                <div class="suggestion-body">
+                    <p>${escapeHtml(cleanSuggestionText(text))}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    grid.innerHTML = html;
+}
+
+// Get completion status
+function getCompletionStatus(score) {
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Good';
+    if (score >= 40) return 'Fair';
+    if (score >= 20) return 'Needs Improvement';
+    return 'Not Started';
+}
+
+// Helper function to show alerts (if not already defined)
+if (typeof window.showAlert !== 'function') {
+    window.showAlert = function(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideInRight 0.3s ease-out;
+        `;
+        
+        if (type === 'success') {
+            alertDiv.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        } else if (type === 'error') {
+            alertDiv.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        } else {
+            alertDiv.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+        }
+        
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => {
+                if (document.body.contains(alertDiv)) {
+                    document.body.removeChild(alertDiv);
+                }
+            }, 300);
+        }, 4000);
+    };
+}
+
+// Extract Requirements and Actors
+async function extractRequirementsAndActors() {
+    const btn = document.getElementById('extract-req-actors-btn');
+    if (!btn || btn.disabled) return;
+    
+    if (!window.currentProjectId) {
+        alert('No project ID available');
+        return;
+    }
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extracting...';
+    
+    try {
+        console.log('🔄 Starting requirements and actors extraction...');
+        if (typeof window.showAlert === 'function') {
+            window.showAlert('🔄 Extracting requirements and actors from all documents... This may take 1-2 minutes.', 'info');
+        } else {
+            alert('🔄 Extracting requirements and actors from all documents... This may take 1-2 minutes.');
+        }
+        
+        const response = await fetch('/performance_agent/extract_requirements_actors', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                project_id: window.currentProjectId
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Extraction Results:', data);
+        
+        if (data.success !== false) {
+            const results = data.extraction_results || {};
+            const reqCount = results.requirements_count || data.requirements?.count || 0;
+            const actorCount = results.actors_count || data.actors?.count || 0;
+            
+            // Update the dashboard with new data
+            updateDashboardMetrics(data);
+            
+            const successMsg = `✅ Extraction complete! Found ${reqCount} requirements and ${actorCount} actors.`;
+            if (typeof window.showAlert === 'function') {
+                window.showAlert(successMsg, 'success');
+            } else {
+                alert(successMsg);
+            }
+            console.log(`✅ Extraction SUCCESS - Requirements: ${reqCount}, Actors: ${actorCount}`);
+        } else {
+            throw new Error(data.error || 'Extraction failed');
+        }
+    } catch (error) {
+        console.error('❌ ERROR during extraction:', error);
+        const errorMsg = '❌ Error: ' + error.message;
+        if (typeof window.showAlert === 'function') {
+            window.showAlert(errorMsg, 'error');
+        } else {
+            alert(errorMsg);
+        }
+    } finally {
+        // Re-enable button
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+</script>
+{% endblock %}

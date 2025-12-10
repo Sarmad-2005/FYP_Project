@@ -1,0 +1,193 @@
+
+
+2.3 (Extended Use Cases)
+
+Use Case ID
+UC-01
+Use Case Name
+View Project Dashboard
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Manager
+Stakeholders and Interests
+Manager wants real-time performance data; System ensures accurate and visual metrics.
+Preconditions
+Manager is logged in and assigned to at least one project.
+Postconditions
+Dashboard data is retrieved, analyzed, and displayed in real time.
+Main Success Scenario
+1. Manager logs into system.2. System fetches latest project KPIs.3. Dashboard visualizes current milestones, tasks, and alerts.4. User can view summary charts and analytics.
+Extensions
+2a. Data retrieval delay → System shows loading state.3a. Missing project data → Display placeholder message.
+Special Requirements
+Must update every 10 seconds; responsive across devices.
+Technology and Data Variation List
+Data from project DB, analytics API, and performance cache.
+Frequency of Occurrence
+Continuous when project session is active.
+Open Issues
+Handling missing data sources during real-time updates.
+
+
+
+Use Case ID
+UC-02
+Use Case Name
+Track Milestones
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Manager
+Stakeholders and Interests
+Manager ensures projects remain on schedule; System monitors milestone completion status.
+Preconditions
+Active project with defined milestones.
+Postconditions
+Updated milestone progress is stored in the database.
+Main Success Scenario
+1. Manager views milestone list.2. System fetches current completion percentage.3. Alerts or delays are highlighted.4. Updated progress is logged.
+Extensions
+3a. Overdue milestones → System sends notifications.4a. AI suggests priority realignment.
+Special Requirements
+Must sync with team updates in under 30 seconds.
+Technology and Data Variation List
+Timeline tracking, Gantt chart, ML-based delay predictions.
+Frequency of Occurrence
+Daily or hourly.
+Open Issues
+Handling overlapping milestone dependencies.
+
+
+
+Use Case ID
+UC-03
+Use Case Name
+Detect Operational Bottlenecks
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+AI Assistant
+Stakeholders and Interests
+AI detects performance issues early; Managers want timely warnings to reduce project delays.
+Preconditions
+Project data (tasks, resources) is being actively updated.
+Postconditions
+Bottlenecks identified and logged in system for manager review.
+Main Success Scenario
+1. AI analyzes performance metrics.2. Detects resource overload or stalled tasks.3. Flags potential bottlenecks.4. Sends alerts to the project manager.
+Extensions
+2a. Low confidence → System reanalyzes with updated inputs.3a. False positives → Allow manager override.
+Special Requirements
+Must detect bottlenecks within 1 minute of occurrence.
+Technology and Data Variation List
+ML anomaly detection; data from performance logs and resource tables.
+Frequency of Occurrence
+Continuous background analysis.
+Open Issues
+Reducing false positives from normal workflow fluctuations.
+
+
+
+
+Use Case ID
+UC-04
+Use Case Name
+Manage Budgets
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Auditor / Administrator
+Stakeholders and Interests
+Finance team wants accurate budget tracking; Auditor ensures fund integrity.
+Preconditions
+Project financial module initialized; user has budget access rights.
+Postconditions
+Budget entries are validated and stored with audit trail.
+Main Success Scenario
+1. User opens budget panel.2. System displays allocated and spent funds.3. User adds or edits entries.4. System updates totals and logs changes.
+Extensions
+3a. Entry exceeds limit → AI suggests budget reallocation.4a. Validation error → prompt user correction.
+Special Requirements
+Real-time totals; financial data encryption.
+Technology and Data Variation List
+SQL budget tables; AI reallocation module.
+Frequency of Occurrence
+Weekly or per project phase.
+Open Issues
+Handling currency exchange rate fluctuations.
+
+
+
+
+Use Case ID
+UC-05
+Use Case Name
+Record Financial Transactions
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Auditor
+Stakeholders and Interests
+Auditor needs accurate financial records to maintain transparency and traceability.
+Preconditions
+Financial accounts must be set up and accessible.
+Postconditions
+Transaction data is recorded securely with timestamp and audit ID.
+Main Success Scenario
+1. Auditor opens financial module.2. Enters transaction details.3. System validates data.4. Record is saved.5. Confirmation shown to auditor.
+Extensions
+3a. Invalid or incomplete data → prompt correction.4a. Connection failure → retry or log for later sync.
+Special Requirements
+Ledger immutability; digital signature verification.
+Technology and Data Variation List
+Encrypted SQL storage, financial audit API.
+Frequency of Occurrence
+Daily.
+Open Issues
+Integration with third-party accounting tools.
+
+
+
+
+
+Use Case ID
+UC-06
+Use Case Name
+Detect Fraud and Anomalies
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+AI Assistant
+Stakeholders and Interests
+The AI and auditor aim to identify potential financial fraud before approval.
+Preconditions
+Transactional data must be available for analysis.
+Postconditions
+Fraudulent or unusual activities are flagged and logged.
+Main Success Scenario
+1. AI scans transaction logs.2. Detects irregularities or anomalies.3. Flags suspicious transactions.4. Sends alerts to auditor.
+Extensions
+2a. Confidence below threshold → request human verification.3a. False positive → re-train model.
+Special Requirements
+Real-time detection (<60 seconds).
+Technology and Data Variation List
+ML anomaly detection model (Ollama), audit trail DB.
+Frequency of Occurrence
+Continuous.
+Open Issues
+Adjusting sensitivity to reduce false alerts.
+
+

@@ -1,0 +1,91 @@
+@startuml Storage Overview (ChromaDB + JSON)
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam linetype ortho
+
+skinparam rectangle {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+
+skinparam circle {
+    BackgroundColor #FFF4E6
+    BorderColor #FF8C00
+    FontColor #8B4513
+}
+
+skinparam diamond {
+    BackgroundColor #E8F5E9
+    BorderColor #4CAF50
+    FontColor #2E7D32
+}
+
+title System Storage Overview
+ChromaDB (vectors) and JSON (records/config)
+
+' ==============================
+' PRODUCERS / CONSUMERS (RECTANGLES)
+' ==============================
+rectangle "Web App / Flask API" as App
+rectangle "Performance Agents" as PerfAgents
+rectangle "Financial Agents" as FinAgents
+rectangle "Embeddings Manager" as EmbedMgr
+
+' ==============================
+' DATA STORES (RECTANGLES)
+' ==============================
+rectangle "ChromaDB\n(path: ./chroma_db)" as ChromaDB {
+    PersistentClient
+}
+
+rectangle "JSON Storage\n(path: ./data)" as JSONStore {
+    projects.json
+    documents.json
+    financial/*.json
+    performance/*.json
+    csv_sessions/*
+}
+
+' ==============================
+' RELATIONSHIPS (DIAMONDS)
+' ==============================
+diamond "WRITES" as R_WRITES
+diamond "READS" as R_READS
+
+' ==============================
+' FLOWS
+' ==============================
+App ||--o{ R_WRITES
+R_WRITES ||--o{ JSONStore
+App ||--o{ R_READS
+R_READS ||--o{ JSONStore
+
+EmbedMgr ||--o{ R_WRITES
+R_WRITES ||--o{ ChromaDB
+PerfAgents ||--o{ R_READS
+R_READS ||--o{ ChromaDB
+PerfAgents ||--o{ R_WRITES
+R_WRITES ||--o{ ChromaDB
+FinAgents ||--o{ R_WRITES
+R_WRITES ||--o{ ChromaDB
+FinAgents ||--o{ R_READS
+R_READS ||--o{ ChromaDB
+
+note right of ChromaDB
+  Vector embeddings and
+  analytics collections
+  (milestones, tasks,
+  bottlenecks, financial)
+end note
+
+note right of JSONStore
+  Lightweight records,
+  session data, configs,
+  and cached results
+end note
+
+@enduml
+
+
+

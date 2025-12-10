@@ -1,0 +1,170 @@
+@startuml UC7 - Fraud & Anomaly Detection
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC7 - Fraud & Anomaly Detection\nSequence Diagram
+
+actor "Auditor" as AU
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Fraud Detection Engine" as FDE
+participant "Anomaly Analyzer" as AA
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Trigger Fraud Detection ==
+
+AU -> WB: Navigate to fraud detection
+WB -> FA: GET /audit/fraud_detection/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_financial_data(project_id)
+DM --> FA: Financial data
+FA --> WB: Render fraud detection dashboard
+WB --> AU: Display fraud detection interface
+
+AU -> WB: Run fraud detection analysis
+WB -> FA: POST /audit/run_fraud_detection
+note right: project_id, detection_parameters
+
+== Financial Pattern Analysis ==
+
+FA -> FDE: run_fraud_detection(project_id, parameters)
+FDE -> DM: get_financial_transactions(project_id)
+DM --> FDE: Transaction data
+FDE -> FDE: Analyze spending patterns
+FDE -> FDE: Detect unusual amounts
+FDE -> FDE: Check for duplicate transactions
+FDE -> FDE: Identify suspicious timing patterns
+
+== AI-Powered Anomaly Detection ==
+
+FDE -> AA: analyze_financial_anomalies(transaction_data)
+AA -> LLM: Detect fraud patterns
+note right: Context: transaction data, spending patterns
+LLM --> AA: Fraud indicators
+AA -> AA: Calculate anomaly scores
+AA -> AA: Classify risk levels
+note right: High, Medium, Low risk classifications
+AA --> FDE: Anomaly analysis results
+
+== Suspicious Activity Detection ==
+
+FDE -> FDE: Check for suspicious activities
+note right: Unusual vendors, odd amounts, timing patterns
+FDE -> CDB: Query historical patterns
+CDB --> FDE: Historical data
+FDE -> LLM: Compare with historical patterns
+note right: Context: current vs historical spending
+LLM --> FDE: Pattern comparison results
+FDE -> FDE: Identify deviations from normal patterns
+
+== Fraud Risk Assessment ==
+
+FDE -> FDE: Calculate fraud risk score
+FDE -> FDE: Generate fraud indicators
+FDE -> CDB: Store fraud analysis results
+CDB --> FDE: Analysis saved
+FDE -> DM: save_fraud_detection_results(project_id, results)
+DM --> FDE: Results saved
+FDE --> FA: Fraud detection complete
+FA --> WB: Fraud analysis results
+WB --> AU: Display fraud detection results
+
+== Fraud Alert Generation ==
+
+note over FDE: Continuous monitoring
+FDE -> DM: query_recent_transactions(project_id)
+DM --> FDE: Recent transaction data
+FDE -> FDE: Check for new suspicious activities
+alt High-risk fraud detected
+    FDE -> FDE: Generate fraud alert
+    FDE -> DM: save_fraud_alert(project_id, alert_data)
+    DM --> FDE: Alert saved
+    FDE -> FA: send_fraud_alert(project_id, alert_data)
+    FA -> WB: Push notification
+    WB --> PM: Display fraud alert
+end
+
+== Fraud Investigation ==
+
+AU -> WB: Investigate fraud case
+WB -> FA: GET /audit/fraud_case/<case_id>
+FA -> FDE: get_fraud_case_details(case_id)
+FDE -> DM: get_fraud_case_data(case_id)
+DM --> FDE: Case data
+FDE -> CDB: Query related evidence
+CDB --> FDE: Evidence data
+FDE -> LLM: Generate investigation summary
+note right: Context: fraud case data, evidence
+LLM --> FDE: Investigation summary
+FDE --> FA: Case details
+FA --> WB: Render fraud case details
+WB --> AU: Display fraud investigation
+
+== Fraud Prevention Recommendations ==
+
+PM -> WB: Request fraud prevention advice
+WB -> FA: POST /audit/fraud_prevention
+note right: project_id
+
+FA -> FDE: get_fraud_prevention_recommendations(project_id)
+FDE -> DM: get_financial_data(project_id)
+DM --> FDE: Financial data
+FDE -> LLM: Generate prevention recommendations
+note right: Context: current fraud risks, best practices
+LLM --> FDE: Prevention recommendations
+FDE -> CDB: Store recommendations
+CDB --> FDE: Recommendations saved
+FDE --> FA: Prevention recommendations
+FA --> WB: Recommendations data
+WB --> PM: Display fraud prevention recommendations
+
+== Compliance Monitoring ==
+
+AU -> WB: Check compliance violations
+WB -> FA: GET /audit/compliance_check/<project_id>
+FA -> FDE: check_compliance_violations(project_id)
+FDE -> DM: get_financial_data(project_id)
+DM --> FDE: Financial data
+FDE -> FDE: Check against compliance rules
+FDE -> LLM: Validate compliance
+note right: Context: financial data, compliance rules
+LLM --> FDE: Compliance validation results
+FDE -> FDE: Generate compliance report
+FDE --> FA: Compliance report
+FA --> WB: Render compliance report
+WB --> AU: Display compliance status
+
+== Fraud Report Generation ==
+
+AU -> WB: Generate fraud report
+WB -> FA: POST /audit/generate_fraud_report
+note right: project_id, report_type, date_range
+
+FA -> FDE: generate_fraud_report(project_id, report_params)
+FDE -> DM: get_fraud_data(project_id, date_range)
+DM --> FDE: Fraud data
+FDE -> LLM: Generate fraud report summary
+note right: Context: fraud cases, patterns, recommendations
+LLM --> FDE: Report summary
+FDE -> FDE: Format report data
+FDE -> DM: save_fraud_report(project_id, report_data)
+DM --> FDE: Report saved
+FDE --> FA: Fraud report
+FA --> WB: Report data
+WB --> AU: Display fraud report
+
+@enduml

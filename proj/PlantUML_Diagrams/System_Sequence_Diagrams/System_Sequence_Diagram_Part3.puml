@@ -1,0 +1,77 @@
+@startuml System Sequence Diagram - Part 3: Financial & Risk Management
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title System Sequence Diagram - Part 3
+Financial & Risk Management
+
+actor "Project Manager" as PM
+actor "Financial Officer" as FO
+actor "Auditor" as AU
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "AI Engine" as AI
+participant "Database Manager" as DM
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+
+== Financial Management ==
+
+FO -> WB: Access financial dashboard
+WB -> FA: GET /financial/dashboard/<project_id>
+FA -> AI: get_financial_data(project_id)
+AI -> DM: query_financial_transactions(project_id)
+DM --> AI: Financial data
+AI -> LLM: analyze_financial_patterns(financial_data)
+LLM --> AI: Financial insights
+AI -> AI: detect_fraud_patterns(financial_data)
+AI -> AI: calculate_budget_utilization(financial_data)
+AI --> FA: Financial analysis
+FA --> WB: Render financial dashboard
+WB --> FO: Display financial status
+
+== Risk Management ==
+
+PM -> WB: View risk dashboard
+WB -> FA: GET /risk/dashboard/<project_id>
+FA -> AI: get_risk_data(project_id)
+AI -> DM: query_risk_indicators(project_id)
+DM --> AI: Risk data
+AI -> LLM: predict_risks(risk_data, project_context)
+LLM --> AI: Risk predictions
+AI -> AI: calculate_risk_scores(risk_predictions)
+AI -> AI: generate_mitigation_strategies(risk_scores)
+AI --> FA: Risk analysis
+FA --> WB: Render risk dashboard
+WB --> PM: Display risk assessment
+
+== Compliance Monitoring ==
+
+AU -> WB: Access compliance dashboard
+WB -> FA: GET /compliance/dashboard/<project_id>
+FA -> AI: get_compliance_data(project_id)
+AI -> DM: query_compliance_indicators(project_id)
+DM --> AI: Compliance data
+AI -> LLM: check_compliance_violations(compliance_data)
+LLM --> AI: Compliance analysis
+AI -> AI: generate_compliance_report(compliance_analysis)
+AI --> FA: Compliance data
+FA --> WB: Render compliance dashboard
+WB --> AU: Display compliance status
+
+@enduml
+
+
+
+
+

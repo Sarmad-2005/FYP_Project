@@ -1,0 +1,93 @@
+@startuml System Sequence Diagram - High Level
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title System Sequence Diagram - High Level
+AI-Powered Project Management Platform
+
+actor "User" as U
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "AI Engine" as AI
+participant "Database" as DB
+
+== User Login ==
+
+U -> WB: Login
+WB -> FA: POST /login
+FA -> DB: authenticate_user()
+DB --> FA: User authenticated
+FA --> WB: Dashboard
+WB --> U: Display dashboard
+
+== Project Management ==
+
+U -> WB: Create project
+WB -> FA: POST /create_project
+FA -> DB: save_project()
+DB --> FA: Project saved
+FA --> WB: Project created
+WB --> U: Display project
+
+== Document Processing ==
+
+U -> WB: Upload document
+WB -> FA: POST /upload_document
+FA -> AI: process_document()
+AI -> DB: store_embeddings()
+DB --> AI: Embeddings stored
+AI --> FA: Document processed
+FA --> WB: Success
+WB --> U: Document uploaded
+
+== AI Analysis ==
+
+U -> WB: Generate analysis
+WB -> FA: POST /performance_agent/first_generation
+FA -> AI: run_analysis()
+AI -> DB: query_data()
+DB --> AI: Project data
+AI -> AI: analyze_data()
+AI -> DB: save_results()
+DB --> AI: Results saved
+AI --> FA: Analysis complete
+FA --> WB: Analysis results
+WB --> U: Display insights
+
+== Dashboard View ==
+
+U -> WB: View dashboard
+WB -> FA: GET /dashboard
+FA -> DB: get_project_data()
+DB --> FA: Project data
+FA -> AI: get_insights()
+AI --> FA: AI insights
+FA --> WB: Dashboard data
+WB --> U: Display dashboard
+
+== Real-time Monitoring ==
+
+note over AI: Continuous monitoring
+AI -> DB: check_alerts()
+DB --> AI: Alert data
+AI -> AI: process_alerts()
+AI -> FA: send_alerts()
+FA -> WB: Push notification
+WB --> U: Display alert
+
+@enduml
+
+
+
+
+

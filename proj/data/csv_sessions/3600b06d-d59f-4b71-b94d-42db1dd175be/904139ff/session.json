@@ -1,0 +1,46 @@
+{
+  "session_id": "904139ff",
+  "project_id": "3600b06d-d59f-4b71-b94d-42db1dd175be",
+  "created_at": "2025-10-30T13:23:53.668976",
+  "last_accessed": "2025-10-30T13:23:53.668976",
+  "csv_file": "data.csv",
+  "metadata": {
+    "headers": [
+      "Date",
+      "Open",
+      "High",
+      "Low",
+      "Close"
+    ],
+    "rows": 139,
+    "columns": 5,
+    "analysis": {
+      "total_rows": 139,
+      "total_columns": 5,
+      "column_types": {
+        "Date": "text",
+        "Open": "numeric",
+        "High": "numeric",
+        "Low": "numeric",
+        "Close": "numeric"
+      },
+      "numeric_columns": [
+        "Open",
+        "High",
+        "Low",
+        "Close"
+      ],
+      "text_columns": [
+        "Date"
+      ],
+      "date_columns": [],
+      "has_nulls": {
+        "Date": 0,
+        "Open": 0,
+        "High": 0,
+        "Low": 0,
+        "Close": 0
+      }
+    }
+  }
+}

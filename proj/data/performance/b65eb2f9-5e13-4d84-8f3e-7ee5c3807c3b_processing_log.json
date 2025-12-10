@@ -1,0 +1,15 @@
+[
+  {
+    "project_id": "b65eb2f9-5e13-4d84-8f3e-7ee5c3807c3b",
+    "document_id": "5ba7449f-9f65-4ce8-9244-bcbcbdddd525",
+    "timestamp": "2025-10-28T13:53:00.930188",
+    "success": true,
+    "milestone_success": true,
+    "task_success": true,
+    "bottleneck_success": true,
+    "milestone_count": 2,
+    "task_count": 5,
+    "bottleneck_count": 1,
+    "error": null
+  }
+]

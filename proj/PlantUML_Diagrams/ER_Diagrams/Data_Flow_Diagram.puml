@@ -1,0 +1,144 @@
+@startuml Data Flow Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam rectangle {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam database {
+    BackgroundColor #F7FAFC
+    BorderColor #4A5568
+    FontColor #2D3748
+}
+skinparam arrow {
+    Color #2E86AB
+    FontColor #1A365D
+}
+
+title Data Flow Diagram
+Project Monitoring & Performance Management System
+ChromaDB Vector Database Architecture
+
+' Input Layer
+rectangle "Document Upload" as Upload {
+    [PDF Documents]
+    [Word Documents]
+    [Excel Files]
+    [Text Files]
+}
+
+rectangle "Document Processing" as Processing {
+    [Enhanced PDF Processor]
+    [Text Extraction]
+    [Content Parsing]
+}
+
+' Embedding Layer
+rectangle "Embeddings Manager" as Embeddings {
+    [Sentence Transformer]
+    [Vector Generation]
+    [Collection Creation]
+}
+
+' Storage Layer
+database "Document Collections\n(Dynamic)" as DocCollections {
+    [p_{project_id}_d_{document_id}]
+    [Sentence Embeddings]
+    [Document Metadata]
+}
+
+database "Performance Collections\n(Static)" as PerfCollections {
+    [project_milestones]
+    [project_tasks]
+    [project_bottlenecks]
+}
+
+database "Details Collections\n(Large Text)" as DetailsCollections {
+    [project_milestone_details]
+    [project_task_details]
+    [project_bottleneck_details]
+}
+
+' Analysis Layer
+rectangle "Performance Agents" as Agents {
+    [Milestone Agent]
+    [Task Agent]
+    [Bottleneck Agent]
+}
+
+rectangle "ChromaDB Manager" as Manager {
+    [Centralized Operations]
+    [Collection Management]
+    [Error Handling]
+}
+
+' Output Layer
+rectangle "Analytics & Reporting" as Analytics {
+    [Dashboard Visualization]
+    [Performance Metrics]
+    [Risk Analysis]
+    [Progress Tracking]
+}
+
+rectangle "AI Assistant" as AI {
+    [Semantic Search]
+    [Context-Aware Queries]
+    [Intelligent Insights]
+}
+
+' Data Flow Connections
+Upload --> Processing : "Raw Documents"
+Processing --> Embeddings : "Extracted Text"
+Embeddings --> DocCollections : "Vector Embeddings"
+DocCollections --> Agents : "Semantic Analysis"
+Agents --> PerfCollections : "Performance Data"
+Agents --> DetailsCollections : "Detailed Analysis"
+Manager --> DocCollections : "Collection Operations"
+Manager --> PerfCollections : "Data Management"
+Manager --> DetailsCollections : "Large Text Storage"
+PerfCollections --> Analytics : "Performance Metrics"
+DetailsCollections --> Analytics : "Detailed Reports"
+DocCollections --> AI : "Semantic Search"
+PerfCollections --> AI : "Context Data"
+DetailsCollections --> AI : "Rich Context"
+
+' Styling for different types
+DocCollections -[#4A90E2]-> DocCollections : "Vector Similarity"
+PerfCollections -[#50C878]-> PerfCollections : "Metadata Filtering"
+DetailsCollections -[#FF6B6B]-> DetailsCollections : "Parent-Child Links"
+
+note right of DocCollections
+  Dynamic naming pattern:
+  p_{project_id[:8]}_d_{document_id[:8]}
+  Each document gets its own collection
+  for isolated embedding storage
+end note
+
+note right of PerfCollections
+  Static collections for:
+  - Milestones with categories
+  - Tasks with status tracking
+  - Bottlenecks with severity
+end note
+
+note right of DetailsCollections
+  Separate storage for large text:
+  - Milestone analysis details
+  - Task implementation notes
+  - Bottleneck mitigation strategies
+end note
+
+note bottom of Manager
+  Centralized ChromaDB operations:
+  - Consistent naming patterns
+  - Error handling
+  - Collection lifecycle management
+end note
+
+@enduml
+
+
+
+
+

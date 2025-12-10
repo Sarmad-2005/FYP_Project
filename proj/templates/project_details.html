@@ -1,0 +1,1039 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }} - Project Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <!-- Project Header -->
+    <div class="card mb-6" style="animation: slideInDown 0.6s ease-out;">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-4xl font-bold text-gray-800 mb-2">
+                    <i class="fas fa-folder-open text-orange-500"></i> {{ project.name }}
+                </h2>
+                {% if project.description %}
+                <p class="text-gray-600 mb-3 leading-relaxed">{{ project.description }}</p>
+                {% endif %}
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span><i class="fas fa-calendar text-blue-500"></i> Created: {{ project.created_at[:10] }}</span>
+                    <span><i class="fas fa-fingerprint text-purple-500"></i> ID: {{ project.id }}</span>
+                </div>
+            </div>
+            <a href="/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Document Upload Section -->
+    <div class="card mb-6" style="animation: slideInUp 0.5s ease-out;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-cloud-upload-alt text-blue-500"></i> Upload Document
+            </h3>
+        </div>
+        <form id="documentUploadForm" enctype="multipart/form-data">
+            <input type="hidden" name="project_id" value="{{ project.id }}">
+            
+            <div class="file-upload">
+                <input type="file" id="documentFile" name="file" accept=".pdf" required>
+                <label for="documentFile" class="file-upload-label">
+                    <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                    <div class="file-upload-text">Choose PDF File</div>
+                    <div class="file-upload-subtext">Click to browse or drag and drop</div>
+                </label>
+            </div>
+            
+            <div class="mt-4 flex gap-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-upload"></i> Upload & Process Document
+                </button>
+                <button type="button" onclick="refreshDocuments()" class="btn btn-secondary">
+                    <i class="fas fa-rotate"></i> Refresh
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Document Agent Container -->
+    <div class="card mb-6" style="animation: slideInUp 0.6s ease-out;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-file-alt text-blue-500"></i> Document Agent
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-info">PSDP Summary & Financial Brief</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="text-gray-700 mb-4">Generate PSDP Summary, Financial Brief, and access the Intelligent Document Generator.</p>
+            <button onclick="viewDocumentDashboard()" class="btn btn-primary btn-lg">
+                <i class="fas fa-file"></i> Open Document Agent
+            </button>
+        </div>
+    </div>
+
+    <!-- Performance Agent Container -->
+    <div class="card mb-6" style="animation: slideInUp 0.7s ease-out;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-robot text-purple-500"></i> Performance Agent
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-info">AI-Powered Analysis</span>
+            </div>
+        </div>
+        
+        <div class="performance-agent-container">
+            <!-- Performance Metrics Cards -->
+            <div class="grid grid-3 mb-6">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-flag text-blue-500"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title">Milestones</h4>
+                        <p class="metric-value" id="milestones-count">0</p>
+                        <p class="metric-subtitle">Project milestones identified</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-tasks text-green-500"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title">Tasks</h4>
+                        <p class="metric-value" id="tasks-count">0</p>
+                        <p class="metric-subtitle">Tasks identified</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-exclamation-triangle text-red-500"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title">Bottlenecks</h4>
+                        <p class="metric-value" id="bottlenecks-count">0</p>
+                        <p class="metric-subtitle">Issues identified</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Completion Score -->
+            <div class="completion-score-card">
+                <div class="score-header">
+                    <h4 class="score-title">Project Completion Score</h4>
+                    <span class="score-badge" id="completion-badge">Not Started</span>
+                </div>
+                <div class="score-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="completion-progress" style="width: 0%"></div>
+                    </div>
+                    <span class="score-percentage" id="completion-percentage">0%</span>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="performance-actions" style="justify-content: center;">
+                <button onclick="viewPerformanceDashboard()" class="btn btn-primary btn-lg">
+                    <i class="fas fa-chart-line"></i> View Full Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Agent Container -->
+    <div class="card mb-6" style="animation: slideInUp 0.8s ease-out;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-line text-green-600"></i> Financial Agent
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-success">AI-Powered Financial Analysis</span>
+            </div>
+        </div>
+        
+        <div class="financial-agent-container">
+            <!-- Financial Metrics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="metric-card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-500">
+                    <div class="metric-icon">
+                        <i class="fas fa-wallet text-blue-600 text-3xl"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title text-gray-700">Total Budget</h4>
+                        <p class="metric-value text-blue-600" id="financial-budget">PKR 0</p>
+                        <p class="metric-subtitle text-gray-600">Allocated funds</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-500">
+                    <div class="metric-icon">
+                        <i class="fas fa-money-bill-wave text-amber-600 text-3xl"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title text-gray-700">Total Expenses</h4>
+                        <p class="metric-value text-amber-600" id="financial-expenses">PKR 0</p>
+                        <p class="metric-subtitle text-gray-600"><span id="expense-count">0</span> transactions</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500">
+                    <div class="metric-icon">
+                        <i class="fas fa-coins text-green-600 text-3xl"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title text-gray-700">Total Revenue</h4>
+                        <p class="metric-value text-green-600" id="financial-revenue">PKR 0</p>
+                        <p class="metric-subtitle text-gray-600"><span id="revenue-count">0</span> receipts</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card bg-gradient-to-br from-purple-50 to-purple-100 border-l-4 border-purple-500">
+                    <div class="metric-icon">
+                        <i class="fas fa-heartbeat text-purple-600 text-3xl"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title text-gray-700">Financial Health</h4>
+                        <p class="metric-value text-purple-600" id="financial-health">0%</p>
+                        <p class="metric-subtitle" id="health-status">Not analyzed</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Financial Summary -->
+            <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 mb-6 border border-green-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-800 mb-2 text-lg">
+                            <i class="fas fa-chart-pie text-green-600"></i> Financial Overview
+                        </h4>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-600">Net Balance:</p>
+                                <p class="font-bold text-lg" id="net-balance">PKR 0</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Budget Utilization:</p>
+                                <p class="font-bold text-lg" id="budget-utilization">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-24 h-24 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <span class="text-white font-bold text-xl" id="health-score-circle">0%</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-2">Health Score</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Button -->
+            <div class="performance-actions" style="justify-content: center;">
+                <button onclick="viewFinancialDashboard()" class="btn btn-success btn-lg">
+                    <i class="fas fa-dollar-sign"></i> View Full Financial Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Agent Container -->
+    <div class="card mb-6" style="animation: slideInUp 0.9s ease-out;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-cogs text-orange-500"></i> Resource Agent
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-warning">Task & Resource Optimization</span>
+            </div>
+        </div>
+        
+        <div class="resource-agent-container">
+            <!-- Resource Metrics Cards -->
+            <div class="grid grid-3 mb-6">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-tasks text-blue-500"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title">Tasks Analyzed</h4>
+                        <p class="metric-value" id="resource-tasks-count">0</p>
+                        <p class="metric-subtitle">Tasks with analysis</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-project-diagram text-purple-500"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title">Dependencies</h4>
+                        <p class="metric-value" id="resource-dependencies-count">0</p>
+                        <p class="metric-subtitle">Task dependencies</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-users text-green-500"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title">Work Team</h4>
+                        <p class="metric-value" id="resource-team-count">0</p>
+                        <p class="metric-subtitle">Team members</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Button -->
+            <div class="performance-actions" style="justify-content: center;">
+                <button onclick="viewResourceDashboard()" class="btn btn-warning btn-lg">
+                    <i class="fas fa-chart-pie"></i> Open Resource Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Mitigation Agent Container -->
+    <div class="card mb-6" style="animation: slideInUp 1.0s ease-out;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-shield-alt text-red-500"></i> Prediction and Risk Mitigation
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-danger">AI-Powered Risk Analysis</span>
+            </div>
+        </div>
+        
+        <div class="risk-mitigation-agent-container">
+            <!-- Risk Metrics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="metric-card bg-gradient-to-br from-red-50 to-red-100 border-l-4 border-red-500">
+                    <div class="metric-icon">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title text-gray-700">Bottlenecks</h4>
+                        <p class="metric-value text-red-600" id="risk-bottlenecks-count">0</p>
+                        <p class="metric-subtitle text-gray-600">Identified risks</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card bg-gradient-to-br from-orange-50 to-orange-100 border-l-4 border-orange-500">
+                    <div class="metric-icon">
+                        <i class="fas fa-chart-line text-orange-600 text-3xl"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title text-gray-700">Risk Score</h4>
+                        <p class="metric-value text-orange-600" id="risk-score">0%</p>
+                        <p class="metric-subtitle text-gray-600">Overall risk level</p>
+                    </div>
+                </div>
+                
+                <div class="metric-card bg-gradient-to-br from-yellow-50 to-yellow-100 border-l-4 border-yellow-500">
+                    <div class="metric-icon">
+                        <i class="fas fa-lightbulb text-yellow-600 text-3xl"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h4 class="metric-title text-gray-700">Mitigations</h4>
+                        <p class="metric-value text-yellow-600" id="mitigations-count">0</p>
+                        <p class="metric-subtitle text-gray-600">Available strategies</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex gap-4" style="justify-content: center;">
+                <button onclick="viewRiskMitigationDashboard()" class="btn btn-danger btn-lg">
+                    <i class="fas fa-tachometer-alt"></i> Risk Mitigation Dashboard
+                </button>
+                <button onclick="viewWhatIfSimulator()" class="btn btn-warning btn-lg">
+                    <i class="fas fa-project-diagram"></i> What If Scenario Simulator
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents List -->
+    <div class="card" style="animation: fadeInUp 0.6s ease-out;">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="card-title"><i class="fas fa-file-alt text-purple-500"></i> Documents ({{ documents|length }})</h3>
+            <button onclick="refreshDocuments()" class="btn btn-secondary">
+                <i class="fas fa-rotate"></i> Refresh
+            </button>
+        </div>
+
+        {% if documents %}
+            <div class="grid grid-2">
+                {% for document in documents %}
+                <div class="card group hover:scale-105 transition-all duration-300">
+                    <div class="card-header">
+                        <div class="flex-1">
+                            <h4 class="card-title text-xl mb-2">{{ document.filename }}</h4>
+                            <p class="card-subtitle flex items-center gap-2">
+                                <i class="fas fa-calendar text-blue-500"></i>
+                                Uploaded: {{ document.created_at[:10] }}
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="viewEmbeddings('{{ document.id }}')" class="btn btn-info btn-sm group-hover:scale-110 transition-transform">
+                                <i class="fas fa-brain"></i> View Embeddings
+                            </button>
+                            <button onclick="openChatModal('{{ document.id }}')" class="btn btn-success btn-sm group-hover:scale-110 transition-transform">
+                                <i class="fas fa-comments"></i> Chat
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-4 leading-relaxed">
+                        <p><i class="fas fa-file-text"></i> Sentences: {{ document.sentences_count }}</p>
+                        <p><i class="fas fa-table"></i> Tables: {{ document.tables_count }}</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div class="flex items-center gap-2 text-sm text-gray-500">
+                            <i class="fas fa-fingerprint"></i>
+                            <span class="font-mono">{{ document.id[:8] }}...</span>
+                        </div>
+                        <div class="flex items-center gap-1 text-green-600">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="text-sm font-medium">Ready</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-file-pdf text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No Documents Yet</h3>
+                <p class="text-gray-500 mb-6">Upload your first PDF document to get started</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Embeddings Modal -->
+<div id="embeddingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white bg-opacity-90 backdrop-blur-xl border border-white/30 rounded-2xl p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Document Embeddings</h3>
+            <button onclick="closeEmbeddingsModal()" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+        <div id="embeddingsContent">
+            <div class="text-center py-8">
+                <div class="loading"></div>
+                <p class="mt-4">Loading embeddings...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Modal -->
+<div id="chatModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white bg-opacity-90 backdrop-blur-xl border border-white/30 rounded-2xl p-6 max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Chat with Document</h3>
+            <button onclick="closeChatModal()" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+        
+        <!-- LLM Status Display -->
+        <div class="flex items-center gap-4 mb-4 p-4 bg-white bg-opacity-60 rounded-lg border border-white/30 backdrop-blur-sm">
+            <label class="text-sm font-medium text-gray-700">AI Model:</label>
+            <span id="currentLLMDisplay" class="text-sm text-gray-600">Not selected - Please select from dashboard</span>
+            <button onclick="testChatLLM()" class="btn btn-info btn-sm">
+                <i class="fas fa-play"></i> Test
+            </button>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div id="chatMessages" class="flex-1 overflow-y-auto mb-4 p-4 bg-white bg-opacity-60 rounded-lg border border-white/30 backdrop-blur-sm" style="max-height: 420px;">
+            <div class="text-center text-gray-500">
+                <i class="fas fa-comments text-2xl mb-2"></i>
+                <p>Start a conversation with your document...</p>
+            </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="flex gap-2">
+            <input type="text" id="chatInput" class="form-input flex-1" 
+                   placeholder="Ask a question about the document..." 
+                   onkeypress="handleChatKeyPress(event)">
+            <button onclick="sendChatMessage()" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Send
+            </button>
+        </div>
+        
+        <input type="hidden" id="currentDocumentId" value="">
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+    }
+
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 800px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .embedding-item {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+        border-left: 4px solid #667eea;
+    }
+
+    .embedding-type {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .embedding-type.sentence {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .embedding-type.table {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .embedding-content {
+        margin-top: 8px;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    .embedding-metadata {
+        margin-top: 8px;
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    .table-preview {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 12px;
+        margin-top: 8px;
+        font-family: monospace;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('documentUploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = showLoading(submitBtn);
+        
+        try {
+            console.log('Uploading document...');
+            
+            const response = await fetch('/upload_document', {
+                method: 'POST',
+                body: formData
+            });
+            
+            console.log('Upload response status:', response.status);
+            console.log('Upload response headers:', response.headers);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('Upload response data:', result);
+            
+            if (result.success) {
+                showAlert(`Document uploaded successfully! Processed ${result.sentences_count} sentences and ${result.tables_count} tables.`, 'success');
+                this.reset();
+                // Refresh the page to show new document
+                console.log('Reloading page in 1 second...');
+                setTimeout(() => {
+                    console.log('Executing reload now...');
+                    try {
+                        window.location.href = window.location.href;
+                    } catch (e) {
+                        console.error('Reload failed, trying alternative:', e);
+                        window.location.reload(true);
+                    }
+                }, 1000);
+            } else {
+                showAlert(result.error || 'Failed to upload document', 'error');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            showAlert('Error uploading document: ' + error.message, 'error');
+        } finally {
+            hideLoading(submitBtn, originalText);
+        }
+    });
+
+    async function viewEmbeddings(documentId) {
+        const modal = document.getElementById('embeddingsModal');
+        const content = document.getElementById('embeddingsContent');
+        
+        modal.classList.remove('hidden');
+        content.innerHTML = `
+            <div class="text-center py-8">
+                <div class="loading"></div>
+                <p class="mt-4">Loading embeddings...</p>
+            </div>
+        `;
+        
+        try {
+            const response = await fetch(`/get_embeddings/{{ project.id }}/${documentId}`);
+            const result = await response.json();
+            
+            if (result.embeddings) {
+                displayEmbeddings(result.embeddings);
+            } else {
+                content.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+                        <p class="text-gray-600">No embeddings found for this document.</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            content.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+                    <p class="text-gray-600">Error loading embeddings: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+
+    function displayEmbeddings(embeddings) {
+        const content = document.getElementById('embeddingsContent');
+        
+        if (embeddings.length === 0) {
+            content.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-info-circle text-4xl text-blue-500 mb-4"></i>
+                    <p class="text-gray-600">No embeddings available for this document.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const groupedEmbeddings = {
+            sentences: embeddings.filter(e => e.type === 'sentence'),
+            tables: embeddings.filter(e => e.type === 'table')
+        };
+        
+        content.innerHTML = `
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold mb-4">Sentences (${groupedEmbeddings.sentences.length})</h4>
+                ${groupedEmbeddings.sentences.map(embedding => `
+                    <div class="embedding-item">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="embedding-type sentence">Sentence</span>
+                            <span class="text-sm text-gray-500">#${embedding.metadata.index + 1}</span>
+                        </div>
+                        <div class="embedding-content">${embedding.content}</div>
+                        <div class="embedding-metadata">
+                            Embedding ID: ${embedding.id} | Vector dimensions: ${embedding.embedding.length}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold mb-4">Tables (${groupedEmbeddings.tables.length})</h4>
+                ${groupedEmbeddings.tables.map(embedding => `
+                    <div class="embedding-item">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="embedding-type table">Table</span>
+                            <span class="text-sm text-gray-500">#${embedding.metadata.index + 1}</span>
+                            <span class="text-sm text-gray-500">${embedding.metadata.row_count} rows × ${embedding.metadata.column_count} cols</span>
+                        </div>
+                        <div class="embedding-content">${embedding.content}</div>
+                        <div class="embedding-metadata">
+                            Embedding ID: ${embedding.id} | Vector dimensions: ${embedding.embedding.length}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function closeEmbeddingsModal() {
+        document.getElementById('embeddingsModal').classList.add('hidden');
+    }
+
+    function refreshDocuments() {
+        window.location.reload();
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('embeddingsModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEmbeddingsModal();
+        }
+    });
+
+    // File upload preview
+    document.getElementById('documentFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const label = document.querySelector('.file-upload-label');
+            label.innerHTML = `
+                <i class="fas fa-file-pdf file-upload-icon" style="color: #e53e3e;"></i>
+                <div class="file-upload-text">${file.name}</div>
+                <div class="file-upload-subtext">Ready to upload</div>
+            `;
+        }
+    });
+
+    // Chat functionality
+    function openChatModal(documentId) {
+        document.getElementById('currentDocumentId').value = documentId;
+        document.getElementById('chatModal').classList.remove('hidden');
+        document.getElementById('chatInput').focus();
+        
+        // Clear previous messages
+        document.getElementById('chatMessages').innerHTML = `
+            <div class="text-center text-gray-500">
+                <i class="fas fa-comments text-2xl mb-2"></i>
+                <p>Start a conversation with your document...</p>
+            </div>
+        `;
+    }
+
+    function closeChatModal() {
+        document.getElementById('chatModal').classList.add('hidden');
+    }
+
+    function handleChatKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendChatMessage();
+        }
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        const documentId = document.getElementById('currentDocumentId').value;
+        
+        if (!message) return;
+        
+        // Add user message to chat
+        addChatMessage('user', message);
+        input.value = '';
+        
+        // Show loading
+        const loadingId = addChatMessage('assistant', 'Thinking...', true);
+        
+        try {
+            const response = await fetch('/chat_with_document', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    project_id: '{{ project.id }}',
+                    document_id: documentId,
+                    query: message,
+                    llm: llm
+                })
+            });
+            
+            const result = await response.json();
+            
+            // Remove loading message
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+            
+            if (result.success) {
+                addChatMessage('assistant', result.response, false, result.model);
+            } else {
+                addChatMessage('assistant', `Error: ${result.error}`, false, 'error');
+            }
+        } catch (error) {
+            // Remove loading message
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+            addChatMessage('assistant', `Error: ${error.message}`, false, 'error');
+        }
+    }
+
+    function addChatMessage(sender, message, isLoading = false, model = null) {
+        const messagesContainer = document.getElementById('chatMessages');
+        const messageId = 'msg_' + Date.now();
+        
+        // Remove placeholder if it exists
+        const placeholder = messagesContainer.querySelector('.text-center');
+        if (placeholder) {
+            placeholder.remove();
+        }
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.id = messageId;
+        messageDiv.className = `mb-4 ${sender === 'user' ? 'text-right' : 'text-left'}`;
+        
+        const bubbleClass = sender === 'user' 
+            ? 'bg-blue-500 text-white' 
+            : 'bg-white text-gray-800 border';
+        
+        const icon = sender === 'user' 
+            ? 'fas fa-user' 
+            : isLoading 
+                ? 'fas fa-spinner fa-spin' 
+                : 'fas fa-robot';
+        
+        messageDiv.innerHTML = `
+            <div class="inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${bubbleClass}">
+                <div class="flex items-center gap-2 mb-1">
+                    <i class="${icon}"></i>
+                    ${model ? `<span class="text-xs opacity-75">${model}</span>` : ''}
+                </div>
+                <div class="text-sm">${message}</div>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        return messageId;
+    }
+
+    async function testChatLLM() {
+        const testBtn = document.querySelector('button[onclick="testChatLLM()"]');
+        const originalText = showLoading(testBtn);
+        
+        try {
+            const response = await fetch('/test_llm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    query: "Hello! Can you tell me what you are?" 
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showAlert(`LLM Test Successful! Response: ${result.response.substring(0, 100)}...`, 'success');
+            } else {
+                showAlert(`LLM Test Failed: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            showAlert('Error testing LLM: ' + error.message, 'error');
+        } finally {
+            hideLoading(testBtn, originalText);
+        }
+    }
+
+    // Close chat modal when clicking outside
+    document.getElementById('chatModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeChatModal();
+        }
+    });
+    
+    // Update LLM status display
+    async function updateLLMStatus() {
+        try {
+            const response = await fetch('/get_llm_status');
+            const data = await response.json();
+            
+            const displayElement = document.getElementById('currentLLMDisplay');
+            if (data.is_set) {
+                displayElement.textContent = data.display_name;
+                displayElement.className = 'text-sm text-green-600 font-medium';
+            } else {
+                displayElement.textContent = 'Not selected - Please select from dashboard';
+                displayElement.className = 'text-sm text-red-600';
+            }
+        } catch (error) {
+            console.error('Error updating LLM status:', error);
+            const displayElement = document.getElementById('currentLLMDisplay');
+            displayElement.textContent = 'Error loading status';
+            displayElement.className = 'text-sm text-red-600';
+        }
+    }
+    
+    // Load financial data
+    async function loadFinancialData() {
+        try {
+            const response = await fetch(`/financial_agent/quick_status/{{ project.id }}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update budget
+                document.getElementById('financial-budget').textContent = `PKR ${formatNumber(data.budget || 0)}`;
+                
+                // Update expenses
+                document.getElementById('financial-expenses').textContent = `PKR ${formatNumber(data.total_expenses || 0)}`;
+                document.getElementById('expense-count').textContent = data.expense_count || 0;
+                
+                // Update revenue
+                document.getElementById('financial-revenue').textContent = `PKR ${formatNumber(data.total_revenue || 0)}`;
+                document.getElementById('revenue-count').textContent = data.revenue_count || 0;
+                
+                // Update financial health
+                const healthScore = data.financial_health || 0;
+                document.getElementById('financial-health').textContent = `${healthScore.toFixed(1)}%`;
+                document.getElementById('health-score-circle').textContent = `${healthScore.toFixed(0)}%`;
+                
+                // Update health status
+                const healthStatusEl = document.getElementById('health-status');
+                if (healthScore >= 80) {
+                    healthStatusEl.textContent = 'Healthy';
+                    healthStatusEl.className = 'metric-subtitle text-green-600 font-medium';
+                } else if (healthScore >= 60) {
+                    healthStatusEl.textContent = 'Warning';
+                    healthStatusEl.className = 'metric-subtitle text-yellow-600 font-medium';
+                } else if (healthScore > 0) {
+                    healthStatusEl.textContent = 'Critical';
+                    healthStatusEl.className = 'metric-subtitle text-red-600 font-medium';
+                } else {
+                    healthStatusEl.textContent = 'Not analyzed';
+                    healthStatusEl.className = 'metric-subtitle text-gray-600';
+                }
+                
+                // Update net balance
+                const netBalance = (data.total_revenue || 0) - (data.total_expenses || 0);
+                const netBalanceEl = document.getElementById('net-balance');
+                netBalanceEl.textContent = `PKR ${formatNumber(netBalance)}`;
+                netBalanceEl.className = netBalance >= 0 ? 'font-bold text-lg text-green-600' : 'font-bold text-lg text-red-600';
+                
+                // Update budget utilization
+                if (data.budget && data.budget > 0) {
+                    const utilization = ((data.total_expenses || 0) / data.budget * 100).toFixed(1);
+                    document.getElementById('budget-utilization').textContent = `${utilization}%`;
+                } else {
+                    document.getElementById('budget-utilization').textContent = 'N/A';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading financial data:', error);
+        }
+    }
+    
+    function formatNumber(num) {
+        return new Intl.NumberFormat('en-PK').format(num);
+    }
+    
+    // Navigate to performance dashboard
+    function viewPerformanceDashboard() {
+        window.location.href = `/performance_agent/dashboard/{{ project.id }}`;
+    }
+    
+    // Navigate to financial dashboard
+    function viewFinancialDashboard() {
+        window.location.href = `/financial_agent/dashboard/{{ project.id }}`;
+    }
+    
+    // Navigate to resource dashboard
+    function viewResourceDashboard() {
+        window.location.href = `/resource_agent/dashboard/{{ project.id }}`;
+    }
+    
+    // Navigate to risk mitigation dashboard
+    function viewRiskMitigationDashboard() {
+        window.location.href = `/risk_mitigation/dashboard/{{ project.id }}`;
+    }
+    
+    // Navigate to what if simulator
+    function viewWhatIfSimulator() {
+        window.location.href = `/risk_mitigation/what_if_simulator/{{ project.id }}`;
+    }
+
+    // Navigate to document agent dashboard
+    function viewDocumentDashboard() {
+        window.location.href = `/document_agent/dashboard/{{ project.id }}`;
+    }
+    
+    // Load resource metrics
+    async function loadResourceMetrics() {
+        try {
+            const response = await fetch(`/resource_agent/status/{{ project.id }}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('resource-tasks-count').textContent = data.tasks_analyzed_count || 0;
+                document.getElementById('resource-dependencies-count').textContent = data.dependencies_count || 0;
+                document.getElementById('resource-team-count').textContent = data.work_team_count || 0;
+            }
+        } catch (error) {
+            console.error('Error loading resource metrics:', error);
+        }
+    }
+    
+    // Load risk mitigation metrics
+    async function loadRiskMetrics() {
+        try {
+            const response = await fetch(`/api/risk_mitigation/risk_summary/{{ project.id }}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('risk-bottlenecks-count').textContent = data.total_bottlenecks || 0;
+                document.getElementById('risk-score').textContent = `${data.risk_score || 0}%`;
+                // Mitigations count would need to be calculated separately if needed
+                document.getElementById('mitigations-count').textContent = 'N/A';
+            }
+        } catch (error) {
+            console.error('Error loading risk metrics:', error);
+        }
+    }
+    
+    // Initialize LLM status and financial data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        updateLLMStatus();
+        loadFinancialData();
+        loadResourceMetrics();
+        loadRiskMetrics();
+    });
+</script>
+{% endblock %}
+
+
+
+
+

@@ -1,0 +1,124 @@
+@startuml UC5 - Bottleneck Detection
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC5 - Bottleneck Detection\nSequence Diagram
+
+actor "Project Staff" as PS
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Performance Agent" as PA
+participant "Bottleneck Agent" as BA
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Trigger Bottleneck Detection ==
+
+PS -> WB: Navigate to performance dashboard
+WB -> FA: GET /performance_agent/dashboard/<project_id>
+FA -> PA: get_performance_status(project_id)
+PA -> CDB: Query project_bottlenecks collection
+CDB --> PA: Existing bottlenecks
+PA --> FA: Current bottlenecks
+FA --> WB: Render dashboard
+WB --> PS: Display bottlenecks
+
+PS -> WB: Click "Detect Bottlenecks"
+WB -> FA: POST /performance_agent/extract_bottlenecks
+note right: project_id, document_id
+
+== Bottleneck Analysis Process ==
+
+FA -> PA: extract_bottlenecks(project_id, document_id)
+PA -> BA: analyze_bottlenecks(project_id, document_id)
+
+== Document Analysis ==
+BA -> CDB: Query document embeddings
+note right: Similarity threshold > 0.20
+CDB --> BA: Relevant document chunks
+BA -> LLM: Analyze bottlenecks from context
+note right: Prompt: "Extract project bottlenecks in bullet points"
+LLM --> BA: Bottleneck data
+
+== Workflow Analysis ==
+BA -> CDB: Query project_tasks collection
+CDB --> BA: Task data
+BA -> CDB: Query project_milestones collection
+CDB --> BA: Milestone data
+BA -> BA: Analyze task dependencies
+BA -> BA: Identify workflow delays
+BA -> BA: Detect critical dependencies
+
+== Bottleneck Classification ==
+BA -> BA: Classify bottlenecks by severity
+note right: Critical, High, Medium, Low
+BA -> BA: Identify bottleneck types
+note right: Resource, Process, Dependency, External
+BA -> BA: Generate bottleneck insights
+BA -> BA: Create optimization recommendations
+
+== Store Bottleneck Data ==
+BA -> CDB: Store bottlenecks in project_bottlenecks
+note right: Metadata: severity, type, recommendations
+CDB --> BA: Success
+BA -> PA: Bottleneck analysis complete
+PA -> DM: Update performance metrics
+DM --> PA: Success
+
+== Display Bottleneck Results ==
+PA --> FA: Bottleneck analysis results
+FA --> WB: Bottleneck data with recommendations
+WB --> PS: Display detected bottlenecks
+
+== Bottleneck Monitoring ==
+
+PS -> WB: View bottleneck details
+WB -> FA: GET /performance_agent/bottleneck_details/<bottleneck_id>
+FA -> BA: get_bottleneck_details(bottleneck_id)
+BA -> CDB: Query specific bottleneck
+CDB --> BA: Bottleneck details
+BA -> BA: Generate detailed analysis
+BA --> FA: Detailed bottleneck data
+FA --> WB: Render bottleneck details
+WB --> PS: Display detailed bottleneck view
+
+== Bottleneck Resolution Tracking ==
+
+PS -> WB: Mark bottleneck as resolved
+WB -> FA: POST /performance_agent/resolve_bottleneck
+note right: bottleneck_id, resolution_notes
+
+FA -> BA: resolve_bottleneck(bottleneck_id, notes)
+BA -> CDB: Update bottleneck status
+CDB --> BA: Success
+BA -> BA: Update workflow analysis
+BA --> FA: Bottleneck resolved
+FA --> WB: Success response
+WB --> PS: Display updated status
+
+== Automated Bottleneck Detection ==
+
+note over BA: Continuous monitoring
+BA -> CDB: Query all project data
+CDB --> BA: Project data
+BA -> BA: Analyze workflow patterns
+BA -> BA: Detect new bottlenecks
+BA -> LLM: Validate bottleneck detection
+LLM --> BA: Validation results
+BA -> CDB: Update bottleneck collections
+CDB --> BA: Success
+BA -> DM: Update performance metrics
+DM --> BA: Success
+
+@enduml

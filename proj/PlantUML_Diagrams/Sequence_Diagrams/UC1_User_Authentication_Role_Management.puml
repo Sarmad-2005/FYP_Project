@@ -1,0 +1,168 @@
+@startuml UC1 - User Authentication & Role Management
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC1 - User Authentication & Role Management\nSequence Diagram
+
+actor "Project Manager" as PM
+actor "Project Staff" as PS
+actor "Auditor" as AU
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Authentication Service" as AS
+participant "Role Manager" as RM
+participant "Database Manager" as DM
+participant "Session Manager" as SM
+
+== User Login Process ==
+
+PM -> WB: Navigate to login page
+WB -> FA: GET /login
+FA --> WB: Render login.html
+WB --> PM: Display login form
+
+PM -> WB: Enter credentials
+WB -> FA: POST /login
+note right: username, password
+
+FA -> AS: authenticate_user(username, password)
+AS -> DM: query_user_credentials(username)
+DM --> AS: User data
+AS -> AS: Verify password hash
+alt Valid credentials
+    AS -> RM: get_user_roles(username)
+    RM -> DM: query_user_roles(username)
+    DM --> RM: Role data
+    RM --> AS: User roles
+    AS -> SM: create_session(user_id, roles)
+    SM --> AS: Session token
+    AS --> FA: Authentication success
+    FA -> FA: Set session cookie
+    FA --> WB: Redirect to dashboard
+    WB --> PM: Display dashboard
+else Invalid credentials
+    AS --> FA: Authentication failed
+    FA --> WB: Error message
+    WB --> PM: Display error
+end
+
+== Role-Based Access Control ==
+
+PS -> WB: Access project details
+WB -> FA: GET /project/<project_id>
+FA -> SM: validate_session(session_token)
+SM --> FA: Session valid
+FA -> RM: check_permission(user_id, "view_project")
+RM -> DM: query_user_permissions(user_id)
+DM --> RM: User permissions
+alt Has permission
+    RM --> FA: Permission granted
+    FA -> DM: get_project(project_id)
+    DM --> FA: Project data
+    FA --> WB: Render project details
+    WB --> PS: Display project details
+else No permission
+    RM --> FA: Permission denied
+    FA --> WB: Access denied page
+    WB --> PS: Display access denied
+end
+
+== User Profile Management ==
+
+PM -> WB: Access profile settings
+WB -> FA: GET /profile
+FA -> SM: validate_session(session_token)
+SM --> FA: Session valid
+FA -> DM: get_user_profile(user_id)
+DM --> FA: Profile data
+FA --> WB: Render profile.html
+WB --> PM: Display profile settings
+
+PM -> WB: Update profile information
+WB -> FA: POST /update_profile
+note right: name, email, preferences
+
+FA -> SM: validate_session(session_token)
+SM --> FA: Session valid
+FA -> DM: update_user_profile(user_id, profile_data)
+DM --> FA: Profile updated
+FA --> WB: Success response
+WB --> PM: Display success message
+
+== Role Assignment ==
+
+AU -> WB: Access user management
+WB -> FA: GET /admin/users
+FA -> SM: validate_session(session_token)
+SM --> FA: Session valid
+FA -> RM: check_permission(user_id, "manage_users")
+RM --> FA: Permission granted
+FA -> DM: get_all_users()
+DM --> FA: Users list
+FA --> WB: Render user management
+WB --> AU: Display user list
+
+AU -> WB: Assign role to user
+WB -> FA: POST /assign_role
+note right: target_user_id, role_name
+
+FA -> RM: assign_role(target_user_id, role_name)
+RM -> DM: update_user_role(target_user_id, role_name)
+DM --> RM: Role updated
+RM --> FA: Role assigned
+FA --> WB: Success response
+WB --> AU: Display success message
+
+== Session Management ==
+
+note over SM: Session timeout monitoring
+SM -> SM: Check session validity
+alt Session expired
+    SM -> DM: invalidate_session(session_token)
+    DM --> SM: Session invalidated
+    SM --> FA: Session expired
+    FA --> WB: Redirect to login
+    WB --> PM: Display login page
+else Session valid
+    SM -> SM: Extend session timeout
+end
+
+== Logout Process ==
+
+PS -> WB: Click logout
+WB -> FA: POST /logout
+FA -> SM: invalidate_session(session_token)
+SM -> DM: remove_session(session_token)
+DM --> SM: Session removed
+SM --> FA: Logout complete
+FA -> FA: Clear session cookie
+FA --> WB: Redirect to login
+WB --> PS: Display login page
+
+== Multi-Role User Access ==
+
+PM -> WB: Access audit features
+note right: User has both PM and Auditor roles
+WB -> FA: GET /audit/dashboard
+FA -> SM: validate_session(session_token)
+SM --> FA: Session valid
+FA -> RM: get_user_roles(user_id)
+RM --> FA: [ProjectManager, Auditor]
+FA -> RM: check_permission(user_id, "view_audit")
+RM --> FA: Permission granted
+FA -> DM: get_audit_data()
+DM --> FA: Audit data
+FA --> WB: Render audit dashboard
+WB --> PM: Display audit interface
+
+@enduml

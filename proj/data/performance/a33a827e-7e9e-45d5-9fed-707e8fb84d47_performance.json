@@ -1,0 +1,45 @@
+{
+  "2025-12-09T23:17:21.668300": {
+    "project_id": "a33a827e-7e9e-45d5-9fed-707e8fb84d47",
+    "document_id": "c9448b11-4abb-42ad-bb54-08c12dad2790",
+    "timestamp": "2025-12-09T23:17:21.668300",
+    "milestones": {
+      "success": true,
+      "count": 8,
+      "details_count": 8,
+      "suggestions_count": 11,
+      "error": null
+    },
+    "tasks": {
+      "success": true,
+      "count": 19,
+      "details_count": 19,
+      "suggestions_count": 18,
+      "completion_analysis": true,
+      "error": null
+    },
+    "bottlenecks": {
+      "success": true,
+      "count": 9,
+      "details_count": 9,
+      "suggestions_count": 18,
+      "error": null
+    },
+    "requirements": {
+      "success": true,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": null
+    },
+    "actors": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "linked_requirements_count": 0,
+      "error": "No actors parsed"
+    },
+    "completion_score": 0.5789473684210527,
+    "overall_success": true
+  }
+}

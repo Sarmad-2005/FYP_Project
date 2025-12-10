@@ -1,0 +1,1532 @@
+{% extends "base.html" %}
+
+{% block title %}Resource Agent Dashboard - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="resource-dashboard">
+    <!-- Hidden doc id for first generation -->
+    {% if first_doc_id %}
+    <input type="hidden" id="first-doc-id" value="{{ first_doc_id }}">
+    {% endif %}
+    
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title-modern">Resource Agent Dashboard</h1>
+            <p class="dashboard-subtitle-modern">{{ project.name }} - Task & Resource Optimization</p>
+            <div class="dashboard-meta-info">
+                <span>Project ID: {{ project.id }}</span>
+                <span id="last-analysis-timestamp">Loading...</span>
+            </div>
+        </div>
+        <div class="dashboard-controls">
+            <button onclick="runFirstGeneration()" class="btn btn-primary" id="first-generation-btn">
+                <i class="fas fa-play"></i> Run First Generation
+            </button>
+            <button onclick="refreshResourceData()" class="btn btn-secondary">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+            <a href="/project/{{ project.id }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to Project
+            </a>
+        </div>
+    </div>
+
+    <!-- Task Analysis Card -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-tasks text-blue-500"></i> Task Analysis
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-info" id="task-analysis-count">0 tasks analyzed</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="task-analysis-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="text-center p-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-4"></i>
+                    <p>Loading task analysis...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dependencies Graph Card -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-project-diagram text-purple-500"></i> Task Dependencies
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-info" id="dependencies-count">0 dependencies</span>
+            </div>
+        </div>
+        <div class="card-body" style="position: relative;">
+            <div id="dependencies-graph-container" class="graph-container">
+                <div class="text-center p-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-4"></i>
+                    <p>Loading dependencies graph...</p>
+                </div>
+            </div>
+            <!-- Task Details Card (Inline) -->
+            <div id="task-details-card" class="task-details-card hidden">
+                <div class="task-details-card-header">
+                    <h4>
+                        <i class="fas fa-tasks text-blue-500"></i>
+                        Task Details
+                    </h4>
+                    <button onclick="closeTaskDetailsCard()" class="task-details-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="task-details-card-body" id="task-details-card-content">
+                    <div class="text-center p-8 text-gray-500">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-4"></i>
+                        <p>Loading task details...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Critical Path Graph Card -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-route text-red-500"></i> Critical Path Method
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-danger" id="critical-path-length">0 tasks</span>
+                <span class="badge badge-info" id="critical-path-duration">0 hours</span>
+            </div>
+        </div>
+        <div class="card-body" style="position: relative;">
+            <div id="critical-path-graph-container" class="graph-container critical-path-graph">
+                <div class="text-center p-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-4"></i>
+                    <p>Loading critical path graph...</p>
+                </div>
+            </div>
+            <!-- Task Details Card (Inline) -->
+            <div id="task-details-card-cp" class="task-details-card hidden">
+                <div class="task-details-card-header">
+                    <h4>
+                        <i class="fas fa-tasks text-red-500"></i>
+                        Task Details
+                    </h4>
+                    <button onclick="closeTaskDetailsCardCP()" class="task-details-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="task-details-card-body" id="task-details-card-content-cp">
+                    <div class="text-center p-8 text-gray-500">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-4"></i>
+                        <p>Loading task details...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Work Team & Resource Assignment Card (Combined) -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-users-cog text-green-500"></i> Work Team & Resource Management
+            </h3>
+            <div class="flex items-center gap-2">
+                <button onclick="showAddMemberCard()" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add Member
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Financial Summary Section -->
+            <div class="financial-summary-card">
+                <div class="financial-summary-header">
+                    <div class="financial-summary-title">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Financial Summary</span>
+                    </div>
+                </div>
+                <div class="financial-metrics-grid">
+                    <div class="financial-metric-card budget">
+                        <div class="metric-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="metric-content">
+                            <p class="metric-label">Total Budget</p>
+                            <span class="metric-value-badge budget-badge" id="resource-budget">PKR 0</span>
+                        </div>
+                    </div>
+                    <div class="financial-metric-card expenses">
+                        <div class="metric-icon">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="metric-content">
+                            <p class="metric-label">Total Expenses</p>
+                            <span class="metric-value-badge expenses-badge" id="resource-expenses">PKR 0</span>
+                        </div>
+                    </div>
+                    <div class="financial-metric-card revenue">
+                        <div class="metric-icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="metric-content">
+                            <p class="metric-label">Total Revenue</p>
+                            <span class="metric-value-badge revenue-badge" id="resource-revenue">PKR 0</span>
+                        </div>
+                    </div>
+                    <div class="financial-metric-card available">
+                        <div class="metric-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="metric-content">
+                            <p class="metric-label">Available</p>
+                            <span class="metric-value-badge available-badge" id="resource-available">PKR 0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Assignment Button -->
+                <div class="ai-assignment-section">
+                    <button onclick="assignResourcesAI()" class="btn-ai-assign" id="assign-resources-btn">
+                        <i class="fas fa-robot"></i>
+                        <span>Assign Resources (AI)</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Assignment Results -->
+            <div id="assignment-results" class="hidden mb-6">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> Resources assigned successfully!
+                </div>
+            </div>
+            
+            <!-- Loading Indicator for AI Assignment -->
+            <div id="assignment-loading" class="hidden mb-6">
+                <div class="alert alert-info">
+                    <i class="fas fa-spinner fa-spin"></i> AI is assigning resources, please wait...
+                </div>
+            </div>
+            
+            <!-- Work Team Members -->
+            <div class="work-team-section">
+                <div class="work-team-header">
+                    <div class="work-team-title">
+                        <i class="fas fa-users"></i>
+                        <span>Work Team Members</span>
+                    </div>
+                </div>
+                
+                <!-- Add Member Inline Card -->
+                <div id="add-member-card" class="add-member-card hidden">
+                    <div class="add-member-card-header">
+                        <h4>
+                            <i class="fas fa-user-plus text-green-600"></i>
+                            Add New Team Member
+                        </h4>
+                        <button onclick="closeAddMemberCard()" class="add-member-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="add-member-card-body">
+                        <form id="add-team-member-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i> Name
+                                    </label>
+                                    <input type="text" id="team-member-name" class="form-control" placeholder="Enter member name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-tag"></i> Type
+                                    </label>
+                                    <select id="team-member-type" class="form-control" required>
+                                        <option value="person">Person</option>
+                                        <option value="organization">Organization</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add Member
+                                </button>
+                                <button type="button" onclick="closeAddMemberCard()" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Edit Resource Inline Card -->
+                <div id="edit-resource-card" class="edit-resource-card hidden">
+                    <div class="edit-resource-card-header">
+                        <h4>
+                            <i class="fas fa-edit text-blue-600"></i>
+                            Edit Resource Assignment
+                        </h4>
+                        <button onclick="closeEditResourceCard()" class="edit-resource-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="edit-resource-card-body">
+                        <form id="edit-resource-form">
+                            <input type="hidden" id="edit-team-member-id">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-coins"></i> Assigned Resources (PKR)
+                                </label>
+                                <input type="number" id="edit-resource-amount" class="form-control" step="0.01" min="0" placeholder="Enter amount in PKR" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Update
+                                </button>
+                                <button type="button" onclick="closeEditResourceCard()" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="work-team-container" class="work-team-grid">
+                    <div class="text-center p-8 text-gray-500">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-4"></i>
+                        <p>Loading work team...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Details Modal (for dependency graph nodes) -->
+<div id="task-details-modal" class="modal hidden">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-tasks text-blue-500"></i>
+                Task Details
+            </h3>
+            <button onclick="closeTaskDetailsModal()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="task-details-content">
+            <div class="text-center p-8">
+                <i class="fas fa-spinner fa-spin fa-2x mb-4"></i>
+                <p>Loading task details...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Team Member Modal - Simple Inline Card -->
+<div id="add-team-member-modal" class="simple-modal hidden">
+    <div class="simple-modal-content">
+        <div class="simple-modal-header">
+            <h3>Add Work Team Member</h3>
+            <button onclick="closeAddTeamMemberModal()" class="simple-modal-close">&times;</button>
+        </div>
+        <div class="simple-modal-body">
+            <form id="add-team-member-form">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="team-member-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="team-member-type" class="form-control" required>
+                        <option value="person">Person</option>
+                        <option value="organization">Organization</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Add Member</button>
+                    <button type="button" onclick="closeAddTeamMemberModal()" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.resource-dashboard {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.work-team-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+}
+
+.work-team-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.work-team-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.work-team-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.work-team-card-type {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.work-team-card-type.person {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.work-team-card-type.organization {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.work-team-card-resources {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #059669;
+    margin: 0.5rem 0;
+}
+
+.work-team-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.priority-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.priority-badge.High {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.priority-badge.Medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.priority-badge.Low {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.complexity-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.complexity-badge.Simple {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.complexity-badge.Moderate {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.complexity-badge.Complex {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.complexity-badge.Very\ Complex {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Task Analysis Cards */
+.task-analysis-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.task-analysis-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.task-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-left: 0.75rem;
+    border-left: 4px solid #3b82f6;
+}
+
+.task-card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1f2937;
+    line-height: 1.4;
+    flex: 1;
+    margin-right: 0.5rem;
+}
+
+.task-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.task-card-metric {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.task-card-metric i {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+}
+
+.task-card-metric > div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.task-card-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.task-card-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-top: 0.125rem;
+}
+
+/* Financial Summary Card */
+.financial-summary-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.financial-summary-header {
+    margin-bottom: 1.5rem;
+}
+
+.financial-summary-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.financial-summary-title i {
+    font-size: 1.75rem;
+}
+
+.financial-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.financial-metric-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-width: 0; /* Allows flex item to shrink */
+    overflow: hidden;
+}
+
+.financial-metric-card:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.financial-metric-card.budget .metric-icon {
+    background: rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+}
+
+.financial-metric-card.expenses .metric-icon {
+    background: rgba(245, 158, 11, 0.3);
+    color: #fcd34d;
+}
+
+.financial-metric-card.revenue .metric-icon {
+    background: rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+}
+
+.financial-metric-card.available .metric-icon {
+    background: rgba(139, 92, 246, 0.3);
+    color: #c4b5fd;
+}
+
+.metric-content {
+    flex: 1;
+    min-width: 0; /* Allows flex item to shrink below content size */
+    overflow: hidden;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    hyphens: auto;
+}
+
+/* Badge-style financial values */
+.metric-value-badge {
+    display: inline-block;
+    padding: 0.5rem 0.875rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    line-height: 1.2;
+    margin-top: 0.25rem;
+}
+
+.metric-value-badge.budget-badge {
+    background: rgba(59, 130, 246, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.metric-value-badge.expenses-badge {
+    background: rgba(245, 158, 11, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.metric-value-badge.revenue-badge {
+    background: rgba(16, 185, 129, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.metric-value-badge.available-badge {
+    background: rgba(139, 92, 246, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
+.ai-assignment-section {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-ai-assign {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+.btn-ai-assign:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+}
+
+.btn-ai-assign:active {
+    transform: translateY(0);
+}
+
+.btn-ai-assign i {
+    font-size: 1.25rem;
+}
+
+/* Work Team Section */
+.work-team-section {
+    margin-top: 2rem;
+}
+
+.work-team-header {
+    margin-bottom: 1.5rem;
+}
+
+.work-team-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.work-team-title i {
+    color: #10b981;
+    font-size: 1.75rem;
+}
+
+.work-team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.work-team-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 1.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.work-team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.work-team-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: #10b981;
+}
+
+.work-team-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+}
+
+.work-team-card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1f2937;
+    flex: 1;
+    line-height: 1.3;
+}
+
+.work-team-card-type {
+    padding: 0.375rem 0.875rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.work-team-card-type.person {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+.work-team-card-type.organization {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.work-team-card-resources {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #059669;
+    margin: 1rem 0;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid #10b981;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+.work-team-card-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.work-team-card-actions .btn {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.work-team-card-actions .btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+}
+
+.work-team-card-actions .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.work-team-card-actions .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+}
+
+.work-team-card-actions .btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.work-team-card-resources.no-resources {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-color: #d1d5db;
+    color: #6b7280;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Graph Containers */
+.graph-container {
+    width: 100%;
+    height: 600px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.graph-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%);
+    z-index: 1;
+}
+
+.critical-path-graph::before {
+    background: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #dc2626 100%);
+}
+
+.graph-container canvas {
+    border-radius: 12px;
+}
+
+/* Modal Base Styles - For Task Details (Full Screen Overlay) */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 10000;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+}
+
+.modal:not(.hidden) {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.hidden {
+    display: none !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: calc(100vh - 4rem);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10001;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Simple Modal - For Add Member (No Overlay) */
+.simple-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    pointer-events: none;
+    background: transparent;
+}
+
+.simple-modal:not(.hidden) {
+    display: flex;
+}
+
+.simple-modal.hidden {
+    display: none !important;
+}
+
+.simple-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 10000;
+    pointer-events: auto;
+    animation: slideUp 0.3s ease;
+}
+
+.simple-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.simple-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.simple-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.simple-modal-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+.simple-modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(90vh - 80px);
+}
+
+.modal-large {
+    max-width: 700px;
+    width: 90%;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+.task-details-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.task-details-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.task-details-badges {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.task-details-section {
+    margin-bottom: 1.5rem;
+}
+
+.task-details-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.task-details-section-title i {
+    color: #6366f1;
+}
+
+.task-details-content {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #6366f1;
+}
+
+.task-details-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.task-details-metric:last-child {
+    border-bottom: none;
+}
+
+.task-details-metric-label {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.task-details-metric-value {
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 1rem;
+}
+
+.task-dependencies-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-dependencies-list li {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #e0e7ff;
+    border-radius: 6px;
+    color: #4f46e5;
+    font-weight: 500;
+    border-left: 3px solid #6366f1;
+}
+
+.task-dependencies-list li:last-child {
+    margin-bottom: 0;
+}
+
+.no-dependencies {
+    color: #9ca3af;
+    font-style: italic;
+    padding: 0.75rem;
+    text-align: center;
+    background: #f3f4f6;
+    border-radius: 6px;
+}
+
+#assignment-loading {
+    margin-top: 1rem;
+}
+
+#assignment-loading .alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    color: #1e40af;
+    font-weight: 600;
+}
+
+/* Fix for work team card resources - override conflicting styles */
+.work-team-card .work-team-card-resources {
+    font-size: 1.75rem !important;
+    font-weight: 800 !important;
+    color: #059669 !important;
+    margin: 1rem 0 !important;
+    padding: 1.25rem !important;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+    border: 2px solid #10b981 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15) !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+    background-clip: unset !important;
+}
+
+/* Add Member Inline Card */
+.add-member-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    border: 2px solid #10b981;
+    border-radius: 16px;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+    animation: slideDown 0.3s ease;
+    overflow: hidden;
+}
+
+.add-member-card.hidden {
+    display: none;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.add-member-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.add-member-card-header h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.add-member-card-header h4 i {
+    color: white;
+}
+
+.add-member-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.add-member-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.add-member-card-body {
+    padding: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-group label i {
+    color: #10b981;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Increase dropdown/select text size */
+select.form-control,
+select.form-control option {
+    font-size: 1rem !important;
+    padding: 0.75rem !important;
+    line-height: 1.5 !important;
+}
+
+select.form-control {
+    background-color: white;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+/* Task Details Inline Card */
+.task-details-card {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 400px;
+    max-width: calc(100% - 2rem);
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideInRight 0.3s ease;
+    max-height: calc(100% - 2rem);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.task-details-card.hidden {
+    display: none;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.task-details-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+}
+
+.task-details-card-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.task-details-card-header h4 i {
+    color: white;
+}
+
+.task-details-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.task-details-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.task-details-card-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(600px - 80px);
+}
+
+/* Critical Path Task Details Card */
+#task-details-card-cp .task-details-card-header {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+}
+
+/* Edit Resource Inline Card */
+.edit-resource-card {
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    border: 2px solid #3b82f6;
+    border-radius: 16px;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+    animation: slideDown 0.3s ease;
+    overflow: hidden;
+}
+
+.edit-resource-card.hidden {
+    display: none;
+}
+
+.edit-resource-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.edit-resource-card-header h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.edit-resource-card-header h4 i {
+    color: white;
+}
+
+.edit-resource-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.edit-resource-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.edit-resource-card-body {
+    padding: 1.5rem;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/vis-network@latest/dist/vis-network.min.js"></script>
+<script src="/static/js/resource-agent.js"></script>
+<script>
+    // Store project ID globally
+    window.currentProjectId = '{{ project.id }}';
+    
+    // Store document ID if available
+    {% if first_doc_id %}
+    window.currentDocumentId = '{{ first_doc_id }}';
+    {% endif %}
+    
+    // Initialize dashboard when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.currentDocumentId) {
+            currentDocumentId = window.currentDocumentId;
+        }
+        loadResourceDashboard('{{ project.id }}');
+    });
+</script>
+{% endblock %}
+

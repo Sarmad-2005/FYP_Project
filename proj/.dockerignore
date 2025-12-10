@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data and databases (mounted as volumes)
+chroma_db/
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Documentation
+Documentation/
+Details/
+Planning/
+PlantUML_Diagrams/
+*.md
+*.puml
+# Exclude .txt files but keep requirements.txt
+*.txt
+!requirements.txt
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose.yml
+Dockerfile*
+!Dockerfile
+.dockerignore
+!docker-entrypoint.sh
+
+# Test files
+test_*.py
+*_test.py
+quick_test.py
+verify_*.py
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project root files (not needed in containers)
+app.py
+PHASE*.md
+DOCKER_SETUP_GUIDE.md
+
+# Static and templates (if not needed in microservices)
+static/
+templates/
+
+# Backend - needed by services, but we copy it explicitly in Dockerfiles
+# backend/

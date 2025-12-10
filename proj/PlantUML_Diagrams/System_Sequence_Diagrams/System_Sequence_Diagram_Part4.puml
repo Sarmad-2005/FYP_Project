@@ -1,0 +1,97 @@
+@startuml System Sequence Diagram - Part 4: Advanced Features & Integration
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title System Sequence Diagram - Part 4
+Advanced Features & Integration
+
+actor "Project Manager" as PM
+actor "Project Staff" as PS
+actor "Field Staff" as FS
+participant "Web Browser" as WB
+participant "Mobile App" as MA
+participant "Flask Application" as FA
+participant "AI Engine" as AI
+participant "Database Manager" as DM
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+
+== Resource Optimization ==
+
+PM -> WB: View resource dashboard
+WB -> FA: GET /resources/dashboard/<project_id>
+FA -> AI: get_resource_data(project_id)
+AI -> DM: query_resource_allocations(project_id)
+DM --> AI: Resource data
+AI -> LLM: optimize_resource_allocation(resource_data)
+LLM --> AI: Optimization recommendations
+AI -> AI: generate_resource_schedule(optimization_recommendations)
+AI --> FA: Resource optimization
+FA --> WB: Render resource dashboard
+WB --> PM: Display resource optimization
+
+== Communication Intelligence ==
+
+PS -> WB: Send team message
+WB -> FA: POST /communication/send_message
+FA -> AI: process_communication(message, project_id)
+AI -> LLM: analyze_communication(message, project_context)
+LLM --> AI: Communication analysis
+AI -> AI: extract_action_items(communication_analysis)
+AI -> AI: detect_conflicts(communication_analysis)
+AI -> AI: analyze_sentiment(communication_analysis)
+AI -> DM: save_communication_analysis(project_id, analysis)
+DM --> AI: Analysis saved
+AI --> FA: Communication processed
+FA --> WB: Message sent
+WB --> PS: Display message sent
+
+== Mobile Monitoring ==
+
+FS -> MA: Access mobile dashboard
+MA -> FA: GET /mobile/dashboard/<project_id>
+FA -> AI: get_mobile_data(project_id)
+AI -> DM: query_mobile_summary(project_id)
+DM --> AI: Summary data
+AI -> LLM: generate_mobile_summary(summary_data)
+LLM --> AI: Mobile summary
+AI --> FA: Mobile data
+FA --> MA: Mobile dashboard
+MA --> FS: Display mobile interface
+
+== System Integration & Data Flow ==
+
+note over AI, DM, CDB, LLM
+AI Engine coordinates all modules
+end note
+AI -> DM: query_integrated_data(project_id)
+DM --> AI: Integrated data
+AI -> CDB: query_vector_data(project_id)
+CDB --> AI: Vector data
+AI -> LLM: process_integrated_analysis(integrated_data, vector_data)
+LLM --> AI: Integrated insights
+AI -> AI: generate_cross_module_recommendations(integrated_insights)
+AI -> DM: save_integrated_analysis(project_id, analysis)
+DM --> AI: Analysis saved
+AI -> FA: send_integrated_updates(project_id, updates)
+FA -> WB: Update all dashboards
+FA -> MA: Update mobile interface
+WB --> PM: Display integrated dashboard
+MA --> FS: Display integrated mobile view
+
+@enduml
+
+
+
+
+

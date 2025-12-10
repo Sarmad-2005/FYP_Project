@@ -1,0 +1,54 @@
+{
+  "session_id": "d33399c4",
+  "project_id": "3600b06d-d59f-4b71-b94d-42db1dd175be",
+  "created_at": "2025-10-30T13:02:00.657398",
+  "last_accessed": "2025-10-30T13:02:00.657398",
+  "csv_file": "data.csv",
+  "metadata": {
+    "headers": [
+      "NewGSNo",
+      "SchemeNo",
+      "ProjectID",
+      "Name",
+      "Latitude",
+      "Longitude",
+      "District"
+    ],
+    "rows": 122,
+    "columns": 7,
+    "analysis": {
+      "total_rows": 122,
+      "total_columns": 7,
+      "column_types": {
+        "NewGSNo": "numeric",
+        "SchemeNo": "numeric",
+        "ProjectID": "numeric",
+        "Name": "text",
+        "Latitude": "numeric",
+        "Longitude": "numeric",
+        "District": "text"
+      },
+      "numeric_columns": [
+        "NewGSNo",
+        "SchemeNo",
+        "ProjectID",
+        "Latitude",
+        "Longitude"
+      ],
+      "text_columns": [
+        "Name",
+        "District"
+      ],
+      "date_columns": [],
+      "has_nulls": {
+        "NewGSNo": 0,
+        "SchemeNo": 0,
+        "ProjectID": 0,
+        "Name": 0,
+        "Latitude": 60,
+        "Longitude": 60,
+        "District": 0
+      }
+    }
+  }
+}

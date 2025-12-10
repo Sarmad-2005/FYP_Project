@@ -1,0 +1,193 @@
+@startuml UC12 - Task Prioritization Engine
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC12 - Task Prioritization Engine\nSequence Diagram
+
+actor "Project Staff" as PS
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Task Agent" as TA
+participant "Prioritization Engine" as PE
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Access Task Management ==
+
+PS -> WB: Navigate to task management
+WB -> FA: GET /tasks/prioritization/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_task_data(project_id)
+DM --> FA: Task data
+FA --> WB: Render task dashboard
+WB --> PS: Display task management interface
+
+== Task Prioritization Request ==
+
+PS -> WB: Request task prioritization
+WB -> FA: POST /tasks/prioritize
+note right: project_id, prioritization_parameters
+
+FA -> TA: prioritize_tasks(project_id, parameters)
+TA -> DM: get_all_tasks(project_id)
+DM --> TA: Task data
+TA -> DM: get_task_dependencies(project_id)
+DM --> TA: Dependency data
+TA -> DM: get_task_deadlines(project_id)
+DM --> TA: Deadline data
+TA -> DM: get_resource_availability(project_id)
+DM --> TA: Resource data
+
+== AI-Powered Task Analysis ==
+
+TA -> PE: analyze_task_priorities(project_id)
+PE -> LLM: Analyze task importance
+note right: Context: task data, dependencies, deadlines, resources
+LLM --> PE: Task importance scores
+PE -> PE: Calculate urgency scores
+note right: Based on deadlines, dependencies, impact
+PE -> PE: Calculate effort estimates
+note right: Based on complexity, resources, historical data
+PE -> PE: Calculate dependency scores
+note right: Based on task relationships, critical path
+
+== Dynamic Prioritization ==
+
+PE -> PE: Calculate composite priority scores
+note right: Weighted combination of importance, urgency, effort, dependencies
+PE -> LLM: Optimize task ordering
+note right: Context: priority scores, constraints, resource availability
+LLM --> PE: Optimized task sequence
+PE -> PE: Generate priority rankings
+PE -> PE: Identify critical path tasks
+PE -> PE: Create task scheduling recommendations
+
+== Priority Updates ==
+
+PE -> CDB: Store prioritization results
+CDB --> PE: Results saved
+PE -> DM: update_task_priorities(project_id, priority_data)
+DM --> PE: Priorities updated
+PE --> TA: Prioritization complete
+TA --> FA: Task prioritization results
+FA --> WB: Prioritization results
+WB --> PS: Display prioritized task list
+
+== Real-time Priority Updates ==
+
+note over PE: Continuous monitoring
+PE -> DM: query_task_changes(project_id)
+DM --> PE: Task change data
+PE -> PE: Recalculate priorities
+alt Priority changes detected
+    PE -> PE: Update task rankings
+    PE -> DM: update_task_priorities(project_id, new_priorities)
+    DM --> PE: Priorities updated
+    PE -> FA: send_priority_update(project_id, updates)
+    FA -> WB: Push notification
+    WB --> PS: Display updated priorities
+end
+
+== Task Dependency Management ==
+
+PM -> WB: Update task dependencies
+WB -> FA: POST /tasks/update_dependencies
+note right: project_id, task_id, dependencies
+
+FA -> TA: update_task_dependencies(project_id, task_id, dependencies)
+TA -> PE: recalculate_priorities(project_id)
+PE -> PE: Update dependency scores
+PE -> LLM: Reoptimize task sequence
+note right: Context: updated dependencies, current priorities
+LLM --> PE: Reoptimized sequence
+PE -> DM: update_task_priorities(project_id, new_priorities)
+DM --> PE: Priorities updated
+PE --> TA: Dependencies updated
+TA --> FA: Update complete
+FA --> WB: Update confirmation
+WB --> PM: Display updated task priorities
+
+== Critical Path Analysis ==
+
+PS -> WB: View critical path
+WB -> FA: GET /tasks/critical_path/<project_id>
+FA -> TA: get_critical_path(project_id)
+TA -> PE: calculate_critical_path(project_id)
+PE -> DM: get_task_dependencies(project_id)
+DM --> PE: Dependency data
+PE -> PE: Identify critical path tasks
+PE -> LLM: Analyze critical path risks
+note right: Context: critical path, dependencies, resource constraints
+LLM --> PE: Critical path analysis
+PE --> TA: Critical path data
+TA --> FA: Critical path results
+FA --> WB: Render critical path
+WB --> PS: Display critical path visualization
+
+== Task Scheduling Optimization ==
+
+PM -> WB: Optimize task scheduling
+WB -> FA: POST /tasks/optimize_schedule
+note right: project_id, optimization_goals
+
+FA -> TA: optimize_task_schedule(project_id, goals)
+TA -> PE: find_optimal_schedule(project_id, goals)
+PE -> LLM: Optimize task timing
+note right: Context: task priorities, dependencies, resource availability
+LLM --> PE: Scheduling recommendations
+PE -> PE: Create optimized schedule
+PE -> PE: Validate schedule feasibility
+PE -> DM: update_task_schedule(project_id, schedule)
+DM --> PE: Schedule updated
+PE --> TA: Schedule optimized
+TA --> FA: Optimization results
+FA --> WB: Schedule data
+WB --> PM: Display optimized schedule
+
+== Task Performance Monitoring ==
+
+PS -> WB: View task performance
+WB -> FA: GET /tasks/performance/<project_id>
+FA -> TA: get_task_performance(project_id)
+TA -> DM: get_task_completion_data(project_id)
+DM --> TA: Completion data
+TA -> PE: analyze_task_performance(completion_data)
+PE -> LLM: Analyze performance patterns
+note right: Context: task completion rates, priority accuracy, efficiency
+LLM --> PE: Performance insights
+PE -> PE: Calculate performance metrics
+PE --> TA: Performance analysis
+TA --> FA: Performance data
+FA --> WB: Render performance dashboard
+WB --> PS: Display task performance
+
+== Priority Adjustment ==
+
+PM -> WB: Manually adjust priorities
+WB -> FA: POST /tasks/adjust_priorities
+note right: project_id, task_id, new_priority
+
+FA -> TA: adjust_task_priority(project_id, task_id, new_priority)
+TA -> PE: recalculate_affected_priorities(project_id, task_id)
+PE -> PE: Update related task priorities
+PE -> DM: update_task_priorities(project_id, updated_priorities)
+DM --> PE: Priorities updated
+PE --> TA: Priorities adjusted
+TA --> FA: Adjustment complete
+FA --> WB: Adjustment confirmation
+WB --> PM: Display updated priorities
+
+@enduml

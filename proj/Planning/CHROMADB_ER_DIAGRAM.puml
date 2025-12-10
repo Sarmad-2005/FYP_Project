@@ -1,0 +1,344 @@
+@startuml ChromaDB ER Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam linetype ortho
+
+skinparam entity {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+
+skinparam relation {
+    BackgroundColor #FFFFFF
+    BorderColor #1A365D
+    FontColor #1A365D
+}
+
+title ChromaDB Collections ER Diagram
+Project Management System - Vector Database Architecture
+
+' ==========================================
+' POSTGRESQL ENTITIES (Boxes)
+' ==========================================
+package "PostgreSQL Database" as PG {
+    entity "Projects" as Projects {
+        project_id : UUID <<PK>>
+        --
+        project_name : VARCHAR(200)
+        description : TEXT
+        status : ENUM
+        budget : DECIMAL
+        created_at : TIMESTAMP
+    }
+    
+    entity "Documents" as Documents {
+        document_id : UUID <<PK>>
+        project_id : UUID <<FK>>
+        --
+        filename : VARCHAR(255)
+        file_path : VARCHAR(500)
+        file_type : VARCHAR(50)
+        uploaded_at : TIMESTAMP
+    }
+}
+
+' ==========================================
+' CHROMADB ENTITIES (Boxes - Collections)
+' ==========================================
+package "ChromaDB Collections" as CDB {
+    
+    ' Document Embeddings (Dynamic Collections)
+    entity "Document_Collection\n(p_proj_doc)" as DocCollection {
+        collection_name : STRING <<PK>>
+        --
+        Stores embeddings per document
+        Dynamic naming pattern
+    }
+    
+    ' Performance Collections
+    entity "project_milestones" as Milestones {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_tasks" as Tasks {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_bottlenecks" as Bottlenecks {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_milestone_details" as MilestoneDetails {
+        id : STRING <<PK>>
+        --
+        details_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_task_details" as TaskDetails {
+        id : STRING <<PK>>
+        --
+        details_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_bottleneck_details" as BottleneckDetails {
+        id : STRING <<PK>>
+        --
+        details_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    ' Financial Collections
+    entity "project_financial_details" as FinancialDetails {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_transactions" as Transactions {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_expense_analysis" as ExpenseAnalysis {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_revenue_analysis" as RevenueAnalysis {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_financial_suggestions" as FinancialSuggestions {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_anomaly_alerts" as AnomalyAlerts {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+    
+    entity "project_reviewed_anomalies" as ReviewedAnomalies {
+        id : STRING <<PK>>
+        --
+        document_text : STRING
+        embedding : VECTOR(384)
+    }
+}
+
+' ==========================================
+' ATTRIBUTES (Circles/Ovals)
+' ==========================================
+' Milestones Metadata Attributes
+circle "milestone_metadata" as MilestoneMeta {
+    project_id : STRING
+    document_id : STRING
+    milestone_text : STRING
+    category : STRING
+    priority : STRING
+    created_at : STRING
+    source_document : STRING
+}
+
+' Tasks Metadata Attributes
+circle "task_metadata" as TaskMeta {
+    project_id : STRING
+    document_id : STRING
+    task_text : STRING
+    category : STRING
+    priority : STRING
+    status : STRING
+    created_at : STRING
+    source_document : STRING
+}
+
+' Bottlenecks Metadata Attributes
+circle "bottleneck_metadata" as BottleneckMeta {
+    project_id : STRING
+    document_id : STRING
+    bottleneck_text : STRING
+    category : STRING
+    severity : STRING
+    impact : STRING
+    created_at : STRING
+    source_document : STRING
+}
+
+' Details Metadata Attributes
+circle "details_metadata" as DetailsMeta {
+    parent_id : STRING
+    project_id : STRING
+    document_id : STRING
+    source_document : STRING
+    created_at : STRING
+    detail_type : STRING
+}
+
+' Financial Metadata Attributes
+circle "financial_metadata" as FinancialMeta {
+    project_id : STRING
+    created_at : STRING
+    type : STRING
+    amount : FLOAT
+    category : STRING
+    transaction_date : STRING
+    status : STRING
+}
+
+' Document Collection Attributes
+circle "document_collection_metadata" as DocMeta {
+    project_id : STRING
+    document_id : STRING
+    type : STRING (sentence/table)
+    index : INTEGER
+    row_count : INTEGER
+    column_count : INTEGER
+    page : INTEGER
+}
+
+' ==========================================
+' RELATIONSHIPS (Diamonds)
+' ==========================================
+diamond "HAS" as HasDocs
+diamond "CONTAINS" as Contains
+diamond "LINKS_TO" as LinksTo
+diamond "HAS_METADATA" as HasMetadata
+diamond "GENERATES" as Generates
+diamond "STORES" as Stores
+diamond "BELONGS_TO" as BelongsTo
+diamond "REFERENCES" as References
+diamond "HAS_DETAILS" as HasDetails
+
+' ==========================================
+' RELATIONSHIP CONNECTIONS
+' ==========================================
+' PostgreSQL to ChromaDB
+Projects ||--o{ HasDocs : "has"
+HasDocs ||--o{ DocCollection : "documents"
+
+' Document Collections
+DocCollection ||--o{ Contains : "contains"
+Contains ||--o{ Documents : "embeddings"
+DocCollection }o--|| HasMetadata : "has"
+HasMetadata }o--|| DocMeta : "metadata"
+
+' Performance Collections to Projects
+Projects ||--o{ Stores : "stores"
+Stores ||--o{ Milestones : "milestones"
+Stores ||--o{ Tasks : "tasks"
+Stores ||--o{ Bottlenecks : "bottlenecks"
+
+' Performance Collections Metadata
+Milestones }o--|| HasMetadata : "has"
+HasMetadata }o--|| MilestoneMeta : "metadata"
+Tasks }o--|| HasMetadata : "has"
+HasMetadata }o--|| TaskMeta : "metadata"
+Bottlenecks }o--|| HasMetadata : "has"
+HasMetadata }o--|| BottleneckMeta : "metadata"
+
+' Details Relationships (Parent-Child)
+Milestones ||--o{ HasDetails : "has"
+HasDetails ||--o{ MilestoneDetails : "details"
+Tasks ||--o{ HasDetails : "has"
+HasDetails ||--o{ TaskDetails : "details"
+Bottlenecks ||--o{ HasDetails : "has"
+HasDetails ||--o{ BottleneckDetails : "details"
+
+' Details Metadata
+MilestoneDetails }o--|| HasMetadata : "has"
+TaskDetails }o--|| HasMetadata : "has"
+BottleneckDetails }o--|| HasMetadata : "has"
+HasMetadata }o--|| DetailsMeta : "metadata"
+
+' Details References
+MilestoneDetails }o--|| References : "references"
+TaskDetails }o--|| References : "references"
+BottleneckDetails }o--|| References : "references"
+References }o--|| Milestones : "parent"
+References }o--|| Tasks : "parent"
+References }o--|| Bottlenecks : "parent"
+
+' Financial Collections to Projects
+Projects ||--o{ Generates : "generates"
+Generates ||--o{ FinancialDetails : "financial"
+Generates ||--o{ Transactions : "transactions"
+Generates ||--o{ ExpenseAnalysis : "expenses"
+Generates ||--o{ RevenueAnalysis : "revenue"
+Generates ||--o{ FinancialSuggestions : "suggestions"
+Generates ||--o{ AnomalyAlerts : "anomalies"
+Generates ||--o{ ReviewedAnomalies : "reviewed"
+
+' Financial Collections Metadata
+FinancialDetails }o--|| HasMetadata : "has"
+Transactions }o--|| HasMetadata : "has"
+ExpenseAnalysis }o--|| HasMetadata : "has"
+RevenueAnalysis }o--|| HasMetadata : "has"
+FinancialSuggestions }o--|| HasMetadata : "has"
+AnomalyAlerts }o--|| HasMetadata : "has"
+ReviewedAnomalies }o--|| HasMetadata : "has"
+HasMetadata }o--|| FinancialMeta : "metadata"
+
+' Documents to Collections
+Documents ||--o{ BelongsTo : "belongs to"
+BelongsTo ||--o{ DocCollection : "collection"
+Documents ||--o{ Generates : "generates"
+Generates ||--o{ Milestones : "analysis"
+Generates ||--o{ Tasks : "analysis"
+Generates ||--o{ Bottlenecks : "analysis"
+Generates ||--o{ Transactions : "data"
+
+' Anomaly Relationships
+AnomalyAlerts ||--o{ LinksTo : "links to"
+LinksTo ||--o{ ReviewedAnomalies : "reviewed"
+
+note right of DocCollection
+  Dynamic Collections:
+  Naming Pattern:
+  p_{project_id[:8]}_d_{document_id[:8]}
+  Example: p_abc12345_d_def67890
+end note
+
+note right of Milestones
+  Static Collections:
+  Filtered by project_id
+  in metadata
+end note
+
+note right of MilestoneDetails
+  Large text stored in
+  document field,
+  not metadata
+end note
+
+note right of FinancialDetails
+  All financial collections
+  use metadata filtering
+  by project_id
+end note
+
+@enduml
+

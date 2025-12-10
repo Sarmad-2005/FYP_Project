@@ -1,0 +1,79 @@
+@startuml System Sequence Diagram - Part 2: AI Analysis & Monitoring
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title System Sequence Diagram - Part 2
+AI Analysis & Monitoring
+
+actor "Project Manager" as PM
+actor "Project Staff" as PS
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "AI Engine" as AI
+participant "Database Manager" as DM
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+
+== AI-Powered Analysis ==
+
+PM -> WB: Generate AI analysis
+WB -> FA: POST /performance_agent/first_generation
+FA -> AI: run_ai_analysis(project_id)
+AI -> CDB: query_document_embeddings(project_id)
+CDB --> AI: Document chunks
+AI -> LLM: analyze_project_data(document_chunks, project_context)
+LLM --> AI: Analysis results
+AI -> AI: extract_milestones(analysis_results)
+AI -> AI: extract_tasks(analysis_results)
+AI -> AI: detect_bottlenecks(analysis_results)
+AI -> CDB: store_analysis_results(project_id, results)
+CDB --> AI: Results stored
+AI -> DM: save_performance_metrics(project_id, metrics)
+DM --> AI: Metrics saved
+AI --> FA: Analysis complete
+FA --> WB: Analysis results
+WB --> PM: Display AI insights
+
+== Performance Monitoring ==
+
+PM -> WB: View performance dashboard
+WB -> FA: GET /performance_agent/dashboard/<project_id>
+FA -> AI: get_performance_data(project_id)
+AI -> CDB: query_performance_collections(project_id)
+CDB --> AI: Performance data
+AI -> LLM: generate_performance_insights(performance_data)
+LLM --> AI: Performance insights
+AI --> FA: Performance data
+FA --> WB: Render performance dashboard
+WB --> PM: Display performance metrics
+
+== Real-time Alerts & Notifications ==
+
+note over AI
+Continuous monitoring
+end note
+AI -> DM: query_alert_indicators()
+DM --> AI: Alert data
+AI -> LLM: generate_alerts(alert_data)
+LLM --> AI: Alert content
+AI -> AI: prioritize_alerts(alert_content)
+AI -> FA: send_alerts(alerts)
+FA -> WB: Push notifications
+WB --> PM: Display alerts
+
+@enduml
+
+
+
+
+

@@ -1,0 +1,23 @@
+{
+  "project_id": "a33a827e-7e9e-45d5-9fed-707e8fb84d47",
+  "document_id": "c9448b11-4abb-42ad-bb54-08c12dad2790",
+  "timestamp": "2025-12-10T14:09:36.430612",
+  "task_analysis": {
+    "success": true,
+    "count": 19,
+    "error": null
+  },
+  "dependencies": {
+    "success": true,
+    "count": 19,
+    "error": null,
+    "warning": null
+  },
+  "critical_path": {
+    "success": true,
+    "path_length": 2,
+    "total_duration": 1340.0,
+    "error": null
+  },
+  "overall_success": true
+}

@@ -1,0 +1,166 @@
+@startuml UC6 - Budget & Expenditure Audit
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC6 - Budget & Expenditure Audit\nSequence Diagram
+
+actor "Financial Officer" as FO
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Financial Agent" as FA_Agent
+participant "Budget Analyzer" as BA
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Budget Setup ==
+
+FO -> WB: Navigate to budget management
+WB -> FA: GET /financial/budget/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_budget_data(project_id)
+DM --> FA: Budget data
+FA --> WB: Render budget dashboard
+WB --> FO: Display budget interface
+
+FO -> WB: Set project budget
+WB -> FA: POST /financial/set_budget
+note right: project_id, budget_amount, categories
+
+FA -> FA_Agent: set_project_budget(project_id, budget_data)
+FA_Agent -> DM: save_budget_data(project_id, budget_data)
+DM --> FA_Agent: Budget saved
+FA_Agent --> FA: Budget configured
+FA --> WB: Success response
+WB --> FO: Display budget confirmation
+
+== Expenditure Tracking ==
+
+FO -> WB: Record expenditure
+WB -> FA: POST /financial/record_expenditure
+note right: project_id, amount, category, description
+
+FA -> FA_Agent: record_expenditure(project_id, expenditure_data)
+FA_Agent -> DM: save_expenditure(project_id, expenditure_data)
+DM --> FA_Agent: Expenditure recorded
+FA_Agent -> FA_Agent: Update budget tracking
+FA_Agent -> DM: update_budget_status(project_id)
+DM --> FA_Agent: Status updated
+FA_Agent --> FA: Expenditure recorded
+FA --> WB: Success response
+WB --> FO: Display updated budget status
+
+== Real-time Budget Monitoring ==
+
+PM -> WB: View budget status
+WB -> FA: GET /financial/budget_status/<project_id>
+FA -> FA_Agent: get_budget_status(project_id)
+FA_Agent -> DM: get_budget_data(project_id)
+DM --> FA_Agent: Budget data
+FA_Agent -> DM: get_expenditures(project_id)
+DM --> FA_Agent: Expenditure data
+FA_Agent -> FA_Agent: Calculate budget utilization
+FA_Agent -> FA_Agent: Identify over-budget items
+FA_Agent --> FA: Budget status report
+FA --> WB: Render budget status
+WB --> PM: Display budget dashboard
+
+== Budget vs Actual Analysis ==
+
+FO -> WB: Request budget analysis
+WB -> FA: POST /financial/analyze_budget
+note right: project_id, analysis_type
+
+FA -> FA_Agent: analyze_budget_vs_actual(project_id)
+FA_Agent -> DM: get_complete_financial_data(project_id)
+DM --> FA_Agent: Budget and expenditure data
+FA_Agent -> BA: perform_budget_analysis(financial_data)
+BA -> BA: Calculate variances
+BA -> BA: Identify trends
+BA -> BA: Generate insights
+BA --> FA_Agent: Analysis results
+FA_Agent -> CDB: Store analysis results
+CDB --> FA_Agent: Analysis saved
+FA_Agent --> FA: Analysis complete
+FA --> WB: Analysis results
+WB --> FO: Display budget analysis
+
+== Over-Budget Alerts ==
+
+note over FA_Agent: Continuous monitoring
+FA_Agent -> DM: query_budget_status(project_id)
+DM --> FA_Agent: Current budget data
+FA_Agent -> FA_Agent: Check budget thresholds
+alt Over budget detected
+    FA_Agent -> FA_Agent: Generate alert
+    FA_Agent -> DM: save_alert(project_id, alert_data)
+    DM --> FA_Agent: Alert saved
+    FA_Agent -> FA: send_budget_alert(project_id)
+    FA -> WB: Push notification
+    WB --> PM: Display budget alert
+end
+
+== Financial Reporting ==
+
+PM -> WB: Generate financial report
+WB -> FA: POST /financial/generate_report
+note right: project_id, report_type, date_range
+
+FA -> FA_Agent: generate_financial_report(project_id, report_params)
+FA_Agent -> DM: get_financial_data(project_id, date_range)
+DM --> FA_Agent: Financial data
+FA_Agent -> BA: create_financial_report(financial_data)
+BA -> LLM: Generate report summary
+note right: Context: budget vs actual analysis
+LLM --> BA: Report summary
+BA -> BA: Format report data
+BA --> FA_Agent: Financial report
+FA_Agent -> DM: save_report(project_id, report_data)
+DM --> FA_Agent: Report saved
+FA_Agent --> FA: Report generated
+FA --> WB: Report data
+WB --> PM: Display financial report
+
+== Budget Optimization Recommendations ==
+
+FO -> WB: Request budget recommendations
+WB -> FA: POST /financial/get_recommendations
+note right: project_id
+
+FA -> FA_Agent: get_budget_recommendations(project_id)
+FA_Agent -> DM: get_financial_data(project_id)
+DM --> FA_Agent: Financial data
+FA_Agent -> LLM: Analyze budget patterns
+note right: Context: spending patterns, budget utilization
+LLM --> FA_Agent: Optimization recommendations
+FA_Agent -> CDB: Store recommendations
+CDB --> FA_Agent: Recommendations saved
+FA_Agent --> FA: Recommendations
+FA --> WB: Recommendations data
+WB --> FO: Display budget recommendations
+
+== Audit Trail ==
+
+PM -> WB: View audit trail
+WB -> FA: GET /financial/audit_trail/<project_id>
+FA -> FA_Agent: get_audit_trail(project_id)
+FA_Agent -> DM: get_financial_audit_log(project_id)
+DM --> FA_Agent: Audit log data
+FA_Agent -> FA_Agent: Format audit trail
+FA_Agent --> FA: Audit trail data
+FA --> WB: Render audit trail
+WB --> PM: Display financial audit trail
+
+@enduml

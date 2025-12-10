@@ -1,0 +1,488 @@
+
+
+Use Case ID
+UC-06
+Use Case Name
+Detect Fraud and Anomalies
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+AI Assistant
+Stakeholders and Interests
+The AI and auditor aim to identify potential financial fraud before approval.
+Preconditions
+Transactional data must be available for analysis.
+Postconditions
+Fraudulent or unusual activities are flagged and logged.
+Main Success Scenario
+1. AI scans transaction logs.2. Detects irregularities or anomalies.3. Flags suspicious transactions.4. Sends alerts to auditor.
+Extensions
+2a. Confidence below threshold → request human verification.3a. False positive → re-train model.
+Special Requirements
+Real-time detection (<60 seconds).
+Technology and Data Variation List
+ML anomaly detection model (Ollama), audit trail DB.
+Frequency of Occurrence
+Continuous.
+Open Issues
+Adjusting sensitivity to reduce false alerts.
+
+
+
+
+Use Case ID
+UC-07
+Use Case Name
+Predict Delays and Risks
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+AI Assistant
+Stakeholders and Interests
+Manager wants proactive alerts about potential project delays.
+Preconditions
+Updated task and milestone data available.
+Postconditions
+Risk predictions stored in project report.
+Main Success Scenario
+1. AI collects progress data.2. Runs predictive model.3. Estimates delay probabilities.4. Displays risks to manager.
+Extensions
+2a. Insufficient data → prompt for manual entry.3a. Overlapping delays → merge reports.
+Special Requirements
+Visual risk heatmap.
+Technology and Data Variation List
+Regression model (Python), time-series database.
+Frequency of Occurrence
+Hourly or as needed.
+Open Issues
+Handling inconsistent task updates.
+
+
+
+
+
+Use Case ID
+UC-08
+Use Case Name
+Simulate Scenarios
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Manager
+Stakeholders and Interests
+Evaluate project alternatives before implementation.
+Preconditions
+Active schedule and resource dataset available.
+Postconditions
+Simulation output stored for decision comparison.
+Main Success Scenario
+1. Manager selects parameters.2. System executes simulation.3. Results displayed graphically.4. Preferred scenario saved.
+Extensions
+2a. Invalid input → show validation warning.
+Special Requirements
+Multiple scenario comparison support.
+Technology and Data Variation List
+Monte-Carlo simulation engine.
+Frequency of Occurrence
+Per project phase.
+Open Issues
+Long computation time for large datasets.
+
+
+
+
+Use Case ID
+UC-09
+Use Case Name
+Optimize Resource Allocation
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Manager
+Stakeholders and Interests
+Ensure efficient use of project staff and material resources.
+Preconditions
+Tasks and staff details available.
+Postconditions
+Updated allocation plan saved.
+Main Success Scenario
+1. Manager opens resource dashboard.2. AI analyzes workload.3. Suggests optimal allocations.4. Manager approves plan.5. System updates assignments.
+Extensions
+3a. Resource conflict → AI provides alternate solution.
+Special Requirements
+Conflict-free optimization algorithm.
+Technology and Data Variation List
+Linear optimization model; HR dataset.
+Frequency of Occurrence
+Weekly or per sprint.
+Open Issues
+Handling staff unavailability dynamically.
+
+
+
+
+Use Case ID
+UC-10
+Use Case Name
+Monitor Task Completion
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Staff
+Stakeholders and Interests
+Keep accurate progress logs for assigned tasks.
+Preconditions
+Task assignments exist.
+Postconditions
+Task status updated and timestamped.
+Main Success Scenario
+1. Staff selects task.2. Updates completion percentage.3. System validates data.4. Dashboard refreshes progress.
+Extensions
+2a. Offline mode → store update for later sync.
+Special Requirements
+Auto timestamp for every update.
+Technology and Data Variation List
+Task database; mobile sync API.
+Frequency of Occurrence
+Daily.
+Open Issues
+Handling duplicate or missed updates.
+
+
+
+
+
+Use Case ID
+UC-11
+Use Case Name
+Monitor Policy Compliance
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Auditor / Administrator
+Stakeholders and Interests
+Ensure all activities comply with organizational policies.
+Preconditions
+Policy rules are defined and active.
+Postconditions
+Compliance report generated.
+Main Success Scenario
+1. System scans project records.2. Identifies policy deviations.3. Flags violations.4. Sends compliance report to auditor.
+Extensions
+2a. Minor deviation → log only.
+Special Requirements
+Configurable rule-checking engine.
+Technology and Data Variation List
+Policy DB; AI rule engine.
+Frequency of Occurrence
+Weekly.
+Open Issues
+Maintaining up-to-date rule sets.
+
+
+
+
+
+
+Use Case ID
+UC-12
+Use Case Name
+Define Custom Rules
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Administrator
+Stakeholders and Interests
+Create new operational or compliance rules in natural language.
+Preconditions
+Admin logged in with rule-editing rights.
+Postconditions
+New rules validated and stored.
+Main Success Scenario
+1. Admin opens rule editor.2. Writes or edits rule.3. System parses logic.4. Saves validated rule.
+Extensions
+3a. Syntax error → prompt correction.
+Special Requirements
+NLP-based rule interpretation.
+Technology and Data Variation List
+Rule parser (Ollama LLM); JSON rule DB.
+Frequency of Occurrence
+Monthly or as needed.
+Open Issues
+Conflicts between overlapping rules.
+
+
+
+
+Use Case ID
+UC-13
+Use Case Name
+Receive AI Guidance
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Manager
+Stakeholders and Interests
+Get actionable suggestions from AI analytics.
+Preconditions
+Project metrics available.
+Postconditions
+Guidance recorded and displayed.
+Main Success Scenario
+1. Manager requests guidance.2. AI reviews performance data.3. Produces suggestions.4. System shows results.
+Extensions
+3a. Low confidence → request clarification.
+Special Requirements
+Explainable AI output.
+Technology and Data Variation List
+LLM reasoning; analytics DB.
+Frequency of Occurrence
+On demand.
+Open Issues
+Balancing automation vs human decision.
+
+
+
+
+Use Case ID
+UC-14
+Use Case Name
+Analyze & Summarize Documents
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+AI Assistant
+Stakeholders and Interests
+Reduce manual effort in document review.
+Preconditions
+Document uploaded to system.
+Postconditions
+Summary generated and stored.
+Main Success Scenario
+1. User uploads document.2. AI extracts key points.3. Creates summary.4. Displays and saves output.
+Extensions
+2a. Unsupported file → show warning.
+Special Requirements
+Support PDF, Word, text formats.
+Technology and Data Variation List
+NLP summarization; Ollama model.
+Frequency of Occurrence
+As needed.
+Open Issues
+Maintaining semantic accuracy.
+
+
+
+
+
+Use Case ID
+UC-15
+Use Case Name
+Reuse Past Knowledge
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Administrator
+Stakeholders and Interests
+Retrieve insights from historical project data.
+Preconditions
+Knowledge base active.
+Postconditions
+Previous data retrieved and applied.
+Main Success Scenario
+1. Admin searches past projects.2. AI matches similar cases.3. Presents relevant lessons.
+Extensions
+2a. No match found → suggest manual input.
+Special Requirements
+Fast semantic search.
+Technology and Data Variation List
+Vector DB; embeddings engine.
+Frequency of Occurrence
+On demand.
+Open Issues
+Outdated knowledge filtering.
+
+
+
+
+
+Use Case ID
+UC-16
+Use Case Name
+Manage Project Manuscripts
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Administrator
+Stakeholders and Interests
+Maintain project briefs, summaries, and manuscripts.
+Preconditions
+File repository active.
+Postconditions
+Document version stored.
+Main Success Scenario
+1. Admin uploads manuscript.2. System validates.3. Saves file with version tag.
+Extensions
+2a. Duplicate file → confirm overwrite.
+Special Requirements
+Version control system.
+Technology and Data Variation List
+Cloud storage API.
+Frequency of Occurrence
+Weekly.
+Open Issues
+Large-file storage optimization.
+
+
+
+
+
+Use Case ID
+UC-17
+Use Case Name
+Use Project Chat Hub
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Staff / Manager
+Stakeholders and Interests
+Facilitate real-time project communication.
+Preconditions
+Internet connection available.
+Postconditions
+Conversation stored securely.
+Main Success Scenario
+1. User opens chat hub.2. Sends and receives messages.3. System archives conversation logs.
+Extensions
+2a. Network error → auto reconnect.
+Special Requirements
+End-to-end encryption.
+Technology and Data Variation List
+WebSocket chat service; NoSQL DB.
+Frequency of Occurrence
+Continuous.
+Open Issues
+Message flood handling.
+
+
+
+
+
+Use Case ID
+UC-18
+Use Case Name
+Analyze Team Sentiment
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+AI Assistant
+Stakeholders and Interests
+Gauge team morale through communication patterns.
+Preconditions
+Chat logs accessible.
+Postconditions
+Sentiment report generated.
+Main Success Scenario
+1. AI processes chat data.2. Detects mood trends.3. Produces sentiment score.4. Sends summary to manager.
+Extensions
+2a. Incomplete data → partial result.
+Special Requirements
+GDPR-compliant text processing.
+Technology and Data Variation List
+Sentiment analysis model.
+Frequency of Occurrence
+Daily.
+Open Issues
+Detecting sarcasm accurately.
+
+
+
+
+
+Use Case ID
+UC-19
+Use Case Name
+Get AI Recommendations
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Manager
+Stakeholders and Interests
+Receive proactive project improvement suggestions.
+Preconditions
+Active project metrics.
+Postconditions
+AI suggestions stored and displayed.
+Main Success Scenario
+1. Manager requests recommendations.2. AI evaluates KPIs.3. Provides ranked actions.4. Manager accepts or dismisses them.
+Extensions
+2a. Data incomplete → notify user.
+Special Requirements
+Explainability for each suggestion.
+Technology and Data Variation List
+LLM-based reasoning; analytics API.
+Frequency of Occurrence
+Frequent.
+Open Issues
+Ensuring unbiased results.
+
+
+
+
+Use Case ID
+UC-20
+Use Case Name
+View Mobile Dashboards
+Scope
+Proj.AI – Intelligent Project Management Platform
+Level
+Primary
+Primary Actor
+Project Manager / Citizen
+Stakeholders and Interests
+Access project KPIs via mobile.
+Preconditions
+Authenticated mobile session.
+Postconditions
+KPI data displayed.
+Main Success Scenario
+1. User opens app.2. System loads project metrics.3. Displays graphs.4. Syncs updates automatically.
+Extensions
+2a. Offline → show cached data.
+Special Requirements
+Mobile-responsive UI.
+Technology and Data Variation List
+REST API; Flutter/React-Native app.
+Frequency of Occurrence
+Continuous.
+Open Issues
+Data sync delays under poor connectivity.
+

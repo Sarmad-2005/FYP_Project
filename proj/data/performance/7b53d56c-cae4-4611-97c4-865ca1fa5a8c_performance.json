@@ -1,0 +1,45 @@
+{
+  "2025-12-09T18:29:16.204062": {
+    "project_id": "7b53d56c-cae4-4611-97c4-865ca1fa5a8c",
+    "document_id": "92ab79dd-20be-4b83-a9cb-4e58e9bb4e26",
+    "timestamp": "2025-12-09T18:29:16.204062",
+    "milestones": {
+      "success": true,
+      "count": 21,
+      "details_count": 21,
+      "suggestions_count": 72,
+      "error": null
+    },
+    "tasks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "completion_analysis": false,
+      "error": "No tasks could be parsed from LLM response"
+    },
+    "bottlenecks": {
+      "success": true,
+      "count": 12,
+      "details_count": 12,
+      "suggestions_count": 12,
+      "error": null
+    },
+    "requirements": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "No requirements parsed"
+    },
+    "actors": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "linked_requirements_count": 0,
+      "error": "No actors parsed"
+    },
+    "completion_score": 0.0,
+    "overall_success": false
+  }
+}

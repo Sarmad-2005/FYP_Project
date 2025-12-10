@@ -1,0 +1,152 @@
+@startuml Complete System Sequence Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title Complete System Sequence Diagram
+AI-Powered Project Management Platform (All 9 Modules)
+
+actor "Project Manager" as PM
+actor "Project Staff" as PS
+actor "Financial Officer" as FO
+actor "Auditor" as AU
+actor "Field Staff" as FS
+participant "Web Browser" as WB
+participant "Mobile App" as MA
+participant "Flask Application" as FA
+participant "AI Engine" as AI
+participant "Database" as DB
+
+== Module 1: Project Monitoring & Performance ==
+
+PM -> WB: Access project dashboard
+WB -> FA: GET /dashboard
+FA -> AI: get_performance_data()
+AI -> DB: query_project_data()
+DB --> AI: Project data
+AI --> FA: Performance metrics
+FA --> WB: Dashboard
+WB --> PM: Display performance
+
+== Module 2: Financial & Audit Management ==
+
+FO -> WB: Access financial dashboard
+WB -> FA: GET /financial/dashboard
+FA -> AI: get_financial_data()
+AI -> DB: query_financial_data()
+DB --> AI: Financial data
+AI -> AI: analyze_financial_patterns()
+AI --> FA: Financial analysis
+FA --> WB: Financial dashboard
+WB --> FO: Display financial status
+
+== Module 3: Risk Forecasting & Simulation ==
+
+PM -> WB: View risk dashboard
+WB -> FA: GET /risk/dashboard
+FA -> AI: get_risk_data()
+AI -> DB: query_risk_data()
+DB --> AI: Risk data
+AI -> AI: predict_risks()
+AI --> FA: Risk predictions
+FA --> WB: Risk dashboard
+WB --> PM: Display risk assessment
+
+== Module 4: Resource & Task Optimization ==
+
+PM -> WB: Access resource dashboard
+WB -> FA: GET /resources/dashboard
+FA -> AI: get_resource_data()
+AI -> DB: query_resource_data()
+DB --> AI: Resource data
+AI -> AI: optimize_resources()
+AI --> FA: Resource optimization
+FA --> WB: Resource dashboard
+WB --> PM: Display resource optimization
+
+== Module 5: Compliance & Guidance ==
+
+AU -> WB: Access compliance dashboard
+WB -> FA: GET /compliance/dashboard
+FA -> AI: get_compliance_data()
+AI -> DB: query_compliance_data()
+DB --> AI: Compliance data
+AI -> AI: check_compliance()
+AI --> FA: Compliance status
+FA --> WB: Compliance dashboard
+WB --> AU: Display compliance status
+
+== Module 6: Knowledge & Document Intelligence ==
+
+PS -> WB: Upload document
+WB -> FA: POST /upload_document
+FA -> AI: process_document()
+AI -> AI: extract_knowledge()
+AI -> DB: store_knowledge()
+DB --> AI: Knowledge stored
+AI --> FA: Document processed
+FA --> WB: Success
+WB --> PS: Document uploaded
+
+== Module 7: Communication Intelligence ==
+
+PS -> WB: Send message
+WB -> FA: POST /communication/send
+FA -> AI: process_communication()
+AI -> AI: analyze_communication()
+AI -> DB: store_communication()
+DB --> AI: Communication stored
+AI --> FA: Communication processed
+FA --> WB: Message sent
+WB --> PS: Message sent
+
+== Module 8: AI Guidance & Assistant ==
+
+PM -> WB: Ask AI assistant
+WB -> FA: POST /ai/chat
+FA -> AI: process_query()
+AI -> DB: query_knowledge()
+DB --> AI: Knowledge data
+AI -> AI: generate_response()
+AI --> FA: AI response
+FA --> WB: Response
+WB --> PM: Display AI response
+
+== Module 9: Mobile Monitoring & Alerts ==
+
+FS -> MA: Access mobile app
+MA -> FA: GET /mobile/dashboard
+FA -> AI: get_mobile_data()
+AI -> DB: query_mobile_data()
+DB --> AI: Mobile data
+AI --> FA: Mobile summary
+FA --> MA: Mobile dashboard
+MA --> FS: Display mobile interface
+
+== Cross-Module Integration ==
+
+note over AI: AI Engine coordinates all modules
+AI -> DB: query_integrated_data()
+DB --> AI: Integrated data
+AI -> AI: process_cross_module_analysis()
+AI -> FA: send_integrated_updates()
+FA -> WB: Update all dashboards
+FA -> MA: Update mobile interface
+WB --> PM: Display integrated view
+MA --> FS: Display integrated mobile view
+
+@enduml
+
+
+
+
+

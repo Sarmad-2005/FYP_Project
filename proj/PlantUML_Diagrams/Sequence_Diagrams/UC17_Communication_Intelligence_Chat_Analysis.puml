@@ -1,0 +1,204 @@
+@startuml UC17 - Communication Intelligence (Chat Analysis)
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC17 - Communication Intelligence (Chat Analysis)\nSequence Diagram
+
+actor "Team Members" as TM
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Communication Intelligence Hub" as CIH
+participant "Chat Analyzer" as CA
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Team Communication ==
+
+TM -> WB: Send message in project chat
+WB -> FA: POST /communication/send_message
+note right: project_id, message, sender_id
+
+FA -> CIH: process_message(project_id, message, sender_id)
+CIH -> DM: save_message(project_id, message, sender_id)
+DM --> CIH: Message saved
+CIH -> CA: analyze_message(message, project_id)
+CA -> LLM: Analyze message content
+note right: Context: message content, project context, sender history
+LLM --> CA: Message analysis
+CA -> CA: Extract key information
+CA -> CA: Identify action items
+CA -> CA: Detect sentiment
+CA -> CA: Check for conflicts
+
+== Real-time Communication Analysis ==
+
+CA -> CA: Analyze communication patterns
+CA -> LLM: Detect communication issues
+note right: Context: message patterns, team dynamics, project status
+LLM --> CA: Communication insights
+CA -> CA: Identify potential conflicts
+CA -> CA: Extract action items
+CA -> CA: Monitor team sentiment
+CA -> CDB: Store communication analysis
+CDB --> CA: Analysis saved
+
+== Conflict Detection ==
+
+CA -> CA: Check for conflicts
+alt Conflict detected
+    CA -> CA: Generate conflict alert
+    CA -> DM: save_conflict_alert(project_id, conflict_data)
+    DM --> CA: Alert saved
+    CA -> CIH: send_conflict_alert(project_id, conflict_data)
+    CIH -> FA: send_conflict_notification(project_id, conflict_data)
+    FA -> WB: Push notification
+    WB --> PM: Display conflict alert
+end
+
+== Action Item Extraction ==
+
+CA -> LLM: Extract action items from messages
+note right: Context: message content, project context, team responsibilities
+LLM --> CA: Action items
+CA -> CA: Categorize action items
+note right: Tasks, Decisions, Follow-ups, Deadlines
+CA -> CA: Assign action items to team members
+CA -> DM: save_action_items(project_id, action_items)
+DM --> CA: Action items saved
+CA -> CIH: notify_action_items(project_id, action_items)
+CIH -> FA: send_action_item_notification(project_id, action_items)
+FA -> WB: Push notification
+WB --> TM: Display action items
+
+== Sentiment Analysis ==
+
+PM -> WB: View team sentiment
+WB -> FA: GET /communication/sentiment/<project_id>
+FA -> CIH: get_team_sentiment(project_id)
+CIH -> CA: analyze_team_sentiment(project_id)
+CA -> DM: get_communication_data(project_id)
+DM --> CA: Communication data
+CA -> LLM: Analyze team sentiment
+note right: Context: communication patterns, message content, team dynamics
+LLM --> CA: Sentiment analysis
+CA -> CA: Calculate sentiment scores
+CA -> CA: Identify sentiment trends
+CA -> CA: Generate sentiment insights
+CA --> CIH: Sentiment analysis
+CIH --> FA: Sentiment data
+FA --> WB: Render sentiment dashboard
+WB --> PM: Display team sentiment
+
+== Communication Insights ==
+
+PM -> WB: Request communication insights
+WB -> FA: POST /communication/insights
+note right: project_id, insight_type, date_range
+
+FA -> CIH: get_communication_insights(project_id, insight_type, date_range)
+CIH -> CA: analyze_communication_patterns(project_id, date_range)
+CA -> DM: get_communication_data(project_id, date_range)
+DM --> CA: Communication data
+CA -> LLM: Generate communication insights
+note right: Context: communication data, team dynamics, project progress
+LLM --> CA: Communication insights
+CA -> CA: Identify communication patterns
+CA -> CA: Generate recommendations
+CA -> DM: save_communication_insights(project_id, insights)
+DM --> CA: Insights saved
+CA --> CIH: Communication insights
+CIH --> FA: Insights data
+FA --> WB: Insights results
+WB --> PM: Display communication insights
+
+== Team Collaboration Analysis ==
+
+PM -> WB: View collaboration analysis
+WB -> FA: GET /communication/collaboration/<project_id>
+FA -> CIH: get_collaboration_analysis(project_id)
+CIH -> CA: analyze_team_collaboration(project_id)
+CA -> DM: get_team_communication_data(project_id)
+DM --> CA: Team data
+CA -> LLM: Analyze collaboration patterns
+note right: Context: team communication, collaboration frequency, knowledge sharing
+LLM --> CA: Collaboration analysis
+CA -> CA: Calculate collaboration metrics
+CA -> CA: Identify collaboration gaps
+CA -> CA: Generate collaboration recommendations
+CA --> CIH: Collaboration analysis
+CIH --> FA: Collaboration data
+FA --> WB: Render collaboration dashboard
+WB --> PM: Display collaboration analysis
+
+== Communication Recommendations ==
+
+PM -> WB: Request communication recommendations
+WB -> FA: POST /communication/recommendations
+note right: project_id, team_members
+
+FA -> CIH: get_communication_recommendations(project_id, team_members)
+CIH -> CA: analyze_communication_effectiveness(project_id, team_members)
+CA -> DM: get_team_communication_history(project_id, team_members)
+DM --> CA: Communication history
+CA -> LLM: Generate communication recommendations
+note right: Context: communication patterns, team effectiveness, best practices
+LLM --> CA: Communication recommendations
+CA -> CA: Categorize recommendations
+note right: Frequency, Clarity, Engagement, Conflict resolution
+CA -> DM: save_communication_recommendations(project_id, recommendations)
+DM --> CA: Recommendations saved
+CA --> CIH: Communication recommendations
+CIH --> FA: Recommendations data
+FA --> WB: Recommendations results
+WB --> PM: Display communication recommendations
+
+== Communication Monitoring ==
+
+note over CA: Continuous monitoring
+CA -> DM: query_recent_communications(project_id)
+DM --> CA: Recent communications
+CA -> CA: Analyze communication trends
+alt Communication issues detected
+    CA -> CA: Generate communication alert
+    CA -> DM: save_communication_alert(project_id, alert_data)
+    DM --> CA: Alert saved
+    CA -> CIH: send_communication_alert(project_id, alert_data)
+    CIH -> FA: send_communication_notification(project_id, alert_data)
+    FA -> WB: Push notification
+    WB --> PM: Display communication alert
+end
+
+== Communication Report Generation ==
+
+PM -> WB: Generate communication report
+WB -> FA: POST /communication/generate_report
+note right: project_id, report_type, date_range
+
+FA -> CIH: generate_communication_report(project_id, report_params)
+CIH -> CA: create_communication_report(project_id, report_params)
+CA -> DM: get_communication_data(project_id, date_range)
+DM --> CA: Communication data
+CA -> LLM: Generate communication report summary
+note right: Context: communication data, team dynamics, project progress
+LLM --> CA: Report summary
+CA -> CA: Format report data
+CA -> DM: save_communication_report(project_id, report_data)
+DM --> CA: Report saved
+CA --> CIH: Communication report
+CIH --> FA: Report data
+FA --> WB: Report results
+WB --> PM: Display communication report
+
+@enduml

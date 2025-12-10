@@ -1,0 +1,187 @@
+@startuml UC14 - Guidance & Recommendation Engine
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC14 - Guidance & Recommendation Engine\nSequence Diagram
+
+actor "Project Manager" as PM
+actor "Auditor" as AU
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Guidance Agent" as GA
+participant "Recommendation Engine" as RE
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Request Guidance and Recommendations ==
+
+PM -> WB: Navigate to guidance center
+WB -> FA: GET /guidance/recommendations/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_performance_data(project_id)
+DM --> FA: Performance data
+FA --> WB: Render guidance dashboard
+WB --> PM: Display guidance interface
+
+PM -> WB: Request recommendations
+WB -> FA: POST /guidance/get_recommendations
+note right: project_id, recommendation_type, context
+
+== Data Analysis for Recommendations ==
+
+FA -> GA: get_recommendations(project_id, recommendation_type, context)
+GA -> DM: get_project_data(project_id)
+DM --> GA: Project data
+GA -> DM: get_performance_metrics(project_id)
+DM --> GA: Performance data
+GA -> DM: get_financial_data(project_id)
+DM --> GA: Financial data
+GA -> DM: get_risk_data(project_id)
+DM --> GA: Risk data
+GA -> CDB: Query historical project patterns
+CDB --> GA: Historical data
+
+== AI-Powered Recommendation Generation ==
+
+GA -> RE: generate_recommendations(project_data, performance_data, financial_data, risk_data)
+RE -> LLM: Analyze project patterns
+note right: Context: project data, performance metrics, financial status, risk factors
+LLM --> RE: Pattern analysis
+RE -> LLM: Generate performance recommendations
+note right: Context: current performance, bottlenecks, optimization opportunities
+LLM --> RE: Performance recommendations
+RE -> LLM: Generate financial recommendations
+note right: Context: budget status, spending patterns, cost optimization
+LLM --> RE: Financial recommendations
+RE -> LLM: Generate risk mitigation recommendations
+note right: Context: identified risks, mitigation strategies, best practices
+LLM --> RE: Risk recommendations
+
+== Recommendation Categorization ==
+
+RE -> RE: Categorize recommendations
+note right: Performance, Financial, Risk, Process, Resource recommendations
+RE -> RE: Prioritize recommendations
+note right: Critical, High, Medium, Low priority levels
+RE -> RE: Calculate recommendation impact
+note right: Expected benefits, implementation effort, timeline
+RE -> RE: Generate implementation guidance
+note right: Step-by-step instructions, prerequisites, resources needed
+
+== Personalized Recommendations ==
+
+RE -> LLM: Personalize recommendations
+note right: Context: user role, project context, historical preferences
+LLM --> RE: Personalized recommendations
+RE -> RE: Adapt recommendations to project phase
+note right: Initiation, Planning, Execution, Monitoring, Closure phases
+RE -> RE: Consider resource constraints
+note right: Available resources, budget limitations, timeline constraints
+
+== Recommendation Storage and Delivery ==
+
+RE -> CDB: Store recommendations
+CDB --> RE: Recommendations saved
+RE -> DM: save_recommendations(project_id, recommendation_data)
+DM --> RE: Recommendations saved
+RE --> GA: Recommendations generated
+GA --> FA: Recommendation results
+FA --> WB: Recommendations data
+WB --> PM: Display recommendations
+
+== Implementation Tracking ==
+
+PM -> WB: Implement recommendation
+WB -> FA: POST /guidance/implement_recommendation
+note right: project_id, recommendation_id, implementation_notes
+
+FA -> GA: implement_recommendation(project_id, recommendation_id, notes)
+GA -> DM: update_recommendation_status(project_id, recommendation_id, "implemented")
+DM --> GA: Status updated
+GA -> GA: Track implementation progress
+GA -> DM: save_implementation_tracking(project_id, recommendation_id, progress)
+DM --> GA: Tracking saved
+GA --> FA: Implementation recorded
+FA --> WB: Implementation confirmation
+WB --> PM: Display implementation status
+
+== Feedback Collection ==
+
+PM -> WB: Provide recommendation feedback
+WB -> FA: POST /guidance/feedback
+note right: recommendation_id, feedback_rating, feedback_notes
+
+FA -> GA: record_recommendation_feedback(recommendation_id, feedback)
+GA -> DM: save_feedback(recommendation_id, feedback)
+DM --> GA: Feedback saved
+GA -> RE: update_recommendation_algorithm(feedback)
+RE -> RE: Learn from feedback
+note right: Improve future recommendations based on user feedback
+RE --> GA: Algorithm updated
+GA --> FA: Feedback processed
+FA --> WB: Feedback confirmation
+WB --> PM: Display feedback confirmation
+
+== Proactive Guidance ==
+
+note over GA: Continuous monitoring
+GA -> DM: query_project_status(project_id)
+DM --> GA: Current project status
+GA -> RE: check_guidance_triggers(project_status)
+RE -> RE: Identify guidance opportunities
+alt Guidance needed
+    RE -> LLM: Generate proactive guidance
+    note right: Context: project status, potential issues, best practices
+    LLM --> RE: Proactive recommendations
+    RE -> GA: send_proactive_guidance(project_id, recommendations)
+    GA -> FA: send_guidance_notification(project_id, recommendations)
+    FA -> WB: Push notification
+    WB --> PM: Display proactive guidance
+end
+
+== Best Practices Recommendations ==
+
+AU -> WB: Request best practices
+WB -> FA: POST /guidance/best_practices
+note right: project_id, practice_area
+
+FA -> GA: get_best_practices(project_id, practice_area)
+GA -> CDB: Query industry best practices
+CDB --> GA: Best practices data
+GA -> LLM: Generate practice recommendations
+note right: Context: project context, industry standards, compliance requirements
+LLM --> GA: Practice recommendations
+GA -> DM: save_best_practices(project_id, practice_data)
+DM --> GA: Practices saved
+GA --> FA: Best practices
+FA --> WB: Practices data
+WB --> AU: Display best practices
+
+== Guidance Analytics ==
+
+PM -> WB: View guidance analytics
+WB -> FA: GET /guidance/analytics/<project_id>
+FA -> GA: get_guidance_analytics(project_id)
+GA -> DM: get_recommendation_data(project_id)
+DM --> GA: Recommendation data
+GA -> RE: analyze_recommendation_effectiveness(recommendation_data)
+RE -> RE: Calculate effectiveness metrics
+note right: Implementation rate, success rate, user satisfaction
+RE --> GA: Analytics results
+GA --> FA: Analytics data
+FA --> WB: Render analytics dashboard
+WB --> PM: Display guidance analytics
+
+@enduml

@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}Risk Mitigation Dashboard - Project{% endblock %}
+
+{% block content %}
+<div class="risk-mitigation-dashboard">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title-modern">
+                <i class="fas fa-shield-alt text-red-500"></i> Risk Mitigation Dashboard
+            </h1>
+            <p class="dashboard-subtitle-modern">AI-Powered Risk Analysis & Prediction</p>
+            <div class="dashboard-meta-info">
+                <span>Project ID: {{ project_id }}</span>
+                <span id="last-update-timestamp">Loading...</span>
+            </div>
+        </div>
+        <div class="dashboard-controls">
+            <button onclick="runFirstGeneration()" class="btn btn-primary" id="regenerate-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; margin-right: 0.5rem;">
+                <i class="fas fa-sync-alt"></i> <span id="regenerate-btn-text">Regenerate Analysis</span>
+            </button>
+            <button onclick="refreshRiskData()" class="btn btn-secondary">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+            <a href="/project/{{ project_id }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to Project
+            </a>
+        </div>
+    </div>
+
+    <!-- Risk Metrics Overview -->
+    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Risk Score Card -->
+        <div class="card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b;">
+            <div class="card-body">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="margin: 0; color: #92400e;">Risk Score</h3>
+                        <p style="margin: 0.5rem 0 0 0; color: #78350f; font-size: 0.875rem;">Overall risk level</p>
+                    </div>
+                    <i class="fas fa-chart-line" style="font-size: 2rem; color: #f59e0b;"></i>
+                </div>
+                <div style="font-size: 2.5rem; font-weight: bold; color: #92400e;" id="risk-score-display">0%</div>
+            </div>
+        </div>
+
+        <!-- Bottlenecks Card -->
+        <div class="card" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626;">
+            <div class="card-body">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="margin: 0; color: #991b1b;">Bottlenecks</h3>
+                        <p style="margin: 0.5rem 0 0 0; color: #7f1d1d; font-size: 0.875rem;">Identified risks</p>
+                    </div>
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #dc2626;"></i>
+                </div>
+                <div style="font-size: 2.5rem; font-weight: bold; color: #991b1b;" id="bottlenecks-count-display">0</div>
+            </div>
+        </div>
+
+        <!-- High Severity Card -->
+        <div class="card" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #ef4444;">
+            <div class="card-body">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="margin: 0; color: #991b1b;">High Severity</h3>
+                        <p style="margin: 0.5rem 0 0 0; color: #7f1d1d; font-size: 0.875rem;">Critical risks</p>
+                    </div>
+                    <i class="fas fa-fire" style="font-size: 2rem; color: #ef4444;"></i>
+                </div>
+                <div style="font-size: 2.5rem; font-weight: bold; color: #991b1b;" id="high-severity-count">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottlenecks List -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-list text-red-500"></i> Project Bottlenecks
+            </h3>
+            <button onclick="viewWhatIfSimulator()" class="btn btn-warning">
+                <i class="fas fa-project-diagram"></i> What If Simulator
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="bottlenecks-list">
+                <p class="text-gray-600">Loading bottlenecks...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const projectId = '{{ project_id }}';
+
+    async function loadRiskData() {
+        try {
+            // Check if first generation has been run by checking for stored ordering
+            const checkResponse = await fetch(`/api/risk_mitigation/check_generation_status/${projectId}`);
+            const checkData = await checkResponse.json();
+            
+            if (!checkData.success || !checkData.has_data) {
+                // No data yet - show message to run first generation
+                document.getElementById('risk-score-display').textContent = 'N/A';
+                document.getElementById('bottlenecks-count-display').textContent = '0';
+                document.getElementById('high-severity-count').textContent = '0';
+                document.getElementById('last-update-timestamp').textContent = 'Not yet generated';
+                document.getElementById('bottlenecks-list').innerHTML = `
+                    <div style="text-align: center; padding: 3rem; background: #f7fafc; border-radius: 12px; border: 2px dashed #cbd5e0;">
+                        <svg style="width: 64px; height: 64px; margin: 0 auto 1rem; color: #a0aec0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; color: #2d3748; margin-bottom: 0.5rem;">No Risk Data Available</h3>
+                        <p style="color: #718096; margin-bottom: 1.5rem;">Click "First-Time Generation" below to analyze project risks</p>
+                        <button onclick="runFirstGeneration()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            Run First-Time Generation
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Data exists - load it
+            const summaryResponse = await fetch(`/api/risk_mitigation/risk_summary/${projectId}`);
+            const summaryData = await summaryResponse.json();
+            
+            if (summaryData.success) {
+                document.getElementById('risk-score-display').textContent = `${summaryData.risk_score || 0}%`;
+                document.getElementById('bottlenecks-count-display').textContent = summaryData.total_bottlenecks || 0;
+                document.getElementById('high-severity-count').textContent = summaryData.high_severity || 0;
+                document.getElementById('last-update-timestamp').textContent = `Last updated: ${new Date(summaryData.last_updated).toLocaleString()}`;
+            }
+
+            // Load bottlenecks from stored data only
+            const simulatorResponse = await fetch(`/api/risk_mitigation/what_if_simulator/${projectId}`);
+            const simulatorData = await simulatorResponse.json();
+            
+            console.log('Simulator data:', simulatorData);
+            
+            if (simulatorData.success && simulatorData.bottlenecks && simulatorData.bottlenecks.length > 0) {
+                displayBottlenecks(simulatorData.bottlenecks);
+            } else if (simulatorData.success && simulatorData.ordered_bottlenecks && simulatorData.ordered_bottlenecks.length > 0) {
+                displayBottlenecks(simulatorData.ordered_bottlenecks);
+            } else {
+                document.getElementById('bottlenecks-list').innerHTML = '<p class="text-gray-600">No bottlenecks found. Try refreshing the data.</p>';
+            }
+        } catch (error) {
+            console.error('Error loading risk data:', error);
+            document.getElementById('bottlenecks-list').innerHTML = '<p class="text-red-600">Error loading risk data: ' + error.message + '</p>';
+        }
+    }
+
+    function displayBottlenecks(bottlenecks) {
+        const container = document.getElementById('bottlenecks-list');
+        
+        if (bottlenecks.length === 0) {
+            container.innerHTML = '<p class="text-gray-600">No bottlenecks identified for this project.</p>';
+            return;
+        }
+
+        // Sort by severity (High first, then Medium, then Low)
+        const severityOrder = { 'Critical': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
+        bottlenecks.sort((a, b) => {
+            const aSev = severityOrder[a.severity] ?? 4;
+            const bSev = severityOrder[b.severity] ?? 4;
+            return aSev - bSev;
+        });
+
+        const html = bottlenecks.map((bottleneck, index) => {
+            const severity = bottleneck.severity || 'Medium';
+            const category = bottleneck.category || 'General';
+            const impact = bottleneck.impact || 'Unknown impact';
+            
+            // Severity badge styling
+            const severityBadgeStyles = {
+                'Critical': {
+                    bg: '#dc2626',
+                    text: 'white',
+                    icon: 'fa-fire',
+                    glow: '0 0 10px rgba(220, 38, 38, 0.3)'
+                },
+                'High': {
+                    bg: '#ef4444',
+                    text: 'white',
+                    icon: 'fa-exclamation-triangle',
+                    glow: '0 0 8px rgba(239, 68, 68, 0.2)'
+                },
+                'Medium': {
+                    bg: '#f97316',
+                    text: 'white',
+                    icon: 'fa-exclamation-circle',
+                    glow: 'none'
+                },
+                'Low': {
+                    bg: '#eab308',
+                    text: 'white',
+                    icon: 'fa-info-circle',
+                    glow: 'none'
+                }
+            };
+            const severityStyle = severityBadgeStyles[severity] || severityBadgeStyles['Medium'];
+            
+            // Category badge styling
+            const categoryColors = {
+                'Process': { bg: '#8b5cf6', text: 'white' },
+                'Resource': { bg: '#06b6d4', text: 'white' },
+                'Technical': { bg: '#10b981', text: 'white' },
+                'Timeline': { bg: '#f59e0b', text: 'white' },
+                'Budget': { bg: '#ec4899', text: 'white' },
+                'Communication': { bg: '#6366f1', text: 'white' }
+            };
+            const categoryStyle = categoryColors[category] || { bg: '#6b7280', text: 'white' };
+            
+            // Card background based on severity
+            const cardBgColors = {
+                'Critical': 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                'High': 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                'Medium': 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                'Low': 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)'
+            };
+            const cardBg = cardBgColors[severity] || cardBgColors['Medium'];
+            
+            // Border color
+            const borderColors = {
+                'Critical': '#dc2626',
+                'High': '#ef4444',
+                'Medium': '#f97316',
+                'Low': '#eab308'
+            };
+            const borderColor = borderColors[severity] || borderColors['Medium'];
+            
+            return `
+                <div class="card mb-4" style="border-left: 4px solid ${borderColor}; background: ${cardBg}; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <!-- Bottleneck Title -->
+                        <h4 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.125rem; font-weight: 600; line-height: 1.5;">
+                            ${bottleneck.bottleneck || bottleneck.title || 'Unknown Bottleneck'}
+                        </h4>
+                        
+                        <!-- Badges Row -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; align-items: center;">
+                            <!-- Severity Badge -->
+                            <span class="badge" style="
+                                background: ${severityStyle.bg}; 
+                                color: ${severityStyle.text}; 
+                                font-weight: 700; 
+                                padding: 0.5rem 1rem; 
+                                border-radius: 6px; 
+                                font-size: 0.875rem;
+                                box-shadow: ${severityStyle.glow};
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                            ">
+                                <i class="fas ${severityStyle.icon}"></i>
+                                ${severity}
+                            </span>
+                            
+                            <!-- Category Badge -->
+                            <span class="badge" style="
+                                background: ${categoryStyle.bg}; 
+                                color: ${categoryStyle.text}; 
+                                font-weight: 600; 
+                                padding: 0.5rem 1rem; 
+                                border-radius: 6px; 
+                                font-size: 0.875rem;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                            ">
+                                <i class="fas fa-tag"></i>
+                                ${category}
+                            </span>
+                        </div>
+                        
+                        <!-- Impact Section -->
+                        <div style="
+                            padding: 1rem; 
+                            background: white; 
+                            border-radius: 8px; 
+                            border: 1px solid #e5e7eb;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                        ">
+                            <div style="display: flex; align-items: start; gap: 0.75rem;">
+                                <div style="
+                                    width: 32px; 
+                                    height: 32px; 
+                                    border-radius: 6px; 
+                                    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center;
+                                    flex-shrink: 0;
+                                ">
+                                    <i class="fas fa-bullseye" style="color: white; font-size: 0.875rem;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="
+                                        font-size: 0.75rem; 
+                                        color: #6b7280; 
+                                        font-weight: 700; 
+                                        text-transform: uppercase; 
+                                        letter-spacing: 0.05em; 
+                                        margin-bottom: 0.5rem;
+                                    ">
+                                        Impact
+                                    </div>
+                                    <div style="
+                                        color: ${impact.toLowerCase().includes('unknown') ? '#9ca3af' : '#1f2937'}; 
+                                        font-size: 0.9375rem; 
+                                        line-height: 1.6;
+                                        font-weight: ${impact.toLowerCase().includes('unknown') ? '400' : '500'};
+                                        font-style: ${impact.toLowerCase().includes('unknown') ? 'italic' : 'normal'};
+                                    ">
+                                        ${impact}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    function refreshRiskData() {
+        loadRiskData();
+    }
+
+    function viewWhatIfSimulator() {
+        window.location.href = `/risk_mitigation/what_if_simulator/${projectId}`;
+    }
+    
+    async function runFirstGeneration() {
+        // Get button references
+        const btn = document.getElementById('regenerate-btn');
+        const btnText = document.getElementById('regenerate-btn-text');
+        const originalText = btnText.textContent;
+        
+        // Confirm if data already exists
+        const confirmRegenerate = confirm('⚠️ This will regenerate all risk analysis data and overwrite existing data. Continue?');
+        if (!confirmRegenerate) {
+            return;
+        }
+        
+        // Disable button and show loading state
+        btn.disabled = true;
+        btnText.textContent = 'Generating...';
+        btn.style.opacity = '0.6';
+        
+        // Show loading message in bottlenecks area
+        const bottlenecksList = document.getElementById('bottlenecks-list');
+        const originalContent = bottlenecksList.innerHTML;
+        bottlenecksList.innerHTML = `
+            <div style="text-align: center; padding: 3rem;">
+                <div style="display: inline-block; width: 48px; height: 48px; border: 4px solid #f3f4f6; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; color: #2d3748; margin-bottom: 0.5rem;">Regenerating Risk Analysis...</h3>
+                <p style="color: #718096;">This may take a few minutes. Please wait...</p>
+            </div>
+        `;
+        
+        try {
+            const response = await fetch('/api/risk_mitigation/first_generation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_id: projectId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success message
+                bottlenecksList.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; background: #f0fdf4; border-radius: 12px; border: 2px solid #86efac;">
+                        <svg style="width: 64px; height: 64px; margin: 0 auto 1rem; color: #22c55e;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; color: #166534; margin-bottom: 0.5rem;">Analysis Complete!</h3>
+                        <p style="color: #15803d;">Generated ${data.bottlenecks_count} bottlenecks with ${data.suggestions_generated} mitigation strategies</p>
+                    </div>
+                `;
+                
+                // Reload dashboard after 1.5 seconds
+                setTimeout(() => {
+                    loadRiskData();
+                }, 1500);
+            } else {
+                // Show error
+                bottlenecksList.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; background: #fef2f2; border-radius: 12px; border: 2px solid #fca5a5;">
+                        <svg style="width: 64px; height: 64px; margin: 0 auto 1rem; color: #ef4444;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; color: #991b1b; margin-bottom: 0.5rem;">Generation Failed</h3>
+                        <p style="color: #dc2626;">${data.error || 'Unknown error occurred'}</p>
+                        <button onclick="loadRiskData()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">Retry</button>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            // Show error
+            bottlenecksList.innerHTML = `
+                <div style="text-align: center; padding: 3rem; background: #fef2f2; border-radius: 12px; border: 2px solid #fca5a5;">
+                    <svg style="width: 64px; height: 64px; margin: 0 auto 1rem; color: #ef4444;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; color: #991b1b; margin-bottom: 0.5rem;">Connection Error</h3>
+                    <p style="color: #dc2626;">${error.message}</p>
+                    <button onclick="loadRiskData()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">Retry</button>
+                </div>
+            `;
+        } finally {
+            // Re-enable button
+            btn.disabled = false;
+            btnText.textContent = originalText;
+            btn.style.opacity = '1';
+        }
+    }
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadRiskData();
+    });
+</script>
+{% endblock %}
+

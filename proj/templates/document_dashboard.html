@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Document Agent - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="document-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title-modern">Document Agent</h1>
+            <p class="dashboard-subtitle-modern">{{ project.name }} - Generate PSDP Summary, Financial Brief, and Custom Docs</p>
+        </div>
+        <div class="dashboard-controls">
+            <a href="/project/{{ project.id }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to Project
+            </a>
+        </div>
+    </div>
+
+    <div class="doc-grid">
+        <!-- PSDP Summary -->
+        <div class="doc-card">
+            <div class="doc-card-header">
+                <div class="doc-icon blue"><i class="fas fa-file-alt"></i></div>
+                <div>
+                    <h3>PSDP Summary</h3>
+                    <p>Generate PSDP-style summary from Performance data.</p>
+                </div>
+            </div>
+            <div class="doc-card-actions">
+                <button class="btn btn-primary" onclick="generatePSDP()"><i class="fas fa-magic"></i> Generate</button>
+                <button class="btn btn-secondary" onclick="loadDocs('psdp')"><i class="fas fa-folder-open"></i> View Docs</button>
+            </div>
+        </div>
+
+        <!-- Financial Brief -->
+        <div class="doc-card">
+            <div class="doc-card-header">
+                <div class="doc-icon green"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div>
+                    <h3>Financial Brief</h3>
+                    <p>Generate a concise financial overview.</p>
+                </div>
+            </div>
+            <div class="doc-card-actions">
+                <button class="btn btn-primary" onclick="generateFinancial()"><i class="fas fa-magic"></i> Generate</button>
+                <button class="btn btn-secondary" onclick="loadDocs('financial')"><i class="fas fa-folder-open"></i> View Docs</button>
+            </div>
+        </div>
+
+        <!-- Intelligent Document Generator -->
+        <div class="doc-card wide">
+            <div class="doc-card-header">
+                <div class="doc-icon purple"><i class="fas fa-robot"></i></div>
+                <div>
+                    <h3>Intelligent Document Generator</h3>
+                    <p>User-driven custom document with data reasoning.</p>
+                </div>
+            </div>
+            <div class="doc-card-body">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input id="docGenTitle" type="text" class="form-input" placeholder="Custom Document Title">
+                </div>
+                <div class="form-group">
+                    <label>Instructions</label>
+                    <textarea id="docGenInstructions" class="form-input" rows="4" placeholder="Describe what you want (e.g., include transactions and requirements)..."></textarea>
+                </div>
+                <div class="doc-card-actions">
+                    <button class="btn btn-primary" onclick="createCustomDoc()"><i class="fas fa-magic"></i> Generate</button>
+                    <button class="btn btn-secondary" onclick="loadDocs('custom')"><i class="fas fa-folder-open"></i> View Docs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="doc-list" id="doc-list">
+        <h3>Generated Documents</h3>
+        <div id="doc-items" class="doc-items"></div>
+    </div>
+</div>
+
+<style>
+.document-dashboard { padding: 1.5rem; }
+.dashboard-title-modern { font-size: 2rem; font-weight: 800; }
+.dashboard-subtitle-modern { color: #6b7280; margin-top: 0.25rem; }
+.doc-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-top: 1rem; }
+.doc-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+.doc-card.wide { grid-column: span 2; }
+.doc-card-header { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; }
+.doc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+.doc-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.doc-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
+.doc-icon.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.doc-card-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.doc-list { margin-top: 2rem; }
+.doc-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; }
+.doc-item { border: 1px solid #e5e7eb; border-radius: 10px; padding: 0.75rem; background: #f9fafb; }
+.doc-item h4 { margin: 0 0 0.25rem 0; font-size: 1rem; }
+.doc-meta { color: #6b7280; font-size: 0.9rem; }
+</style>
+
+<script>
+const projectId = "{{ project_id }}";
+
+async function generatePSDP() {
+    await postAndRefresh('/document_agent/psdp_summary', { project_id: projectId });
+}
+async function generateFinancial() {
+    await postAndRefresh('/document_agent/financial_brief', { project_id: projectId });
+}
+async function createCustomDoc() {
+    const title = document.getElementById('docGenTitle').value || 'Custom Document';
+    const instructions = document.getElementById('docGenInstructions').value || '';
+    await postAndRefresh('/doc_gen/create', { project_id: projectId, title, instructions });
+}
+
+async function loadDocs(type) {
+    let url = '/document_agent/documents/' + projectId;
+    if (type === 'custom') url = '/doc_gen/documents/' + projectId;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const container = document.getElementById('doc-items');
+    if (!container) return;
+    const docs = data.documents || [];
+    if (!docs.length) {
+        container.innerHTML = '<p class="text-gray-600">No documents yet.</p>';
+        return;
+    }
+    container.innerHTML = docs.map(doc => `
+        <div class="doc-item">
+            <h4>${doc.title || doc.doc_type || 'Document'}</h4>
+            <div class="doc-meta">${doc.doc_type || ''} · ${doc.created_at || ''}</div>
+            <div class="doc-actions" style="margin-top:0.5rem;">
+                <a class="btn btn-secondary btn-sm" href="${(type==='custom')?'/doc_gen/document/':'/document_agent/document/'}${doc.id}" target="_blank">View JSON</a>
+                <a class="btn btn-primary btn-sm" href="${(type==='custom')?'/doc_gen/document/':'/document_agent/document/'}${doc.id}/download" target="_blank">Download</a>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function postAndRefresh(url, payload) {
+    const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+        alert('Request failed');
+        return;
+    }
+    await loadDocs('all');
+    await loadDocs('custom');
+}
+
+// initial
+document.addEventListener('DOMContentLoaded', () => {
+    loadDocs('all');
+    loadDocs('custom');
+});
+</script>
+
+{% endblock %}

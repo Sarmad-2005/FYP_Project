@@ -1,0 +1,129 @@
+@startuml UC4 - Milestone & Progress Tracking
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC4 - Milestone & Progress Tracking\nSequence Diagram
+
+actor "Project Staff" as PS
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Performance Agent" as PA
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== View Milestones ==
+
+PS -> WB: Navigate to project details
+WB -> FA: GET /project/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> PA: get_performance_status(project_id)
+PA -> CDB: Query project_milestones collection
+CDB --> PA: Milestone data
+PA --> FA: Milestones list
+FA --> WB: Render project_details.html
+WB --> PS: Display milestones
+
+== Extract Milestones from Document ==
+
+PM -> WB: Upload new document
+WB -> FA: POST /upload_document
+FA -> FA: Process document
+FA -> PA: extract_milestones(project_id, document_id)
+PA -> CDB: Query document embeddings
+CDB --> PA: Document chunks
+PA -> LLM: Extract milestones from context
+note right: Prompt: "Extract project milestones in bullet points"
+LLM --> PA: Milestone data
+PA -> CDB: Store in project_milestones
+CDB --> PA: Success
+PA --> FA: Milestones extracted
+FA --> WB: Success response
+WB --> PM: Display extracted milestones
+
+== Update Milestone Status ==
+
+PS -> WB: Click on milestone
+WB -> FA: POST /performance_agent/update_milestone
+note right: milestone_id, status, progress_notes
+
+FA -> PA: update_milestone_status(milestone_id, status, notes)
+PA -> CDB: Query project_milestones
+CDB --> PA: Milestone data
+PA -> PA: Update milestone status
+PA -> CDB: Update milestone in collection
+CDB --> PA: Success
+PA -> PA: Recalculate completion percentages
+PA -> DM: Update performance metrics
+DM --> PA: Success
+PA --> FA: Milestone updated
+FA --> WB: Success response
+WB --> PS: Display updated milestone
+
+== Progress Tracking Dashboard ==
+
+PM -> WB: View progress dashboard
+WB -> FA: GET /performance_agent/dashboard/<project_id>
+FA -> PA: get_performance_analytics(project_id)
+PA -> CDB: Query all milestone data
+CDB --> PA: Complete milestone data
+PA -> PA: Calculate progress metrics
+note right: Completion percentages, timeline analysis
+PA --> FA: Progress analytics
+FA --> WB: Render progress dashboard
+WB --> PM: Display progress visualization
+
+== Milestone Details View ==
+
+PS -> WB: Click "View Milestone Details"
+WB -> FA: GET /performance_agent/milestone_details/<milestone_id>
+FA -> PA: get_milestone_details(milestone_id)
+PA -> CDB: Query specific milestone
+CDB --> PA: Milestone details
+PA -> CDB: Query related tasks
+CDB --> PA: Related tasks
+PA -> PA: Generate milestone insights
+PA --> FA: Detailed milestone data
+FA --> WB: Render milestone details
+WB --> PS: Display detailed milestone view
+
+== Progress Notes Update ==
+
+PS -> WB: Add progress notes
+WB -> FA: POST /performance_agent/update_progress_notes
+note right: milestone_id, progress_notes
+
+FA -> PA: update_progress_notes(milestone_id, notes)
+PA -> CDB: Update milestone notes
+CDB --> PA: Success
+PA -> PA: Update progress tracking
+PA --> FA: Notes updated
+FA --> WB: Success response
+WB --> PS: Display updated notes
+
+== Automated Progress Updates ==
+
+note over PA: Scheduled 12-hour updates
+PA -> CDB: Query all project milestones
+CDB --> PA: Milestone data
+PA -> LLM: Analyze progress patterns
+LLM --> PA: Progress insights
+PA -> PA: Update progress metrics
+PA -> CDB: Update milestone collections
+CDB --> PA: Success
+PA -> DM: Update performance data
+DM --> PA: Success
+
+@enduml

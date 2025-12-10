@@ -1,0 +1,228 @@
+@startuml ChromaDB Collections Only
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam linetype ortho
+
+skinparam rectangle {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+
+skinparam circle {
+    BackgroundColor #FFF4E6
+    BorderColor #FF8C00
+    FontColor #8B4513
+}
+
+skinparam diamond {
+    BackgroundColor #E8F5E9
+    BorderColor #4CAF50
+    FontColor #2E7D32
+}
+
+title ChromaDB Collections (Implemented)
+
+' ==============================
+' COLLECTIONS (RECTANGLES)
+' ==============================
+rectangle "Document_Collection\n(p_{proj}_d_{doc})" as DocCollection {
+    id (PK)
+    documents (text)
+    embeddings (vector)
+}
+
+rectangle "project_milestones" as C_Milestones {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_tasks" as C_Tasks {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_bottlenecks" as C_Bottlenecks {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_milestone_details" as C_MilestoneDetails {
+    id (PK)
+    details_text
+    embedding_vector
+}
+
+rectangle "project_task_details" as C_TaskDetails {
+    id (PK)
+    details_text
+    embedding_vector
+}
+
+rectangle "project_bottleneck_details" as C_BottleneckDetails {
+    id (PK)
+    details_text
+    embedding_vector
+}
+
+rectangle "project_financial_details" as C_FinDetails {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_transactions" as C_Transactions {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_expense_analysis" as C_ExpenseAnalysis {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_revenue_analysis" as C_RevenueAnalysis {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_financial_suggestions" as C_FinSuggestions {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_anomaly_alerts" as C_AnomalyAlerts {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_reviewed_anomalies" as C_ReviewedAnomalies {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+' ==============================
+' METADATA (CIRCLES)
+' ==============================
+circle "Document\nMetadata" as Meta_Doc {
+    project_id
+    document_id
+    type (sentence/table)
+    index
+    row_count
+    column_count
+    page
+}
+
+circle "Milestone\nMetadata" as Meta_Milestone {
+    project_id
+    document_id
+    milestone_text
+    category
+    priority
+    created_at
+}
+
+circle "Task\nMetadata" as Meta_Task {
+    project_id
+    document_id
+    task_text
+    category
+    priority
+    status
+    created_at
+}
+
+circle "Bottleneck\nMetadata" as Meta_Bottle {
+    project_id
+    document_id
+    bottleneck_text
+    category
+    severity
+    impact
+    created_at
+}
+
+circle "Details\nMetadata" as Meta_Details {
+    parent_id
+    project_id
+    document_id
+    created_at
+    detail_type
+}
+
+circle "Financial\nMetadata" as Meta_Fin {
+    project_id
+    created_at
+    type
+    amount
+    category
+    transaction_date
+    status
+}
+
+' ==============================
+' RELATIONSHIPS (DIAMONDS)
+' ==============================
+diamond "HAS_METADATA" as R_HasMeta
+diamond "HAS_DETAILS" as R_HasDetails
+diamond "REFERENCES" as R_Refs
+
+' ==============================
+' LINKS
+' ==============================
+DocCollection }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Doc
+
+C_Milestones }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Milestone
+
+C_Tasks }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Task
+
+C_Bottlenecks }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Bottle
+
+C_MilestoneDetails }o--|| R_HasMeta
+C_TaskDetails }o--|| R_HasMeta
+C_BottleneckDetails }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Details
+
+C_FinDetails }o--|| R_HasMeta
+C_Transactions }o--|| R_HasMeta
+C_ExpenseAnalysis }o--|| R_HasMeta
+C_RevenueAnalysis }o--|| R_HasMeta
+C_FinSuggestions }o--|| R_HasMeta
+C_AnomalyAlerts }o--|| R_HasMeta
+C_ReviewedAnomalies }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Fin
+
+' Parent → Details
+C_Milestones ||--o{ R_HasDetails
+R_HasDetails ||--o{ C_MilestoneDetails
+C_Tasks ||--o{ R_HasDetails
+R_HasDetails ||--o{ C_TaskDetails
+C_Bottlenecks ||--o{ R_HasDetails
+R_HasDetails ||--o{ C_BottleneckDetails
+
+' Details reference parents
+C_MilestoneDetails }o--|| R_Refs
+R_Refs }o--|| C_Milestones
+C_TaskDetails }o--|| R_Refs
+R_Refs }o--|| C_Tasks
+C_BottleneckDetails }o--|| R_Refs
+R_Refs }o--|| C_Bottlenecks
+
+@enduml
+
+
+

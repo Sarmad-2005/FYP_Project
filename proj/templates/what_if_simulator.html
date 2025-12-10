@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What If Scenario Simulator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/vis-network@9.1.2/standalone/umd/vis-network.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            background: #f0f4f8;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+    
+    .what-if-simulator {
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 2rem;
+        min-height: 100vh;
+    }
+    
+    .page-header {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-header h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1a202c;
+        margin: 0;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #48bb78;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #38a169;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(72, 187, 120, 0.3);
+    }
+    
+    .btn-outline {
+        background: white;
+        color: #667eea;
+        border: 1px solid #cbd5e0;
+    }
+    
+    .btn-outline:hover {
+        background: #f7fafc;
+        border-color: #667eea;
+    }
+    
+    .status-message {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: none;
+        font-size: 0.875rem;
+    }
+    
+    .status-message.show {
+        display: block;
+    }
+    
+    .status-message.success {
+        background: #c6f6d5;
+        color: #22543d;
+        border: 1px solid #9ae6b4;
+    }
+    
+    .status-message.error {
+        background: #fed7d7;
+        color: #742a2a;
+        border: 1px solid #fc8181;
+    }
+    
+    .status-message.info {
+        background: #bee3f8;
+        color: #2c5282;
+        border: 1px solid #90cdf4;
+    }
+    
+    .graph-wrapper {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        height: calc(100vh - 150px);
+        min-height: 900px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .graph-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .graph-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 0;
+    }
+    
+    .graph-header i {
+        color: #667eea;
+        font-size: 1.5rem;
+    }
+    
+    .graph-description {
+        color: #718096;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+    
+    .graph-container {
+        width: 100%;
+        height: calc(100vh - 300px);
+        min-height: 800px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        overflow: hidden;
+    }
+    
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none !important;
+    }
+    
+    .modal-overlay.show {
+        display: block !important;
+    }
+    
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 700px;
+        max-height: 85vh;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: none !important;
+        overflow-y: auto;
+    }
+    
+    .modal.show {
+        display: block !important;
+    }
+    
+    .modal-header {
+        background: #667eea;
+        color: white;
+        padding: 1.5rem;
+        border-radius: 16px 16px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .modal-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-critical {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .badge-high {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    
+    .badge-medium {
+        background: #fed7aa;
+        color: #c2410c;
+    }
+    
+    .badge-low {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .badge-category {
+        background: #e9d5ff;
+        color: #6b21a8;
+    }
+    
+    .impact-section {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #f7fafc;
+        border-radius: 8px;
+    }
+    
+    .impact-section strong {
+        color: #4a5568;
+        font-size: 0.875rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .impact-section p {
+        color: #2d3748;
+        margin: 0;
+    }
+    
+    .action-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .action-section button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .suggestions-list, .consequences-list {
+        display: none;
+        margin-top: 1rem;
+    }
+    
+    .suggestions-list.show, .consequences-list.show {
+        display: block;
+    }
+    
+    .suggestion-item, .consequence-item {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        background: #f7fafc;
+        border-left: 3px solid #667eea;
+        border-radius: 6px;
+    }
+    
+    .consequence-item {
+        border-left-color: #f56565;
+    }
+    
+    .suggestion-item strong, .consequence-item strong {
+        color: #4a5568;
+        margin-right: 0.5rem;
+    }
+    
+    .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+</head>
+<body>
+<div class="what-if-simulator">
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button onclick="runFirstGeneration()" class="btn btn-primary" id="regenerate-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-sync-alt"></i> <span id="regenerate-btn-text">Regenerate Analysis</span>
+            </button>
+            
+            <h1 style="margin: 0;">
+                What If Scenario Simulator
+            </h1>
+            
+            <div style="display: flex; gap: 0.75rem;">
+                <button onclick="refreshGraph()" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <a href="/risk_mitigation/dashboard/{{ project_id }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+        
+        <div class="status-message" id="status-message" style="margin-top: 1rem;"></div>
+    </div>
+
+    <div class="graph-wrapper">
+        <div class="graph-header" style="flex-shrink: 0;">
+            <i class="fas fa-sitemap"></i>
+            <h2>Bottleneck Flow Graph</h2>
+        </div>
+        <p class="graph-description" style="flex-shrink: 0;">Click on any node to view detailed information, mitigation strategies, and consequences</p>
+        <div id="graph-container" class="graph-container" style="flex: 1; min-height: 0;"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
+
+<div class="modal" id="modal">
+    <div class="modal-header">
+        <h3 id="modal-title">Bottleneck Details</h3>
+        <button onclick="closeModal()" class="modal-close">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="badges" id="modal-badges">
+            <span class="badge badge-high" id="modal-severity">High</span>
+            <span class="badge badge-category" id="modal-category">General</span>
+        </div>
+        
+        <div class="impact-section">
+            <strong>Impact</strong>
+            <p id="modal-impact">Unknown</p>
+        </div>
+
+        <div class="action-section">
+            <button onclick="loadMitigationSuggestions()" class="btn btn-primary" id="mitigation-btn">
+                <i class="fas fa-lightbulb"></i> Get Mitigation Suggestions
+            </button>
+        </div>
+
+        <div class="suggestions-list" id="suggestions-list">
+            <h4 style="margin: 0 0 1rem 0; color: #2d3748; font-size: 1rem;">Mitigation Strategies</h4>
+            <div id="mitigation-points"></div>
+        </div>
+
+        <div class="action-section">
+            <button onclick="loadConsequences()" class="btn btn-secondary" id="consequences-btn">
+                <i class="fas fa-exclamation-triangle"></i> View Consequences
+            </button>
+        </div>
+
+        <div class="consequences-list" id="consequences-list">
+            <h4 style="margin: 0 0 1rem 0; color: #2d3748; font-size: 1rem;">Potential Consequences</h4>
+            <div id="consequence-points"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const projectId = '{{ project_id }}';
+    let network = null;
+    let graphData = null;
+    let selectedBottleneckId = null;
+    let selectedBottleneck = null;
+
+    // Wait for vis-network to load
+    function waitForVis(callback, maxAttempts = 50) {
+        let attempts = 0;
+        function check() {
+            attempts++;
+            if (typeof vis !== 'undefined' && vis.Network && vis.DataSet) {
+                console.log('vis-network loaded successfully');
+                callback();
+            } else if (attempts < maxAttempts) {
+                setTimeout(check, 100);
+            } else {
+                console.error('vis-network failed to load after', maxAttempts, 'attempts');
+                document.getElementById('graph-container').innerHTML = '<div style="padding: 3rem; text-align: center;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #fc8181; margin-bottom: 1rem;"></i><p style="color: #e53e3e;">Failed to load graph library. Please refresh the page.</p></div>';
+            }
+        }
+        check();
+    }
+
+    async function loadGraphData() {
+        const container = document.getElementById('graph-container');
+        container.innerHTML = '<div style="padding: 3rem; text-align: center;"><div class="loading" style="margin: 0 auto;"></div><p style="margin-top: 1rem; color: #718096;">Loading graph data...</p></div>';
+        
+        try {
+            const response = await fetch(`/api/risk_mitigation/what_if_simulator/${projectId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Graph data response:', data);
+            
+            if (data.success && data.graph_data && data.graph_data.nodes && data.graph_data.nodes.length > 0) {
+                graphData = data.graph_data;
+                console.log('Graph data ready, waiting for vis-network...');
+                waitForVis(() => {
+                    console.log('vis-network loaded, rendering graph...');
+                    renderGraph(data.graph_data);
+                });
+            } else {
+                container.innerHTML = '<div style="padding: 3rem; text-align: center;"><i class="fas fa-info-circle" style="font-size: 2rem; color: #cbd5e0; margin-bottom: 1rem;"></i><p style="color: #718096; margin-bottom: 0.5rem;">No bottlenecks found</p><p style="color: #a0aec0; font-size: 0.875rem;">Please run first-time generation</p></div>';
+            }
+        } catch (error) {
+            console.error('Error loading graph data:', error);
+            container.innerHTML = '<div style="padding: 3rem; text-align: center;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #fc8181; margin-bottom: 1rem;"></i><p style="color: #e53e3e; margin-bottom: 0.5rem;">Error loading graph data</p><p style="color: #a0aec0; font-size: 0.875rem; margin-bottom: 1rem;">' + error.message + '</p><button onclick="loadGraphData()" class="btn btn-primary"><i class="fas fa-redo"></i> Retry</button></div>';
+        }
+    }
+
+    function renderGraph(graphData) {
+        const container = document.getElementById('graph-container');
+        
+        if (!graphData || !graphData.nodes || graphData.nodes.length === 0) {
+            container.innerHTML = '<div style="padding: 3rem; text-align: center;"><i class="fas fa-info-circle" style="font-size: 2rem; color: #cbd5e0;"></i><p style="color: #718096; margin-top: 1rem;">No bottlenecks to display</p></div>';
+            return;
+        }
+        
+        console.log('Rendering graph with', graphData.nodes.length, 'nodes');
+        
+        // Clear container
+        container.innerHTML = '';
+
+        const nodes = new vis.DataSet(graphData.nodes.map(node => {
+            const severity = node.severity || 'Medium';
+            const colors = {
+                'Critical': { bg: '#fee2e2', border: '#dc2626', text: '#991b1b' },
+                'High': { bg: '#fee2e2', border: '#ef4444', text: '#dc2626' },
+                'Medium': { bg: '#fed7aa', border: '#f97316', text: '#c2410c' },
+                'Low': { bg: '#fef3c7', border: '#eab308', text: '#92400e' }
+            };
+            const color = colors[severity] || colors['Medium'];
+            
+            return {
+                id: node.id,
+                label: node.label.length > 50 ? node.label.substring(0, 50) + '...' : node.label,
+                title: node.label + '\nSeverity: ' + severity + '\nCategory: ' + (node.category || 'General'),
+                color: {
+                    background: color.bg,
+                    border: color.border,
+                    highlight: { 
+                        background: color.bg, 
+                        border: color.border,
+                        borderWidth: 4
+                    }
+                },
+                shape: 'box',
+                font: { 
+                    size: 18, 
+                    color: color.text,
+                    face: 'Inter',
+                    bold: true
+                },
+                margin: 20,
+                widthConstraint: { minimum: 240, maximum: 420 },
+                heightConstraint: { minimum: 90 },
+                borderWidth: 4,
+                shadow: {
+                    enabled: true,
+                    color: 'rgba(0,0,0,0.2)',
+                    size: 5,
+                    x: 2,
+                    y: 2
+                }
+            };
+        }));
+
+        const edges = new vis.DataSet(graphData.edges || []);
+        const data = { nodes, edges };
+
+        const options = {
+            nodes: {
+                shape: 'box',
+                font: { size: 15, face: 'Inter', bold: true },
+                borderWidth: 3,
+                shadow: {
+                    enabled: true,
+                    color: 'rgba(0,0,0,0.2)',
+                    size: 5,
+                    x: 2,
+                    y: 2
+                },
+                chosen: {
+                    node: function(values, id, selected, hovering) {
+                        if (hovering) {
+                            values.borderWidth = 5;
+                            values.shadow.size = 10;
+                        }
+                    }
+                }
+            },
+            edges: {
+                arrows: { 
+                    to: { 
+                        enabled: true,
+                        scaleFactor: 1.5,
+                        type: 'arrow'
+                    } 
+                },
+                smooth: { 
+                    type: 'continuous',
+                    roundness: 0.5
+                },
+                color: { 
+                    color: '#cbd5e0',
+                    highlight: '#667eea'
+                },
+                width: 2,
+                selectionWidth: 3
+            },
+            layout: {
+                hierarchical: {
+                    enabled: true,
+                    direction: 'LR',
+                    sortMethod: 'directed',
+                    levelSeparation: 250,
+                    nodeSpacing: 300,
+                    treeSpacing: 350,
+                    blockShifting: true,
+                    edgeMinimization: true,
+                    parentCentralization: true
+                }
+            },
+            physics: { enabled: false },
+            interaction: {
+                dragNodes: true,
+                dragView: true,
+                zoomView: true,
+                hover: true,
+                tooltipDelay: 200,
+                selectConnectedEdges: false
+            }
+        };
+
+        try {
+            network = new vis.Network(container, data, options);
+            console.log('Network created successfully');
+
+            network.on('click', function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    console.log('Node clicked:', nodeId);
+                    showModal(nodeId, graphData.nodes);
+                }
+            });
+            
+            network.on('hoverNode', function(params) {
+                container.style.cursor = 'pointer';
+            });
+            
+            network.on('blurNode', function(params) {
+                container.style.cursor = 'default';
+            });
+        } catch (error) {
+            console.error('Error creating network:', error);
+            container.innerHTML = '<div style="padding: 3rem; text-align: center;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #fc8181; margin-bottom: 1rem;"></i><p style="color: #e53e3e;">Error rendering graph: ' + error.message + '</p></div>';
+        }
+    }
+
+    function showModal(bottleneckId, nodes) {
+        selectedBottleneckId = bottleneckId;
+        selectedBottleneck = nodes.find(n => n.id === bottleneckId);
+        
+        if (!selectedBottleneck) return;
+
+        document.getElementById('modal-title').textContent = selectedBottleneck.label;
+        const severity = selectedBottleneck.severity || 'Medium';
+        document.getElementById('modal-severity').textContent = severity;
+        document.getElementById('modal-severity').className = 'badge badge-' + severity.toLowerCase();
+        document.getElementById('modal-category').textContent = selectedBottleneck.category || 'General';
+        document.getElementById('modal-impact').textContent = selectedBottleneck.impact || 'Unknown impact';
+
+        document.getElementById('suggestions-list').classList.remove('show');
+        document.getElementById('consequences-list').classList.remove('show');
+        document.getElementById('mitigation-btn').disabled = false;
+        document.getElementById('consequences-btn').disabled = false;
+        document.getElementById('mitigation-btn').innerHTML = '<i class="fas fa-lightbulb"></i> Get Mitigation Suggestions';
+        document.getElementById('consequences-btn').innerHTML = '<i class="fas fa-exclamation-triangle"></i> View Consequences';
+
+        document.getElementById('modal-overlay').classList.add('show');
+        document.getElementById('modal').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('show');
+        document.getElementById('modal').classList.remove('show');
+        selectedBottleneckId = null;
+        selectedBottleneck = null;
+    }
+
+    async function loadMitigationSuggestions() {
+        if (!selectedBottleneckId) {
+            alert('No bottleneck selected');
+            return;
+        }
+
+        const btn = document.getElementById('mitigation-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"></span> Loading...';
+
+        try {
+            console.log(`Fetching mitigation suggestions for bottleneck: ${selectedBottleneckId}`);
+            const response = await fetch(`/api/risk_mitigation/mitigation/${projectId}/${selectedBottleneckId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Mitigation suggestions response:', data);
+
+            if (data.success && data.mitigation_points && data.mitigation_points.length > 0) {
+                document.getElementById('mitigation-points').innerHTML = data.mitigation_points.map((point, i) => `
+                    <div class="suggestion-item">
+                        <strong>${i + 1}.</strong> ${point}
+                    </div>
+                `).join('');
+                document.getElementById('suggestions-list').classList.add('show');
+            } else {
+                const errorMsg = data.error || 'No mitigation suggestions available';
+                console.error('Failed to load mitigation suggestions:', errorMsg);
+                alert(`Failed to load mitigation suggestions: ${errorMsg}`);
+            }
+        } catch (error) {
+            console.error('Error loading mitigation suggestions:', error);
+            alert(`Error loading mitigation suggestions: ${error.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lightbulb"></i> Get Mitigation Suggestions';
+        }
+    }
+
+    async function loadConsequences() {
+        if (!selectedBottleneckId) {
+            alert('No bottleneck selected');
+            return;
+        }
+
+        const btn = document.getElementById('consequences-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"></span> Loading...';
+
+        try {
+            console.log(`Fetching consequences for bottleneck: ${selectedBottleneckId}`);
+            const response = await fetch(`/api/risk_mitigation/consequences/${projectId}/${selectedBottleneckId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Consequences response:', data);
+
+            if (data.success && data.consequence_points && data.consequence_points.length > 0) {
+                document.getElementById('consequence-points').innerHTML = data.consequence_points.map((point, i) => `
+                    <div class="consequence-item">
+                        <strong>${i + 1}.</strong> ${point}
+                    </div>
+                `).join('');
+                document.getElementById('consequences-list').classList.add('show');
+            } else {
+                const errorMsg = data.error || 'No consequences available';
+                console.error('Failed to load consequences:', errorMsg);
+                alert(`Failed to load consequences: ${errorMsg}`);
+            }
+        } catch (error) {
+            console.error('Error loading consequences:', error);
+            alert(`Error loading consequences: ${error.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> View Consequences';
+        }
+    }
+
+    async function runFirstGeneration() {
+        const btn = document.getElementById('regenerate-btn');
+        const btnText = document.getElementById('regenerate-btn-text');
+        const status = document.getElementById('status-message');
+        const originalText = btnText ? btnText.textContent : 'Regenerate Analysis';
+        
+        // Confirm regeneration
+        const confirmRegenerate = confirm('⚠️ This will regenerate all risk analysis data and overwrite existing data. Continue?');
+        if (!confirmRegenerate) {
+            return;
+        }
+        
+        btn.disabled = true;
+        if (btnText) btnText.textContent = 'Generating...';
+        btn.style.opacity = '0.6';
+        status.className = 'status-message info show';
+        status.innerHTML = '<i class="fas fa-info-circle"></i> <strong>Generating...</strong> This may take a few minutes.';
+        
+        try {
+            const response = await fetch('/api/risk_mitigation/first_generation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_id: projectId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                status.className = 'status-message success show';
+                status.innerHTML = `<i class="fas fa-check-circle"></i> <strong>Success!</strong> Generated ${data.bottlenecks_count || 0} bottlenecks, ${data.suggestions_generated || 0} suggestions, and ${data.consequences_generated || 0} consequences.`;
+                setTimeout(() => loadGraphData(), 1000);
+            } else {
+                status.className = 'status-message error show';
+                status.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <strong>Error:</strong> ${data.error || 'Failed to generate'}`;
+            }
+        } catch (error) {
+            status.className = 'status-message error show';
+            status.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <strong>Error:</strong> ${error.message}`;
+        } finally {
+            btn.disabled = false;
+            if (btnText) btnText.textContent = originalText;
+            btn.style.opacity = '1';
+        }
+    }
+
+    function refreshGraph() {
+        loadGraphData();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded, checking vis-network...');
+        if (typeof vis === 'undefined') {
+            console.error('vis-network not loaded!');
+        } else {
+            console.log('vis-network is available');
+        }
+        
+        // Make sure modal is hidden on load
+        document.getElementById('modal').classList.remove('show');
+        document.getElementById('modal-overlay').classList.remove('show');
+        
+        waitForVis(() => loadGraphData());
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+services:
+  # API Gateway - Main entry point
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["api-gateway"]
+    container_name: api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - FINANCIAL_SERVICE_URL=http://financial-service:8001
+      - PERFORMANCE_SERVICE_URL=http://performance-service:8002
+      - CSV_ANALYSIS_SERVICE_URL=http://csv-analysis-service:8003
+      - A2A_ROUTER_SERVICE_URL=http://a2a-router-service:8004
+      - SCHEDULER_SERVICE_URL=http://scheduler-service:8005
+      - RISK_MITIGATION_SERVICE_URL=http://risk-mitigation-service:8008
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    depends_on:
+      - financial-service
+      - performance-service
+      - csv-analysis-service
+      - a2a-router-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+  # Financial Service
+  financial-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["financial-service"]
+    container_name: financial-service
+    ports:
+      - "8001:8001"
+    environment:
+      - A2A_ROUTER_URL=http://a2a-router-service:8004
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    depends_on:
+      - a2a-router-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+  # Performance Service
+  performance-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["performance-service"]
+    container_name: performance-service
+    ports:
+      - "8002:8002"
+    environment:
+      - A2A_ROUTER_URL=http://a2a-router-service:8004
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    depends_on:
+      - a2a-router-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+  # CSV Analysis Service
+  csv-analysis-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["csv-analysis-service"]
+    container_name: csv-analysis-service
+    ports:
+      - "8003:8003"
+    environment:
+      - A2A_ROUTER_URL=http://a2a-router-service:8004
+      - FINANCIAL_SERVICE_URL=http://financial-service:8001
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    depends_on:
+      - a2a-router-service
+      - financial-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8003/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+  # A2A Router Service
+  a2a-router-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["a2a-router-service"]
+    container_name: a2a-router-service
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8004/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+  # Scheduler Service
+  scheduler-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["scheduler-service"]
+    container_name: scheduler-service
+    ports:
+      - "8005:8005"
+    environment:
+      - A2A_ROUTER_URL=http://a2a-router-service:8004
+      - FINANCIAL_SERVICE_URL=http://financial-service:8001
+      - PERFORMANCE_SERVICE_URL=http://performance-service:8002
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    depends_on:
+      - a2a-router-service
+      - financial-service
+      - performance-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8005/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+  # Risk Mitigation Service
+  risk-mitigation-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["risk-mitigation-service"]
+    container_name: risk-mitigation-service
+    ports:
+      - "8008:8008"
+    environment:
+      - A2A_ROUTER_URL=http://a2a-router-service:8004
+      - PERFORMANCE_SERVICE_URL=http://performance-service:8002
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    depends_on:
+      - a2a-router-service
+      - performance-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8008/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+  # Document Agent Service
+  document-agent-service:
+    image: proj-api-gateway:latest
+    command: ["document-agent"]
+    container_name: document-agent-service
+    ports:
+      - "8006:8006"
+    environment:
+      - A2A_ROUTER_URL=http://a2a-router-service:8004
+      - FINANCIAL_SERVICE_URL=http://financial-service:8001
+      - PERFORMANCE_SERVICE_URL=http://performance-service:8002
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    depends_on:
+      - a2a-router-service
+      - financial-service
+      - performance-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8006/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+  # Intelligent Document Generator Service
+  doc-gen-service:
+    image: proj-api-gateway:latest
+    command: ["doc-gen"]
+    container_name: doc-gen-service
+    ports:
+      - "8007:8007"
+    environment:
+      - A2A_ROUTER_URL=http://a2a-router-service:8004
+      - FINANCIAL_SERVICE_URL=http://financial-service:8001
+      - PERFORMANCE_SERVICE_URL=http://performance-service:8002
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+    depends_on:
+      - a2a-router-service
+      - financial-service
+      - performance-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8007/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  chroma_db:
+    driver: local
+  data:
+    driver: local

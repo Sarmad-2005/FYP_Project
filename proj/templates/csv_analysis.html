@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial CSV Analysis - {{ project.name }}</title>
+    
+    <!-- Tabulator.js -->
+    <link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/csv_analysis.css') }}">
+</head>
+<body>
+    <!-- App Header -->
+    <div class="app-header">
+        <div class="header-left">
+            <a href="/financial_agent/dashboard/{{ project_id }}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-title">
+                <h1><i class="fas fa-file-excel"></i> Financial CSV Analysis</h1>
+                <p class="project-name">{{ project.name }}</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="header-stats" id="headerStats" style="display: none;">
+                <div class="stat-item">
+                    <i class="fas fa-table"></i>
+                    <span id="rowCount">0</span> rows
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-columns"></i>
+                    <span id="colCount">0</span> columns
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-check-square"></i>
+                    <span id="selectedCount">0</span> selected
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Toolbar - Excel-like -->
+        <div class="excel-toolbar">
+            <div class="toolbar-section">
+                <label for="fileUpload" class="toolbar-btn toolbar-btn-primary">
+                    <i class="fas fa-file-upload"></i>
+                    <span>Upload CSV</span>
+                    <input type="file" id="fileUpload" accept=".csv" style="display: none;">
+                </label>
+                <button class="toolbar-btn" onclick="downloadCSV()" id="downloadBtn" disabled>
+                    <i class="fas fa-download"></i>
+                    <span>Download</span>
+                </button>
+                <button class="toolbar-btn" onclick="exportModifiedCSV()" id="exportBtn" disabled>
+                    <i class="fas fa-file-export"></i>
+                    <span>Export</span>
+                </button>
+            </div>
+            
+            <div class="toolbar-divider"></div>
+            
+            <div class="toolbar-section">
+                <button class="toolbar-btn" onclick="addRow()" id="addRowBtn" disabled>
+                    <i class="fas fa-plus"></i>
+                    <span>Add Row</span>
+                </button>
+                <button class="toolbar-btn" onclick="deleteSelectedRows()" id="deleteRowBtn" disabled>
+                    <i class="fas fa-trash"></i>
+                    <span>Delete Row</span>
+                </button>
+            </div>
+            
+            <div class="toolbar-divider"></div>
+            
+            <div class="toolbar-section">
+                <button class="toolbar-btn" onclick="clearSelection()" id="clearSelectionBtn" disabled>
+                    <i class="fas fa-times"></i>
+                    <span>Clear Selection</span>
+                </button>
+                <button class="toolbar-btn" onclick="refreshTable()" id="refreshBtn" disabled>
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Split: Table + AI Panel -->
+        <div class="main-content">
+            <!-- Left: Spreadsheet Area -->
+            <div class="spreadsheet-container">
+                <!-- Upload State -->
+                <div class="upload-placeholder" id="uploadPlaceholder">
+                    <div class="upload-icon">
+                        <i class="fas fa-file-csv"></i>
+                    </div>
+                    <h2>Upload a CSV File to Begin</h2>
+                    <p>Drag and drop your CSV file here, or click the "Upload CSV" button above</p>
+                    <div class="upload-drop-zone" id="dropZone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drop CSV file here</p>
+                    </div>
+                    <div class="upload-hints">
+                        <div class="hint-item">
+                            <i class="fas fa-check"></i>
+                            <span>Edit cells directly</span>
+                        </div>
+                        <div class="hint-item">
+                            <i class="fas fa-check"></i>
+                            <span>Add/remove rows</span>
+                        </div>
+                        <div class="hint-item">
+                            <i class="fas fa-check"></i>
+                            <span>Ask AI questions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="table-wrapper" id="tableWrapper" style="display: none;">
+                    <div class="table-helper-text">
+                        <i class="fas fa-hand-pointer"></i>
+                        <span><strong>Important:</strong> Click rows to select them before asking questions! Selected rows will be sent to the AI.</span>
+                    </div>
+                    <div id="csvTable"></div>
+                </div>
+            </div>
+
+            <!-- Right: AI Assistant Panel -->
+            <div class="ai-panel">
+                <div class="ai-panel-header">
+                    <h3><i class="fas fa-robot"></i> AI Assistant</h3>
+                    <button class="toggle-panel-btn" onclick="toggleAIPanel()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="ai-panel-content" id="aiPanelContent">
+                    <!-- Question Input -->
+                    <div class="ai-question-section">
+                        <label for="questionInput">
+                            <i class="fas fa-comment-dots"></i> Ask a question about your data
+                        </label>
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="e.g., What is the total amount? What's the average revenue? Which province has the highest expenses?"
+                            rows="4"
+                        ></textarea>
+                        
+                        <div class="ai-options">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="includeProjectContext" checked>
+                                <span><i class="fas fa-database"></i> Include project financial data</span>
+                            </label>
+                        </div>
+
+                        <button class="btn-ask" onclick="askQuestion()" id="askBtn" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Ask Question</span>
+                            <i class="fas fa-spinner fa-spin" id="askSpinner" style="display: none;"></i>
+                        </button>
+                    </div>
+
+                    <!-- Answer Display -->
+                    <div class="ai-answer-section" id="answerSection" style="display: none;">
+                        <div class="answer-header">
+                            <h4><i class="fas fa-lightbulb"></i> Answer</h4>
+                            <span class="execution-time" id="executionTime"></span>
+                        </div>
+                        
+                        <div class="answer-content" id="answerContent"></div>
+                        
+                        <div class="sources-section">
+                            <h5><i class="fas fa-list-ul"></i> Sources</h5>
+                            <div id="sourcesContent"></div>
+                        </div>
+                        
+                        <div class="agent-thinking-section">
+                            <h5><i class="fas fa-brain"></i> How AI Solved This</h5>
+                            <div id="agentChainContent"></div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="ai-empty-state" id="aiEmptyState">
+                        <i class="fas fa-comments"></i>
+                        <p>Upload a CSV file and select cells to start asking questions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <p id="loadingText">Processing...</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Tabulator.js -->
+    <script src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        const projectId = "{{ project_id }}";
+        let currentSessionId = null;
+        let csvTable = null;
+        let selectedCells = [];
+    </script>
+    <script src="{{ url_for('static', filename='js/csv_analysis.js') }}"></script>
+</body>
+</html>

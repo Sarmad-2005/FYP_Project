@@ -1,0 +1,158 @@
+@startuml UC8 - Effort vs. Outcome Analysis
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC8 - Effort vs. Outcome Analysis\nSequence Diagram
+
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Effort Analyzer" as EA
+participant "Outcome Analyzer" as OA
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Request Efficiency Analysis ==
+
+PM -> WB: Navigate to efficiency analysis
+WB -> FA: GET /analytics/efficiency/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_performance_data(project_id)
+DM --> FA: Performance data
+FA --> WB: Render efficiency dashboard
+WB --> PM: Display efficiency interface
+
+PM -> WB: Request efficiency analysis
+WB -> FA: POST /analytics/analyze_efficiency
+note right: project_id, analysis_parameters
+
+== Effort Data Collection ==
+
+FA -> EA: analyze_project_efficiency(project_id, parameters)
+EA -> DM: get_effort_data(project_id)
+note right: Manpower hours, resource costs, time spent
+DM --> EA: Effort data
+EA -> DM: get_financial_data(project_id)
+DM --> EA: Financial data
+EA -> EA: Calculate total effort metrics
+note right: Total hours, total costs, resource utilization
+
+== Outcome Data Collection ==
+
+EA -> OA: analyze_project_outcomes(project_id)
+OA -> DM: get_project_deliverables(project_id)
+DM --> OA: Deliverable data
+OA -> DM: get_milestone_completion(project_id)
+DM --> OA: Milestone data
+OA -> DM: get_performance_metrics(project_id)
+DM --> OA: Performance data
+OA -> OA: Calculate outcome metrics
+note right: Completion rates, quality scores, stakeholder satisfaction
+
+== Efficiency Calculation ==
+
+EA -> EA: Calculate effort vs outcome ratio
+EA -> LLM: Analyze efficiency patterns
+note right: Context: effort data, outcome data, project context
+LLM --> EA: Efficiency insights
+EA -> EA: Generate efficiency metrics
+note right: ROI, productivity ratios, cost-effectiveness
+
+== Comparative Analysis ==
+
+EA -> CDB: Query similar projects
+CDB --> EA: Historical project data
+EA -> LLM: Compare with industry benchmarks
+note right: Context: current project vs industry standards
+LLM --> EA: Benchmark comparison
+EA -> EA: Calculate efficiency rankings
+EA -> EA: Identify improvement areas
+
+== Efficiency Report Generation ==
+
+EA -> CDB: Store efficiency analysis
+CDB --> EA: Analysis saved
+EA -> DM: save_efficiency_report(project_id, analysis_data)
+DM --> EA: Report saved
+EA --> FA: Efficiency analysis complete
+FA --> WB: Efficiency analysis results
+WB --> PM: Display efficiency dashboard
+
+== Resource Optimization Insights ==
+
+PM -> WB: Request resource optimization
+WB -> FA: POST /analytics/resource_optimization
+note right: project_id
+
+FA -> EA: get_resource_optimization_insights(project_id)
+EA -> DM: get_resource_utilization(project_id)
+DM --> EA: Resource data
+EA -> LLM: Generate optimization recommendations
+note right: Context: current resource usage, efficiency metrics
+LLM --> EA: Optimization recommendations
+EA --> FA: Resource insights
+FA --> WB: Optimization recommendations
+WB --> PM: Display resource optimization
+
+== Productivity Trends ==
+
+PM -> WB: View productivity trends
+WB -> FA: GET /analytics/productivity_trends/<project_id>
+FA -> EA: get_productivity_trends(project_id)
+EA -> DM: get_historical_effort_data(project_id)
+DM --> EA: Historical data
+EA -> EA: Calculate trend analysis
+EA -> LLM: Generate trend insights
+note right: Context: productivity trends, efficiency patterns
+LLM --> EA: Trend analysis
+EA --> FA: Productivity trends
+FA --> WB: Render trend visualization
+WB --> PM: Display productivity trends
+
+== Efficiency Benchmarking ==
+
+PM -> WB: Request efficiency benchmarking
+WB -> FA: POST /analytics/efficiency_benchmark
+note right: project_id, benchmark_type
+
+FA -> EA: benchmark_efficiency(project_id, benchmark_type)
+EA -> CDB: Query industry benchmarks
+CDB --> EA: Benchmark data
+EA -> LLM: Compare project efficiency
+note right: Context: project metrics vs industry benchmarks
+LLM --> EA: Benchmark comparison
+EA -> EA: Calculate efficiency score
+EA --> FA: Benchmark results
+FA --> WB: Benchmark data
+WB --> PM: Display efficiency benchmarking
+
+== Cost-Benefit Analysis ==
+
+PM -> WB: Request cost-benefit analysis
+WB -> FA: POST /analytics/cost_benefit
+note right: project_id
+
+FA -> EA: perform_cost_benefit_analysis(project_id)
+EA -> DM: get_complete_project_data(project_id)
+DM --> EA: Project data
+EA -> LLM: Analyze cost-benefit ratio
+note right: Context: total costs vs achieved outcomes
+LLM --> EA: Cost-benefit analysis
+EA -> EA: Calculate ROI metrics
+EA --> FA: Cost-benefit results
+FA --> WB: Analysis results
+WB --> PM: Display cost-benefit analysis
+
+@enduml

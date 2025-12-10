@@ -1,0 +1,45 @@
+{
+  "2025-12-09T19:03:21.998025": {
+    "project_id": "57ac1aab-21a0-411c-88f9-79647c8e7e2c",
+    "document_id": "64e6d39c-02d9-4a1e-b0d8-44250b5f6602",
+    "timestamp": "2025-12-09T19:03:21.998025",
+    "milestones": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "LLM error: Hugging Face API error (400): Requested token count exceeds the model's maximum context length of 8192 tokens. You requested a total of 8930 tokens: 930 tokens from the input messages and 8000 tokens for the completion. Please reduce the number of tokens in the input messages or the completion to fit within the limit."
+    },
+    "tasks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "completion_analysis": false,
+      "error": "LLM error: Hugging Face API error (400): Requested token count exceeds the model's maximum context length of 8192 tokens. You requested a total of 8731 tokens: 731 tokens from the input messages and 8000 tokens for the completion. Please reduce the number of tokens in the input messages or the completion to fit within the limit."
+    },
+    "bottlenecks": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "LLM error: Hugging Face API error (400): Requested token count exceeds the model's maximum context length of 8192 tokens. You requested a total of 8651 tokens: 651 tokens from the input messages and 8000 tokens for the completion. Please reduce the number of tokens in the input messages or the completion to fit within the limit."
+    },
+    "requirements": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "suggestions_count": 0,
+      "error": "Hugging Face API error (400): Requested token count exceeds the model's maximum context length of 8192 tokens. You requested a total of 8763 tokens: 763 tokens from the input messages and 8000 tokens for the completion. Please reduce the number of tokens in the input messages or the completion to fit within the limit."
+    },
+    "actors": {
+      "success": false,
+      "count": 0,
+      "details_count": 0,
+      "linked_requirements_count": 0,
+      "error": "Hugging Face API error (400): Requested token count exceeds the model's maximum context length of 8192 tokens. You requested a total of 8743 tokens: 743 tokens from the input messages and 8000 tokens for the completion. Please reduce the number of tokens in the input messages or the completion to fit within the limit."
+    },
+    "completion_score": 0.0,
+    "overall_success": false
+  }
+}

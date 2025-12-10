@@ -1,0 +1,150 @@
+Data Design
+The data design for Psyplex AI leverages MongoDB, a NoSQL document-based database, to accommodate the flexible and evolving nature of emotional data, user preferences, and module interactions. This choice supports scalability, handles unstructured and semi-structured data (e.g., JSON-like documents), and enables rapid development and iteration, which aligns with the project's dynamic requirements like mood tracking, emotional analysis, and personalization.
+Key considerations include:
+- Privacy and Security: Sensitive data (e.g., journal entries, mood logs) is encrypted at rest using MongoDB's native encryption features. User consent is enforced, and access is logged for auditing via capped collections.
+- Scalability: Sharding is planned for high-traffic modules (e.g., MoodTracking, BrowsingHistory) to distribute data across clusters as the user base grows.
+- Data Retention: Mood and browsing data are retained for up to 1 year by default, with user-configurable TTL (Time-To-Live) indexes for automatic deletion.
+- Flexibility: Nested documents and arrays store complex relationships (e.g., correlated factors, tags) without rigid schemas.
+Below is the document-oriented data model overview, followed by the detailed collections.
+
+Data Model Overview
+- Collections: Users, MoodEntries, JournalEntries, BrowsingHistories, ActivityLogs (for Balance Box), ScheduleGoals, AlertLogs, Preferences.
+- Relationships:
+Users embed references to MoodEntries, JournalEntries, etc., using ObjectId for linking.
+Emotional analysis aggregates data from MoodEntries and BrowsingHistories via map-reduce or aggregation pipelines.
+- Attributes: Timestamps for all logs to enable time-series analysis; emotional scores (e.g., sentiment polarity from -1 to 1) stored as nested fields.
+
+
+MongoDB Collections 
+1. Users Collection  
+Stores user profile and authentication data.  
+Document Example:  
+     ```json:disable-run
+     {
+       "_id": ObjectId("..."),
+       "username": "fawad123",
+       "email": "fawad@example.com",
+       "password_hash": "$2b$10$...",
+       "created_at": ISODate("2025-10-01T12:00:00Z"),
+       "last_login": ISODate("2025-10-15T21:00:00Z"),
+       "is_active": true
+     }
+     ```
+
+2. MoodEntries Collection 
+Logs daily/periodic mood self-reports and correlations.  
+Document Example:  
+     ```json
+     {
+       "_id": ObjectId("..."),
+       "user_id": ObjectId("..."),
+       "mood_type": "happy",
+       "intensity": 8,
+       "notes": "Feeling good after exercise",
+       "timestamp": ISODate("2025-10-15T09:00:00Z"),
+       "correlated_factors": {
+         "sleep": 7,
+         "exercise": true,
+         "weather": "sunny"
+       }
+     }
+     ```
+
+3. JournalEntries Collection 
+Stores text/voice-based journals with sentiment analysis.  
+Document Example:  
+     ```json
+     {
+       "_id": ObjectId("..."),
+       "user_id": ObjectId("..."),
+       "content": "Today was stressful at work...",
+       "voice_transcript": "Today was stressful at work...",
+       "sentiment_score": 0.3,
+       "tags": ["work", "anxiety"],
+       "timestamp": ISODate("2025-10-15T10:00:00Z")
+     }
+     ```
+
+4. BrowsingHistories Collection
+Tracks browsing patterns for emotional inference.  
+Document Example:  
+     ```json
+     {
+       "_id": ObjectId("..."),
+       "user_id": ObjectId("..."),
+       "url": "https://example.com/news",
+       "category": "news",
+       "duration": 120,
+       "emotional_label": "neutral",
+       "timestamp": ISODate("2025-10-15T11:00:00Z")
+     }
+     ```
+
+5. ActivityLogs Collection (for Balance Box)  
+Records participation in recommended activities.  
+Document Example:  
+     ```json
+     {
+       "_id": ObjectId("..."),
+       "user_id": ObjectId("..."),
+       "activity_type": "meditation",
+       "duration": 15,
+       "feedback": "Felt relaxed",
+       "timestamp": ISODate("2025-10-15T12:00:00Z")
+     }
+     ```
+
+
+6. ScheduleGoals Collection
+Manages user-defined goals and AI-suggested routines.  
+Document Example:  
+     ```json
+     {
+       "_id": ObjectId("..."),
+       "user_id": ObjectId("..."),
+       "goal_type": "relaxation",
+       "description": "15 mins meditation",
+       "target_duration": 15,
+       "status": "completed",
+       "reminder_time": ISODate("2025-10-16T08:00:00Z")
+     }
+     ```
+
+7. AlertLogs Collection  
+Logs triggered alerts for reflection and analysis.  
+Document Example:  
+     ```json
+     {
+       "_id": ObjectId("..."),
+       "user_id": ObjectId("..."),
+       "trigger_type": "negative content exposure",
+       "message": "Detected prolonged negative content",
+       "suggestion": "Take a break",
+       "timestamp": ISODate("2025-10-15T13:00:00Z"),
+       "acknowledged": false
+     }
+     ```
+8. Preferences Collection  
+Handles personalization and privacy settings.  
+Document Example:  
+     ```json
+     {
+       "_id": ObjectId("..."),
+       "user_id": ObjectId("..."),
+       "theme": "dark",
+       "notification_prefs": {
+         "email": true,
+         "push": false
+       },
+       "chatbot_tone": "empathetic",
+       "data_sharing_consent": true,
+       "updated_at": ISODate("2025-10-15T14:00:00Z")
+     }
+     ```
+Indexes and Aggregation
+Indexes: 
+On `user_id` and `timestamp` fields for efficient querying in dashboards.
+TTL index on `timestamp` with a 1-year expiration for data retention.
+Aggregation Pipelines: Used to compute emotional summaries (e.g., average sentiment_score over a week) via `$group` and `$match` stages.
+Data Flow and Integration
+Data is ingested from frontend modules via RESTful APIs and stored as documents in MongoDB. Backend services process data using aggregation pipelines for analysis (e.g., emotional_labels in BrowsingHistories influence alerts). Backups are managed with MongoDB Atlas or manual snapshots, ensuring data availability with point-in-time recovery.

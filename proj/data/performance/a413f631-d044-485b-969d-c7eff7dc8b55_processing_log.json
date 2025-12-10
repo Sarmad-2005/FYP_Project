@@ -1,0 +1,67 @@
+[
+  {
+    "project_id": "a413f631-d044-485b-969d-c7eff7dc8b55",
+    "document_id": "3794f850-0e5b-43b7-abd2-92c7697892c9",
+    "timestamp": "2025-12-08T23:45:38.081019",
+    "success": false,
+    "milestone_success": false,
+    "task_success": false,
+    "bottleneck_success": false,
+    "milestone_count": 0,
+    "task_count": 0,
+    "bottleneck_count": 0,
+    "error": null
+  },
+  {
+    "project_id": "a413f631-d044-485b-969d-c7eff7dc8b55",
+    "document_id": "3794f850-0e5b-43b7-abd2-92c7697892c9",
+    "timestamp": "2025-12-08T23:45:47.536927",
+    "success": false,
+    "milestone_success": false,
+    "task_success": false,
+    "bottleneck_success": false,
+    "milestone_count": 0,
+    "task_count": 0,
+    "bottleneck_count": 0,
+    "error": null
+  },
+  {
+    "project_id": "a413f631-d044-485b-969d-c7eff7dc8b55",
+    "document_id": "3794f850-0e5b-43b7-abd2-92c7697892c9",
+    "timestamp": "2025-12-08T23:46:08.989811",
+    "success": false,
+    "milestone_success": false,
+    "task_success": false,
+    "bottleneck_success": false,
+    "milestone_count": 0,
+    "task_count": 0,
+    "bottleneck_count": 0,
+    "error": null
+  },
+  {
+    "project_id": "a413f631-d044-485b-969d-c7eff7dc8b55",
+    "document_id": "3794f850-0e5b-43b7-abd2-92c7697892c9",
+    "timestamp": "2025-12-08T23:46:39.594230",
+    "success": false,
+    "milestone_success": false,
+    "task_success": false,
+    "bottleneck_success": false,
+    "milestone_count": 0,
+    "task_count": 0,
+    "bottleneck_count": 0,
+    "error": null
+  },
+  {
+    "project_id": "a413f631-d044-485b-969d-c7eff7dc8b55",
+    "document_id": "8f529c43-ed03-4eee-bb37-b8cf59e2894e",
+    "timestamp": "2025-12-08T23:46:40.859650",
+    "success": false,
+    "milestone_success": false,
+    "task_success": false,
+    "bottleneck_success": false,
+    "milestone_count": 0,
+    "task_count": 0,
+    "bottleneck_count": 0,
+    "error": null
+  }
+]

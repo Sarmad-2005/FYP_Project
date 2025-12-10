@@ -1,0 +1,154 @@
+@startuml UC15 - Document Analysis & Summarization
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC15 - Document Analysis & Summarization\nSequence Diagram
+
+actor "Project Staff" as PS
+actor "Project Manager" as PM
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Enhanced PDF Processor" as EPP
+participant "Embeddings Manager" as EM
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Document Upload & Processing ==
+
+PS -> WB: Upload PDF document
+WB -> FA: POST /upload_document
+note right: Form data: file, project_id
+
+FA -> FA: Validate file (PDF, size)
+alt Valid file
+    FA -> FA: Save file to uploads/
+    FA -> EPP: process_pdf(file_path)
+    
+    == PDF Processing ==
+    EPP -> EPP: Extract text from PDF
+    EPP -> EPP: Split text into sentences
+    EPP -> EPP: Detect and extract tables
+    EPP --> FA: sentences[], tables[]
+    
+    == Generate Embeddings ==
+    FA -> EM: generate_embeddings(sentences, tables)
+    EM -> EM: Process sentences individually
+    EM -> EM: Process tables as single units
+    EM -> EM: Generate 384-dimensional vectors
+    EM -> CDB: Store embeddings in collection
+    note right: Collection: project_{project_id}_doc_{document_id}
+    CDB --> EM: Embeddings stored
+    EM --> FA: Embeddings generated
+    
+    == Store Document Metadata ==
+    FA -> DM: save_document(document_data)
+    DM -> DM: Write to documents.json
+    DM --> FA: Document saved
+    FA --> WB: Success response
+    WB --> PS: Display success message
+else Invalid file
+    FA --> WB: Return error
+    WB --> PS: Display error message
+end
+
+== Document Analysis ==
+
+PM -> WB: Click "Analyze Document"
+WB -> FA: POST /performance_agent/first_generation
+note right: project_id, document_id
+
+FA -> FA: Trigger document analysis
+FA -> CDB: Query document embeddings
+CDB --> FA: Document chunks
+FA -> LLM: Analyze document content
+note right: Extract key information, themes, insights
+LLM --> FA: Analysis results
+FA -> FA: Generate document summary
+FA -> DM: Save analysis results
+DM --> FA: Analysis saved
+FA --> WB: Analysis complete
+WB --> PM: Display document analysis
+
+== Document Summarization ==
+
+PS -> WB: Request document summary
+WB -> FA: POST /chat_with_document
+note right: project_id, document_id, query
+
+FA -> CDB: Query relevant embeddings
+note right: Similarity search for query context
+CDB --> FA: Relevant chunks
+FA -> LLM: Generate summary from chunks
+note right: Context: "Summarize this document"
+LLM --> FA: Document summary
+FA --> WB: Summary response
+WB --> PS: Display document summary
+
+== Multi-language Support ==
+
+PM -> WB: Upload Urdu document
+WB -> FA: POST /upload_document
+FA -> EPP: process_pdf(file_path)
+EPP -> EPP: Extract text (English/Urdu)
+EPP -> EPP: Detect language
+EPP --> FA: Text content with language info
+FA -> EM: generate_embeddings(text)
+EM -> EM: Process multi-language text
+EM -> CDB: Store embeddings
+CDB --> EM: Success
+EM --> FA: Embeddings ready
+FA -> LLM: Analyze multi-language content
+note right: Support for English and Urdu
+LLM --> FA: Analysis results
+FA --> WB: Multi-language analysis
+WB --> PM: Display analysis results
+
+== Document Search & Retrieval ==
+
+PS -> WB: Search within documents
+WB -> FA: POST /search_documents
+note right: project_id, search_query
+
+FA -> CDB: Vector similarity search
+note right: Query embeddings against document chunks
+CDB --> FA: Relevant document chunks
+FA -> LLM: Generate search results summary
+LLM --> FA: Search results
+FA --> WB: Search results
+WB --> PS: Display relevant document sections
+
+== Document Insights Extraction ==
+
+PM -> WB: Request document insights
+WB -> FA: GET /performance_agent/analytics/<project_id>
+FA -> CDB: Query all document embeddings
+CDB --> FA: All document data
+FA -> LLM: Extract cross-document insights
+note right: Identify patterns, themes, relationships
+LLM --> FA: Document insights
+FA -> FA: Generate insight summary
+FA --> WB: Document insights
+WB --> PM: Display document insights
+
+== Document Export ==
+
+PS -> WB: Export document analysis
+WB -> FA: GET /performance_agent/export/<project_id>
+FA -> CDB: Query document data
+CDB --> FA: Complete document data
+FA -> FA: Generate export report
+FA --> WB: Export data (JSON/PDF)
+WB --> PS: Download document analysis
+
+@enduml

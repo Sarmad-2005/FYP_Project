@@ -1,0 +1,329 @@
+@startuml ChromaDB Agents ER Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam linetype ortho
+
+skinparam rectangle {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+
+skinparam circle {
+    BackgroundColor #FFF4E6
+    BorderColor #FF8C00
+    FontColor #8B4513
+}
+
+skinparam diamond {
+    BackgroundColor #E8F5E9
+    BorderColor #4CAF50
+    FontColor #2E7D32
+}
+
+title ChromaDB ERD (Agents Only)
+Implemented Agents → Collections, Attributes, and Relationships
+
+' ==============================
+' AGENTS (RECTANGLES)
+' ==============================
+rectangle "EmbeddingsManager" as EmbeddingsManager {
+    create_embeddings_from_pdf()
+    create_embeddings()
+    search_embeddings()
+}
+
+rectangle "PerformanceChromaManager" as PerfMgr {
+    store_performance_data()
+    get_performance_data()
+    store_details()
+    get_details_by_parent()
+}
+
+rectangle "FinancialChromaManager" as FinMgr {
+    store_financial_data()
+    get_financial_data()
+    query_financial_data()
+}
+
+rectangle "MilestoneAgent" as MilestoneAgent
+rectangle "TaskAgent" as TaskAgent
+rectangle "BottleneckAgent" as BottleneckAgent
+
+rectangle "ExpenseAgent" as ExpenseAgent
+rectangle "RevenueAgent" as RevenueAgent
+rectangle "AnomalyDetectionAgent" as AnomalyAgent
+
+' ==============================
+' CHROMADB COLLECTIONS (RECTANGLES)
+' ==============================
+rectangle "Document_Collection\n(p_{proj}_d_{doc})" as DocCollection {
+    id (PK)
+    documents (text)
+    embeddings (vector)
+}
+
+rectangle "project_milestones" as C_Milestones {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_tasks" as C_Tasks {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_bottlenecks" as C_Bottlenecks {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_milestone_details" as C_MilestoneDetails {
+    id (PK)
+    details_text
+    embedding_vector
+}
+
+rectangle "project_task_details" as C_TaskDetails {
+    id (PK)
+    details_text
+    embedding_vector
+}
+
+rectangle "project_bottleneck_details" as C_BottleneckDetails {
+    id (PK)
+    details_text
+    embedding_vector
+}
+
+rectangle "project_financial_details" as C_FinDetails {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_transactions" as C_Transactions {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_expense_analysis" as C_ExpenseAnalysis {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_revenue_analysis" as C_RevenueAnalysis {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_financial_suggestions" as C_FinSuggestions {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_anomaly_alerts" as C_AnomalyAlerts {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+rectangle "project_reviewed_anomalies" as C_ReviewedAnomalies {
+    id (PK)
+    document_text
+    embedding_vector
+}
+
+' ==============================
+' ATTRIBUTES (CIRCLES / METADATA SHAPES)
+' ==============================
+circle "Document\nMetadata" as Meta_Doc {
+    project_id
+    document_id
+    type (sentence/table)
+    index
+    row_count
+    column_count
+    page
+}
+
+circle "Milestone\nMetadata" as Meta_Milestone {
+    project_id
+    document_id
+    milestone_text
+    category
+    priority
+    created_at
+}
+
+circle "Task\nMetadata" as Meta_Task {
+    project_id
+    document_id
+    task_text
+    category
+    priority
+    status
+    created_at
+}
+
+circle "Bottleneck\nMetadata" as Meta_Bottle {
+    project_id
+    document_id
+    bottleneck_text
+    category
+    severity
+    impact
+    created_at
+}
+
+circle "Details\nMetadata" as Meta_Details {
+    parent_id
+    project_id
+    document_id
+    created_at
+    detail_type
+}
+
+circle "Financial\nMetadata" as Meta_Fin {
+    project_id
+    created_at
+    type
+    amount
+    category
+    transaction_date
+    status
+}
+
+' ==============================
+' RELATIONSHIPS (DIAMONDS)
+' ==============================
+diamond "WRITES" as R_Writes
+diamond "READS" as R_Reads
+diamond "HAS_METADATA" as R_HasMeta
+diamond "HAS_DETAILS" as R_HasDetails
+diamond "REFERENCES" as R_Refs
+diamond "LINKS_TO" as R_Links
+
+' ==============================
+' AGENT → COLLECTION RELATIONSHIPS
+' ==============================
+EmbeddingsManager ||--o{ R_Writes
+R_Writes ||--o{ DocCollection
+
+MilestoneAgent ||--o{ R_Reads
+R_Reads ||--o{ DocCollection
+TaskAgent ||--o{ R_Reads
+R_Reads ||--o{ DocCollection
+BottleneckAgent ||--o{ R_Reads
+R_Reads ||--o{ DocCollection
+
+PerfMgr ||--o{ R_Writes
+R_Writes ||--o{ C_Milestones
+R_Writes ||--o{ C_Tasks
+R_Writes ||--o{ C_Bottlenecks
+
+PerfMgr ||--o{ R_Writes
+R_Writes ||--o{ C_MilestoneDetails
+R_Writes ||--o{ C_TaskDetails
+R_Writes ||--o{ C_BottleneckDetails
+
+ExpenseAgent ||--o{ R_Writes
+R_Writes ||--o{ C_ExpenseAnalysis
+
+RevenueAgent ||--o{ R_Writes
+R_Writes ||--o{ C_RevenueAnalysis
+
+AnomalyAgent ||--o{ R_Writes
+R_Writes ||--o{ C_AnomalyAlerts
+
+FinMgr ||--o{ R_Writes
+R_Writes ||--o{ C_FinDetails
+R_Writes ||--o{ C_Transactions
+R_Writes ||--o{ C_FinSuggestions
+R_Writes ||--o{ C_ReviewedAnomalies
+
+' ==============================
+' COLLECTION → METADATA RELATIONSHIPS
+' ==============================
+DocCollection }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Doc
+
+C_Milestones }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Milestone
+
+C_Tasks }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Task
+
+C_Bottlenecks }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Bottle
+
+C_MilestoneDetails }o--|| R_HasMeta
+C_TaskDetails }o--|| R_HasMeta
+C_BottleneckDetails }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Details
+
+C_FinDetails }o--|| R_HasMeta
+C_Transactions }o--|| R_HasMeta
+C_ExpenseAnalysis }o--|| R_HasMeta
+C_RevenueAnalysis }o--|| R_HasMeta
+C_FinSuggestions }o--|| R_HasMeta
+C_AnomalyAlerts }o--|| R_HasMeta
+C_ReviewedAnomalies }o--|| R_HasMeta
+R_HasMeta }o--|| Meta_Fin
+
+' ==============================
+' DETAILS REFERENCES (PARENT → DETAILS)
+' ==============================
+C_Milestones ||--o{ R_HasDetails
+R_HasDetails ||--o{ C_MilestoneDetails
+
+C_Tasks ||--o{ R_HasDetails
+R_HasDetails ||--o{ C_TaskDetails
+
+C_Bottlenecks ||--o{ R_HasDetails
+R_HasDetails ||--o{ C_BottleneckDetails
+
+C_MilestoneDetails }o--|| R_Refs
+R_Refs }o--|| C_Milestones
+
+C_TaskDetails }o--|| R_Refs
+R_Refs }o--|| C_Tasks
+
+C_BottleneckDetails }o--|| R_Refs
+R_Refs }o--|| C_Bottlenecks
+
+' ==============================
+' NOTES
+' ==============================
+note right of DocCollection
+  Dynamic per-document vector storage
+  Name: p_{project_id[:8]}_d_{document_id[:8]}
+  Content: sentences, tables
+end note
+
+note right of C_Milestones
+  Static collections filtered by project_id
+  Store analysis results
+end note
+
+note right of C_MilestoneDetails
+  Large text stored in document field
+  Linked via parent_id
+end note
+
+note right of C_FinDetails
+  Financial collections use metadata filtering
+  project_id and type
+end note
+
+@enduml
+
+
+

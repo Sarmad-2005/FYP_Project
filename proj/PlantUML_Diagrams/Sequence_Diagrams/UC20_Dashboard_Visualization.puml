@@ -1,0 +1,209 @@
+@startuml UC20 - Dashboard & Visualization
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam participant {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    FontColor #1A365D
+}
+skinparam sequence {
+    ArrowColor #2E86AB
+    LifeLineBackgroundColor #F7FAFC
+    LifeLineBorderColor #4A5568
+}
+
+title UC20 - Dashboard & Visualization\nSequence Diagram
+
+actor "Project Manager" as PM
+actor "Project Staff" as PS
+participant "Web Browser" as WB
+participant "Flask Application" as FA
+participant "Dashboard Agent" as DA
+participant "Visualization Engine" as VE
+participant "ChromaDB" as CDB
+participant "LLM Manager" as LLM
+participant "Database Manager" as DM
+
+== Access Main Dashboard ==
+
+PM -> WB: Navigate to dashboard
+WB -> FA: GET /
+FA -> DM: get_all_projects()
+DM --> FA: Projects data
+FA -> DA: get_dashboard_data()
+DA -> DM: get_performance_summary()
+DM --> DA: Performance data
+DA -> DM: get_financial_summary()
+DM --> DA: Financial data
+DA -> DM: get_risk_summary()
+DM --> DA: Risk data
+DA --> FA: Dashboard data
+FA --> WB: Render dashboard.html
+WB --> PM: Display main dashboard
+
+== Project Details Dashboard ==
+
+PS -> WB: View project details
+WB -> FA: GET /project/<project_id>
+FA -> DM: get_project(project_id)
+DM --> FA: Project data
+FA -> DM: get_documents_by_project(project_id)
+DM --> FA: Documents data
+FA -> DA: get_project_dashboard_data(project_id)
+DA -> DM: get_performance_metrics(project_id)
+DM --> DA: Performance metrics
+DA -> DM: get_financial_status(project_id)
+DM --> DA: Financial status
+DA -> DM: get_risk_alerts(project_id)
+DM --> DA: Risk alerts
+DA --> FA: Project dashboard data
+FA --> WB: Render project_details.html
+WB --> PS: Display project dashboard
+
+== Performance Visualization ==
+
+PM -> WB: View performance dashboard
+WB -> FA: GET /performance_agent/dashboard/<project_id>
+FA -> DA: get_performance_visualization(project_id)
+DA -> DM: get_performance_data(project_id)
+DM --> DA: Performance data
+DA -> VE: create_performance_charts(performance_data)
+VE -> VE: Generate performance charts
+note right: Milestone completion, task progress, bottleneck analysis
+VE -> VE: Create trend visualizations
+VE -> VE: Generate KPI dashboards
+VE --> DA: Performance visualizations
+DA --> FA: Visualization data
+FA --> WB: Render performance dashboard
+WB --> PM: Display performance visualizations
+
+== Financial Visualization ==
+
+PM -> WB: View financial dashboard
+WB -> FA: GET /financial/dashboard/<project_id>
+FA -> DA: get_financial_visualization(project_id)
+DA -> DM: get_financial_data(project_id)
+DM --> DA: Financial data
+DA -> VE: create_financial_charts(financial_data)
+VE -> VE: Generate budget vs actual charts
+VE -> VE: Create spending trend visualizations
+VE -> VE: Generate cost analysis charts
+VE --> DA: Financial visualizations
+DA --> FA: Financial visualization data
+FA --> WB: Render financial dashboard
+WB --> PM: Display financial visualizations
+
+== Risk Visualization ==
+
+PS -> WB: View risk dashboard
+WB -> FA: GET /risk/dashboard/<project_id>
+FA -> DA: get_risk_visualization(project_id)
+DA -> DM: get_risk_data(project_id)
+DM --> DA: Risk data
+DA -> VE: create_risk_charts(risk_data)
+VE -> VE: Generate risk heat maps
+VE -> VE: Create risk trend charts
+VE -> VE: Generate risk probability visualizations
+VE --> DA: Risk visualizations
+DA --> FA: Risk visualization data
+FA --> WB: Render risk dashboard
+WB --> PS: Display risk visualizations
+
+== Interactive Data Filtering ==
+
+PM -> WB: Filter dashboard data
+WB -> FA: POST /dashboard/filter
+note right: project_id, filter_parameters, date_range
+
+FA -> DA: apply_dashboard_filters(project_id, filter_parameters)
+DA -> DM: get_filtered_data(project_id, filter_parameters)
+DM --> DA: Filtered data
+DA -> VE: update_visualizations(filtered_data)
+VE -> VE: Recalculate chart data
+VE -> VE: Update visualizations
+VE --> DA: Updated visualizations
+DA --> FA: Filtered dashboard data
+FA --> WB: Updated dashboard
+WB --> PM: Display filtered visualizations
+
+== Real-time Dashboard Updates ==
+
+note over DA: Continuous monitoring
+DA -> DM: query_dashboard_updates(project_id)
+DM --> DA: Update data
+DA -> VE: update_dashboard_visualizations(update_data)
+VE -> VE: Refresh chart data
+VE -> VE: Update real-time indicators
+VE --> DA: Updated visualizations
+DA -> FA: send_dashboard_update(project_id, updates)
+FA -> WB: Push update
+WB -> WB: Update dashboard
+WB --> PM: Display updated dashboard
+
+== Custom Dashboard Creation ==
+
+PM -> WB: Create custom dashboard
+WB -> FA: POST /dashboard/create_custom
+note right: project_id, dashboard_config, widgets
+
+FA -> DA: create_custom_dashboard(project_id, dashboard_config)
+DA -> DM: save_dashboard_config(project_id, dashboard_config)
+DM --> DA: Config saved
+DA -> VE: create_custom_widgets(dashboard_config)
+VE -> VE: Generate custom visualizations
+VE -> VE: Create interactive widgets
+VE --> DA: Custom dashboard
+DA --> FA: Custom dashboard data
+FA --> WB: Custom dashboard
+WB --> PM: Display custom dashboard
+
+== Dashboard Export ==
+
+PS -> WB: Export dashboard
+WB -> FA: POST /dashboard/export
+note right: project_id, export_format, date_range
+
+FA -> DA: export_dashboard(project_id, export_format, date_range)
+DA -> DM: get_dashboard_data(project_id, date_range)
+DM --> DA: Dashboard data
+DA -> VE: create_export_visualizations(dashboard_data)
+VE -> VE: Generate export charts
+VE -> VE: Create export report
+VE --> DA: Export data
+DA --> FA: Dashboard export
+FA --> WB: Export file
+WB --> PS: Download dashboard export
+
+== Dashboard Analytics ==
+
+PM -> WB: View dashboard analytics
+WB -> FA: GET /dashboard/analytics/<project_id>
+FA -> DA: get_dashboard_analytics(project_id)
+DA -> DM: get_dashboard_usage_data(project_id)
+DM --> DA: Usage data
+DA -> LLM: Analyze dashboard usage
+note right: Context: usage patterns, user interactions, dashboard effectiveness
+LLM --> DA: Usage analytics
+DA -> DA: Calculate dashboard metrics
+note right: View frequency, user engagement, popular widgets
+DA --> FA: Dashboard analytics
+FA --> WB: Analytics data
+WB --> PM: Display dashboard analytics
+
+== Multi-Project Dashboard ==
+
+PM -> WB: View multi-project dashboard
+WB -> FA: GET /dashboard/multi_project
+FA -> DA: get_multi_project_dashboard()
+DA -> DM: get_all_projects_summary()
+DM --> DA: Projects summary
+DA -> VE: create_multi_project_visualizations(projects_summary)
+VE -> VE: Generate comparative charts
+VE -> VE: Create project comparison visualizations
+VE -> VE: Generate portfolio overview
+VE --> DA: Multi-project visualizations
+DA --> FA: Multi-project dashboard data
+FA --> WB: Multi-project dashboard
+WB --> PM: Display multi-project dashboard
+
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+title High-Level Agent-Based Layered Architecture (Simplified)
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam ArrowColor #888888
+skinparam PackageStyle rectangle
+
+package "Presentation" as UI {
+  component "Flask App" as App
+}
+
+package "Orchestration" as Orc {
+  component "Orchestrator" as OrchestratorCore
+}
+
+package "Agents" as AgentsPkg {
+  component "Domain Agents\n(Financial, Performance, CSV, PDF)" as Agents
+}
+
+package "Services" as Svc {
+  component "LLM/Embeddings/DB Services" as CoreServices
+}
+
+package "Storage" as Store {
+  component "ChromaDB & JSON Data" as DataStore
+}
+
+cloud "External LLMs/APIs" as ExternalLLMs
+
+App --> OrchestratorCore : HTTP requests
+OrchestratorCore --> Agents : delegate tasks
+Agents --> CoreServices : use capabilities
+CoreServices --> DataStore : persist/query
+CoreServices --> ExternalLLMs : model calls
+OrchestratorCore --> App : responses
+
+@enduml
